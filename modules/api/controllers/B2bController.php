@@ -436,7 +436,21 @@ class B2bController extends BaseController
         }
 
         $b2b->duration = 900;
-
+    //     $duration = Yii::$app->request->post("duration") * 60 * 60 * 24;
+    // if(!$duration) {
+    //     $n = date("w", mktime(0,0,0,date("m"),date("d"),date("Y")));
+    //     if ($n == 4 || $n == 5 || $n == 6 || $n == 0) {
+    //         $b2b->duration = 5 * 60 * 60 * 24;
+    //     } else {
+    //         $b2b->duration = 3 * 60 * 60 * 24;
+    //     }
+    // } else {
+    //     if ($duration < 3*60*60*24) {
+    //         $b2b->duration = 3*60*60*24;
+    //     } else {
+    //         $b2b->duration = $duration;
+    //     }
+    // }
         
         $b2b->type = 1; //buy
         $status = -1;  //создать ордер
@@ -452,7 +466,19 @@ class B2bController extends BaseController
             Yii::$app->response->statusCode = 400;
             return ["success" => false, "message" => "Валюта не входит в список доступных для b2b"];
         }
-
+        
+        //$paymentsIDs = [1000];
+        // $paymentIDs = array();
+        // $payments = Yii::$app->request->post("payments");
+        // $paymentsIDs = explode(",", $payments);
+        // if(!$payments) {
+        //     Yii::$app->response->statusCode = 400;
+        //     return ["success" => false, "message" => "Выберите способы оплаты"];
+        // }
+        // if(count($paymentsIDs) > 10 ) {
+        // Yii::$app->response->statusCode = 400;
+        // return ["success" => false, "message" => "Превышено количество способов оплаты в рамках одного ордера"];
+        // }
         
         $wallet = Wallet::findOne(["user_id" => $this->user->id, "chart_id" =>$chart->id]); //
         if(!$wallet) {
@@ -465,7 +491,9 @@ class B2bController extends BaseController
             return ["success" => false, "message" => "Минимальное количество должно быть больше 500 руб"];
             }
         }
-
+    //  if ($b2b->max_limit > $wallet->balance || $b2b->max_limit < $b2b->amount) {
+    //     return ["success" => false, "message" => "Превышен лимит текущего баланса"];
+    //  }
         if ($b2b->max_limit < $b2b->min_limit) {
         return ["success" => false, "message" => "Минимальный лимит меньше максимального"];
         }
@@ -474,6 +502,11 @@ class B2bController extends BaseController
         return ["success" => false, "message" => "Минимальный лимит меньше суммы предложения"];
         }
         
+
+
+    //  if($b2b->type == 1) {
+    //      $wallet->balance -= $b2b->amount; //резервирование средств с финансового кошелька для продажи криптовалюты
+    //  }
 
         if(!$wallet->save()) {
             Yii::$app->response->statusCode = 400;
@@ -495,7 +528,16 @@ class B2bController extends BaseController
                 return ["success" => false, "message" => "Не все обязательные реквизиты заполнены для создания ордера, заполните их в профиле компании"];
             }
         }
+        // foreach ($paymentsIDs as $payment) {
+        //     $b2b_payment = new B2bPayment(["b2b_ads_id" => $b2b->id, "payment_id" => $payment, "company_id" => $this->user->id]);
+        //     $b2b_payment_user = PaymentUser::find()->where(['user_id' => $this->user->id, 'payment_id' => $payment, 'active'=>1])->one();
 
+        //     if (!$b2b_payment_user) {
+        //         return ["success" => false, "message" => "Вы не заполнили реквизиты для выбранного метода оплаты"];
+        //     } else {
+        //         $b2b_payment->save();
+        //     }
+        // }
         if(!$b2b->save()) {
             Yii::$app->response->statusCode = 400;
             return ["success" => false, "message" => "Ошибка сохранения объявления"];
@@ -815,7 +857,7 @@ class B2bController extends BaseController
      *    @SWG\Parameter(
      *      name="duration",
      *      in="path",
-     *      description="Период исполнения ордера",
+     *      description="Период исполнения ордера (в минутах), без указания все",
      *      type="integer",
      *     ),
      *    @SWG\Parameter(
@@ -1229,6 +1271,18 @@ class B2bController extends BaseController
         }
 
         
+        // $b2b_payment = (int)Yii::$app->request->post("payment");
+        // if(!$b2b_payment) {
+        //     Yii::$app->response->statusCode = 401;
+        //     return ["success" => false, "message" => "Не выбран способ орлаты"];
+            
+        // }
+        // $b2b_author = PaymentUser::find()->where(['user_id' => $this->user->id, "payment_id" => $b2b_payment])->all();
+        // if(!$b2b_author) {
+        //     Yii::$app->response->statusCode = 401;
+        //     return ["success" => false, "message" => "Добавьте тип оплаты, выбранный вами тип оплаты не доступен для сделки"];
+            
+        // }
         
         $b2bAds_history = B2bHistory::find()->where(["author_id" => $this->user->id, "status" => [1,2]])->one();
         if($b2bAds_history) {
@@ -1236,7 +1290,18 @@ class B2bController extends BaseController
             return ["success" => false, "message" => "У вас есть активный ордер с текущим ользователем"];
         }
 
-
+        // $payments_seller = B2bPayment::find()->where(['b2b_ads_id' => $b2b_ads->id])->all();
+        // foreach ($payments_seller as $payment_seller) {
+        //     $flag = False;
+        //     if ($b2b_payment == $payment_seller->payment_id) {
+        //         $flag = True;
+        //         break;
+        //     }
+        // }
+        // if (!$flag) {
+        //     Yii::$app->response->statusCode = 401;
+        //     return ["success" => false, "message" => "Не ооответствует способу оплаты"];
+        // }
         $chart_name = Chart::find()->where(['id' => $b2b_ads->chart_id])->one();
         $currency_name = Currency::find()->where(['id' => $b2b_ads->currency_id])->one();
 
@@ -1616,7 +1681,7 @@ class B2bController extends BaseController
         
         //$b2b_ads->status = 2; 
         $b2b_h->status = 2; //нажал кнопку платеж выполнен
-        $b2b_h->end_time = strtotime('+2 days 23 hours 45 minutes', $b2b_h->end_date);
+        $b2b_h->end_date = strtotime('+2 days 23 hours 45 minutes', $b2b_h->end_date);
         $b2b_h->file_path = 'Оплачен';
         if (!$b2b_ads->save()) {
             Yii::$app->response->statusCode = 400;
@@ -2264,90 +2329,176 @@ class B2bController extends BaseController
                 //$b2b_reqs_creator = PaymentUser::find()->where(['user_id' => $item->creator_id, "payment_id" => $item->payment_id])->joinWith(['type'])->one();
                 
                 //$b2b_reqs_author = PaymentUser::find()->where(['user_id' => $item->author_id, "payment_id" => $item->payment_id])->joinWith(['type'])->one();
-
                 $author_info = Company::find()->where(["user_id" => $item->author_id])->one();
 
+                if ($item->ads->company_id == $this->user->id) {
+                    
+                    $can_delete = 1; 
 
+                    if ($item->ads->status == 6 || $item->ads->status == 6) {
+                    $can_delete = 0;
+                    }
+                    if ($item->ads->amount > 1) {
+                        $item->ads->amount = number_format($item->ads->amount, 2,'.','');
+                    }
+                    else {
+                        $item->ads->amount = number_format($item->ads->amount, 10,'.','');
+                        $item->ads->amount = (float)rtrim($item->ads->amount, '0');
+                    }
+                    if ($item->ads->amount == 0) {
+                        $item->ads->amount = 0;
+                    }
+        
+                    if ($item->ads->min_limit * $item->ads->course > 1) {
+                        $item->ads->min_limit = number_format($item->ads->min_limit, 2, '.', '');
+                    }
+                    
+        
+                    if ($item->ads->max_limit * $item->ads->course > 1) {
+                        $item->ads->max_limit = number_format($item->ads->max_limit, 2, '.', '');
+        
+                    }
+                  
+                    
+                    if ($item->ads->course > 1) {
+                        $item->ads->course = number_format($item->ads->course, 2, '.','');
+                    }
+
+
+                    $data[] = [
+                    "b2b_ads_id" => $item->ads->id,
+                    "uuid" => $item->ads->uuid,
+                    "date" => date("Y-m-d H:i:s", $item->ads->date),
+                    "company_id" => $item->ads->user->id,
+                    "company" => $item->ads->company->name,
+                    "first_name" => $item->ads->user->first_name,
+                    "last_name" => $item->ads->user->last_name,
+                    "patronymic" => $item->ads->user->patronymic,
+                    "verify_status" => $item->ads->user->verify_status,
+                    "type" => $item->ads->type,
+                    "chart_id" => $item->ads->chart->id,
+                    "chart" => $item->ads->chart->symbol,
+                    "currency" => $item->ads->currency->symbol,
+                    "currency_id" => $item->ads->currency_id,
+                    "full_amount" => (float)$item->ads->start_amount,
+                    "amount" => (float)$item->ads->amount,
+                    "course" => (float)$item->ads->course,
+                    "min_limit" => (float)$item->ads->min_limit,
+                    "max_limit" => (float)$item->ads->max_limit,
+                    "author_id" => $item->author_id,
+                    "author" => $author_info->name ?? null,
+                    "author_bank" => $author_info->bank ?? null,
+                    "author_bik" => $author_info->bik ?? null,
+                    "author_rs" => $author_info->rs ?? null,
+                    "author_ks" => $author_info->ks ?? null,
+                    "author_phone" => $author_info->phone ?? null,
+                    "image_author" => Url::to([$item->user->getImage()->getUrl("75x75")], "https"),
+                    "creator" => $item->company->name,
+                    "creator_bank" => $item->company->bank,
+                    "creator_id" => $item->creator_id,
+                    "creator_bik" => $item->company->bik,
+                    "creator_rs" => $item->company->rs,
+                    "creator_ks" => $item->company->ks,
+                    "creator_phone" => $item->company->phone,
+                    "image_creator" => Url::to([$item->ads->user->getImage()->getUrl("75x75")], "https"),
+                    "status" => $item->ads->status,
+                    "can_delete" => $can_delete,
+                    "order_id_history" => $item->b2b_ads_id,
+                    "volume" => (float)$item->price,
+                    "start_date" => date("Y-m-d H:i:s", $item->start_date),
+                    "end_date" => date("Y-m-d H:i:s", $item->end_date),
+                    "status_history" => $item->status,
+                    "description" => $item->ads->description
+                ];
+            }
+
+            if ($item->author_id == $this->user->id) {
                 $can_delete = 1; 
 
-                if ($item->ads->status == 6 || $item->ads->status == 6) {
-                $can_delete = 0;
-                }
-                if ($item->ads->amount > 1) {
-                    $item->ads->amount = number_format($item->ads->amount, 2,'.','');
-                }
-                else {
-                    $item->ads->amount = number_format($item->ads->amount, 10,'.','');
-                    $item->ads->amount = (float)rtrim($item->ads->amount, '0');
-                }
-                if ($item->ads->amount == 0) {
-                    $item->ads->amount = 0;
-                }
-    
-                if ($item->ads->min_limit * $item->ads->course > 1) {
-                    $item->ads->min_limit = number_format($item->ads->min_limit, 2, '.', '');
-                }
-                
-    
-                if ($item->ads->max_limit * $item->ads->course > 1) {
-                    $item->ads->max_limit = number_format($item->ads->max_limit, 2, '.', '');
-    
-                }
-                
-                
-                if ($item->ads->course > 1) {
-                    $item->ads->course = number_format($item->ads->course, 2, '.','');
-                }
-
-                
-                $data[] = [
-                "b2b_ads_id" => $item->ads->id,
-                "uuid" => $item->ads->uuid,
-                "date" => date("Y-m-d H:i:s", $item->ads->date),
-                "company_id" => $item->ads->user->id,
-                "company" => $item->ads->company->name,
-                "first_name" => $item->ads->user->first_name,
-                "last_name" => $item->ads->user->last_name,
-                "patronymic" => $item->ads->user->patronymic,
-                "verify_status" => $item->ads->user->verify_status,
-                "type" => $item->ads->type,
-                "chart_id" => $item->ads->chart->id,
-                "chart" => $item->ads->chart->symbol,
-                "currency" => $item->ads->currency->symbol,
-                "currency_id" => $item->ads->currency_id,
-                "full_amount" => (float)$item->ads->start_amount,
-                "amount" => (float)$item->ads->amount,
-                "course" => (float)$item->ads->course,
-                "min_limit" => (float)$item->ads->min_limit,
-                "max_limit" => (float)$item->ads->max_limit,
-                "author_id" => $item->author_id ?? null,
-                "author" => $author_info->name ?? null,
-                "author_bank" => $author_info->bank ?? null,
-                "author_bik" => $author_info->bik ?? null,
-                "author_rs" => $author_info->rs ?? null,
-                "author_ks" => $author_info->ks ?? null,
-                "author_phone" => $author_info->phone ?? null,
-                "image_author" => Url::to([$item->user->getImage()->getUrl("75x75")], "https"),
-                "creator" => $item->company->name,
-                "creator_bank" => $item->company->bank,
-                "creator_id" => $item->creator_id,
-                "creator_bik" => $item->company->bik,
-                "creator_rs" => $item->company->rs,
-                "creator_ks" => $item->company->ks,
-                "creator_phone" => $item->company->phone,
-                "image_creator" => Url::to([$item->ads->user->getImage()->getUrl("75x75")], "https"),
-                "status" => $item->ads->status,
-                "can_delete" => $can_delete,
-                "order_id_history" => $item->b2b_ads_id,
-                "volume" => (float)$item->price,
-                "start_date" => date("Y-m-d H:i:s", $item->start_date),
-                "end_date" => date("Y-m-d H:i:s", $item->end_date),
-                "status_history" => $item->status,
-                "description" => $item->ads->description
-            ];
-            
-
-           
+                    if ($item->ads->status == 5 || $item->ads->status == 7 || $item->ads->status == 2) {
+                    $can_delete = 0;
+                    }
+                    if ($item->ads->amount > 1) {
+                        $item->ads->amount = number_format($item->ads->amount, 2,'.','');
+                    }
+                    else {
+                        $item->ads->amount = number_format($item->ads->amount, 10,'.','');
+                        $item->ads->amount = rtrim($item->ads->amount, '0');
+                    }
+                    if ($item->ads->amount == 0) {
+                        $item->ads->amount = 0;
+                    }
+        
+                    if ($item->ads->min_limit * $item->ads->course > 1) {
+                        $item->ads->min_limit = number_format($item->ads->min_limit, 2, '.', '');
+                    }
+                    
+        
+                    if ($item->ads->max_limit * $item->ads->course > 1) {
+                        $item->ads->max_limit = number_format($item->ads->max_limit, 2, '.', '');
+        
+                    }
+                  
+                    
+                    if ($item->ads->course > 1) {
+                        $item->ads->course = number_format($item->ads->course, 2, '.','');
+                    }
+                    
+                    // $payment[] = [
+                    //     "id" => $b2b_reqs->payment_id,
+                    //     "name" => $b2b_reqs->type->name,
+                    //     "value" => $b2b_reqs->value,
+                    //     "payment_receiver" => $b2b_reqs->payment_receiver
+                        
+                    // ];
+                    
+                    $data[] = [
+                        "b2b_ads_id" => $item->ads->id,
+                        "uuid" => $item->ads->uuid,
+                        "date" => date("Y-m-d H:i:s", $item->ads->date),
+                        "company_id" => $item->ads->user->id,
+                        "company" => $item->ads->company->name,
+                        "first_name" => $item->ads->user->first_name,
+                        "last_name" => $item->ads->user->last_name,
+                        "patronymic" => $item->ads->user->patronymic,
+                        "verify_status" => $item->ads->user->verify_status,
+                        "type" => $item->ads->type,
+                        "chart_id" => $item->ads->chart->id,
+                        "chart" => $item->ads->chart->symbol,
+                        "currency" => $item->ads->currency->symbol,
+                        "currency_id" => $item->ads->currency_id,
+                        "full_amount" => (float)$item->ads->start_amount,
+                        "amount" => (float)$item->ads->amount,
+                        "course" => (float)$item->ads->course,
+                        "min_limit" => (float)$item->ads->min_limit,
+                        "max_limit" => (float)$item->ads->max_limit,
+                        "author_id" => $item->author_id,
+                        "author" => $item->author->name,
+                        "author_bank" => $item->author->bank,
+                        "author_bik" => $item->author->bik,
+                        "author_rs" => $item->author->rs,
+                        "author_ks" => $item->author->ks,
+                        "author_phone" => $item->author->phone,
+                        "image_author" => Url::to([$item->user->getImage()->getUrl("75x75")], "https"),
+                        "creator" => $item->company->name,
+                        "creator_bank" => $item->company->bank,
+                        "creator_id" => $item->creator_id,
+                        "creator_bik" => $item->company->bik,
+                        "creator_rs" => $item->company->rs,
+                        "creator_ks" => $item->company->ks,
+                        "creator_phone" => $item->company->phone,
+                        "image_creator" => Url::to([$item->ads->user->getImage()->getUrl("75x75")], "https"),
+                        "status" => $item->ads->status,
+                        "can_delete" => $can_delete,
+                        "order_id_history" => $item->b2b_ads_id,
+                        "volume" => (float)$item->price,
+                        "start_date" => date("Y-m-d H:i:s", $item->start_date),
+                        "end_date" => date("Y-m-d H:i:s", $item->end_date),
+                        "status_history" => $item->status,
+                        "description" => $item->ads->description
+                    
+                ];
+            }
         }
             return $data;
 
