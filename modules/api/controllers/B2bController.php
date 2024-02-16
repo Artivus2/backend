@@ -2266,9 +2266,7 @@ class B2bController extends BaseController
                 //$b2b_reqs_author = PaymentUser::find()->where(['user_id' => $item->author_id, "payment_id" => $item->payment_id])->joinWith(['type'])->one();
 
                 $author_info = Company::find()->where(["user_id" => $item->author_id])->one();
-                if (!$author_info) {
-                    return $author_info;
-                }
+
 
                 $can_delete = 1; 
 
@@ -2323,12 +2321,12 @@ class B2bController extends BaseController
                 "min_limit" => (float)$item->ads->min_limit,
                 "max_limit" => (float)$item->ads->max_limit,
                 "author_id" => $item->author_id ?? null,
-                "author" => $author->name ?? null,
-                "author_bank" => $author->bank ?? null,
-                "author_bik" => $author->bik ?? null,
-                "author_rs" => $author->rs ?? null,
-                "author_ks" => $author->ks ?? null,
-                "author_phone" => $author->phone ?? null,
+                "author" => $author_info->name ?? null,
+                "author_bank" => $author_info->bank ?? null,
+                "author_bik" => $author_info->bik ?? null,
+                "author_rs" => $author_info->rs ?? null,
+                "author_ks" => $author_info->ks ?? null,
+                "author_phone" => $author_info->phone ?? null,
                 "image_author" => Url::to([$item->user->getImage()->getUrl("75x75")], "https"),
                 "creator" => $item->company->name,
                 "creator_bank" => $item->company->bank,
