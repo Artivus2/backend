@@ -2265,173 +2265,87 @@ class B2bController extends BaseController
                 
                 //$b2b_reqs_author = PaymentUser::find()->where(['user_id' => $item->author_id, "payment_id" => $item->payment_id])->joinWith(['type'])->one();
 
-                if ($item->ads->company_id == $this->user->id) {
-                    $can_delete = 1; 
-
-                    if ($item->ads->status == 6 || $item->ads->status == 6) {
-                    $can_delete = 0;
-                    }
-                    if ($item->ads->amount > 1) {
-                        $item->ads->amount = number_format($item->ads->amount, 2,'.','');
-                    }
-                    else {
-                        $item->ads->amount = number_format($item->ads->amount, 10,'.','');
-                        $item->ads->amount = (float)rtrim($item->ads->amount, '0');
-                    }
-                    if ($item->ads->amount == 0) {
-                        $item->ads->amount = 0;
-                    }
-        
-                    if ($item->ads->min_limit * $item->ads->course > 1) {
-                        $item->ads->min_limit = number_format($item->ads->min_limit, 2, '.', '');
-                    }
-                    
-        
-                    if ($item->ads->max_limit * $item->ads->course > 1) {
-                        $item->ads->max_limit = number_format($item->ads->max_limit, 2, '.', '');
-        
-                    }
-                  
-                    
-                    if ($item->ads->course > 1) {
-                        $item->ads->course = number_format($item->ads->course, 2, '.','');
-                    }
-
-
-                    $data[] = [
-                    "b2b_ads_id" => $item->ads->id,
-                    "uuid" => $item->ads->uuid,
-                    "date" => date("Y-m-d H:i:s", $item->ads->date),
-                    "company_id" => $item->ads->user->id,
-                    "company" => $item->ads->company->name,
-                    "first_name" => $item->ads->user->first_name,
-                    "last_name" => $item->ads->user->last_name,
-                    "patronymic" => $item->ads->user->patronymic,
-                    "verify_status" => $item->ads->user->verify_status,
-                    "type" => $item->ads->type,
-                    "chart_id" => $item->ads->chart->id,
-                    "chart" => $item->ads->chart->symbol,
-                    "currency" => $item->ads->currency->symbol,
-                    "currency_id" => $item->ads->currency_id,
-                    "full_amount" => (float)$item->ads->start_amount,
-                    "amount" => (float)$item->ads->amount,
-                    "course" => (float)$item->ads->course,
-                    "min_limit" => (float)$item->ads->min_limit,
-                    "max_limit" => (float)$item->ads->max_limit,
-                    "author_id" => $item->author_id,
-                    "author" => $item->author->name,
-                    "author_bank" => $item->author->bank,
-                    "author_bik" => $item->author->bik,
-                    "author_rs" => $item->author->rs,
-                    "author_ks" => $item->author->ks,
-                    "author_phone" => $item->author->phone,
-                    "image_author" => Url::to([$item->user->getImage()->getUrl("75x75")], "https"),
-                    "creator" => $item->company->name,
-                    "creator_bank" => $item->company->bank,
-                    "creator_id" => $item->creator_id,
-                    "creator_bik" => $item->company->bik,
-                    "creator_rs" => $item->company->rs,
-                    "creator_ks" => $item->company->ks,
-                    "creator_phone" => $item->company->phone,
-                    "image_creator" => Url::to([$item->ads->user->getImage()->getUrl("75x75")], "https"),
-                    "status" => $item->ads->status,
-                    "can_delete" => $can_delete,
-                    "order_id_history" => $item->b2b_ads_id,
-                    "volume" => (float)$item->price,
-                    "start_date" => date("Y-m-d H:i:s", $item->start_date),
-                    "end_date" => date("Y-m-d H:i:s", $item->end_date),
-                    "status_history" => $item->status,
-                    "description" => $item->ads->description
-                ];
-            }
-
-            if ($item->author_id == $this->user->id) {
+                $author = Company::find()->where(["user_id" => $item->author_id])->one();
                 $can_delete = 1; 
 
-                    if ($item->ads->status == 5 || $item->ads->status == 7 || $item->ads->status == 2) {
-                    $can_delete = 0;
-                    }
-                    if ($item->ads->amount > 1) {
-                        $item->ads->amount = number_format($item->ads->amount, 2,'.','');
-                    }
-                    else {
-                        $item->ads->amount = number_format($item->ads->amount, 10,'.','');
-                        $item->ads->amount = rtrim($item->ads->amount, '0');
-                    }
-                    if ($item->ads->amount == 0) {
-                        $item->ads->amount = 0;
-                    }
-        
-                    if ($item->ads->min_limit * $item->ads->course > 1) {
-                        $item->ads->min_limit = number_format($item->ads->min_limit, 2, '.', '');
-                    }
-                    
-        
-                    if ($item->ads->max_limit * $item->ads->course > 1) {
-                        $item->ads->max_limit = number_format($item->ads->max_limit, 2, '.', '');
-        
-                    }
-                  
-                    
-                    if ($item->ads->course > 1) {
-                        $item->ads->course = number_format($item->ads->course, 2, '.','');
-                    }
-                    
-                    // $payment[] = [
-                    //     "id" => $b2b_reqs->payment_id,
-                    //     "name" => $b2b_reqs->type->name,
-                    //     "value" => $b2b_reqs->value,
-                    //     "payment_receiver" => $b2b_reqs->payment_receiver
-                        
-                    // ];
-                    
-                    $data[] = [
-                        "b2b_ads_id" => $item->ads->id,
-                        "uuid" => $item->ads->uuid,
-                        "date" => date("Y-m-d H:i:s", $item->ads->date),
-                        "company_id" => $item->ads->user->id,
-                        "company" => $item->ads->company->name,
-                        "first_name" => $item->ads->user->first_name,
-                        "last_name" => $item->ads->user->last_name,
-                        "patronymic" => $item->ads->user->patronymic,
-                        "verify_status" => $item->ads->user->verify_status,
-                        "type" => $item->ads->type,
-                        "chart_id" => $item->ads->chart->id,
-                        "chart" => $item->ads->chart->symbol,
-                        "currency" => $item->ads->currency->symbol,
-                        "currency_id" => $item->ads->currency_id,
-                        "full_amount" => (float)$item->ads->start_amount,
-                        "amount" => (float)$item->ads->amount,
-                        "course" => (float)$item->ads->course,
-                        "min_limit" => (float)$item->ads->min_limit,
-                        "max_limit" => (float)$item->ads->max_limit,
-                        "author_id" => $item->author_id,
-                        "author" => $item->author->name,
-                        "author_bank" => $item->author->bank,
-                        "author_bik" => $item->author->bik,
-                        "author_rs" => $item->author->rs,
-                        "author_ks" => $item->author->ks,
-                        "author_phone" => $item->author->phone,
-                        "image_author" => Url::to([$item->user->getImage()->getUrl("75x75")], "https"),
-                        "creator" => $item->company->name,
-                        "creator_bank" => $item->company->bank,
-                        "creator_id" => $item->creator_id,
-                        "creator_bik" => $item->company->bik,
-                        "creator_rs" => $item->company->rs,
-                        "creator_ks" => $item->company->ks,
-                        "creator_phone" => $item->company->phone,
-                        "image_creator" => Url::to([$item->ads->user->getImage()->getUrl("75x75")], "https"),
-                        "status" => $item->ads->status,
-                        "can_delete" => $can_delete,
-                        "order_id_history" => $item->b2b_ads_id,
-                        "volume" => (float)$item->price,
-                        "start_date" => date("Y-m-d H:i:s", $item->start_date),
-                        "end_date" => date("Y-m-d H:i:s", $item->end_date),
-                        "status_history" => $item->status,
-                        "description" => $item->ads->description
-                    
-                ];
-            }
+                if ($item->ads->status == 6 || $item->ads->status == 6) {
+                $can_delete = 0;
+                }
+                if ($item->ads->amount > 1) {
+                    $item->ads->amount = number_format($item->ads->amount, 2,'.','');
+                }
+                else {
+                    $item->ads->amount = number_format($item->ads->amount, 10,'.','');
+                    $item->ads->amount = (float)rtrim($item->ads->amount, '0');
+                }
+                if ($item->ads->amount == 0) {
+                    $item->ads->amount = 0;
+                }
+    
+                if ($item->ads->min_limit * $item->ads->course > 1) {
+                    $item->ads->min_limit = number_format($item->ads->min_limit, 2, '.', '');
+                }
+                
+    
+                if ($item->ads->max_limit * $item->ads->course > 1) {
+                    $item->ads->max_limit = number_format($item->ads->max_limit, 2, '.', '');
+    
+                }
+                
+                
+                if ($item->ads->course > 1) {
+                    $item->ads->course = number_format($item->ads->course, 2, '.','');
+                }
+
+                
+                $data[] = [
+                "b2b_ads_id" => $item->ads->id,
+                "uuid" => $item->ads->uuid,
+                "date" => date("Y-m-d H:i:s", $item->ads->date),
+                "company_id" => $item->ads->user->id,
+                "company" => $item->ads->company->name,
+                "first_name" => $item->ads->user->first_name,
+                "last_name" => $item->ads->user->last_name,
+                "patronymic" => $item->ads->user->patronymic,
+                "verify_status" => $item->ads->user->verify_status,
+                "type" => $item->ads->type,
+                "chart_id" => $item->ads->chart->id,
+                "chart" => $item->ads->chart->symbol,
+                "currency" => $item->ads->currency->symbol,
+                "currency_id" => $item->ads->currency_id,
+                "full_amount" => (float)$item->ads->start_amount,
+                "amount" => (float)$item->ads->amount,
+                "course" => (float)$item->ads->course,
+                "min_limit" => (float)$item->ads->min_limit,
+                "max_limit" => (float)$item->ads->max_limit,
+                "author_id" => $item->author_id ?? null,
+                "author" => $author->name ?? null,
+                "author_bank" => $author->bank ?? null,
+                "author_bik" => $author->bik ?? null,
+                "author_rs" => $author->rs ?? null,
+                "author_ks" => $author->ks ?? null,
+                "author_phone" => $author->phone,
+                "image_author" => Url::to([$item->user->getImage()->getUrl("75x75")], "https"),
+                "creator" => $item->company->name,
+                "creator_bank" => $item->company->bank,
+                "creator_id" => $item->creator_id,
+                "creator_bik" => $item->company->bik,
+                "creator_rs" => $item->company->rs,
+                "creator_ks" => $item->company->ks,
+                "creator_phone" => $item->company->phone,
+                "image_creator" => Url::to([$item->ads->user->getImage()->getUrl("75x75")], "https"),
+                "status" => $item->ads->status,
+                "can_delete" => $can_delete,
+                "order_id_history" => $item->b2b_ads_id,
+                "volume" => (float)$item->price,
+                "start_date" => date("Y-m-d H:i:s", $item->start_date),
+                "end_date" => date("Y-m-d H:i:s", $item->end_date),
+                "status_history" => $item->status,
+                "description" => $item->ads->description
+            ];
+            
+
+           
         }
             return $data;
 
