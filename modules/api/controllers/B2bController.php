@@ -2265,7 +2265,11 @@ class B2bController extends BaseController
                 
                 //$b2b_reqs_author = PaymentUser::find()->where(['user_id' => $item->author_id, "payment_id" => $item->payment_id])->joinWith(['type'])->one();
 
-                $author = Company::find()->where(["user_id" => $item->author_id])->one();
+                $author_info = Company::find()->where(["user_id" => $item->author_id])->one();
+                if (!$author_info) {
+                    return $author_info;
+                }
+
                 $can_delete = 1; 
 
                 if ($item->ads->status == 6 || $item->ads->status == 6) {
@@ -2324,7 +2328,7 @@ class B2bController extends BaseController
                 "author_bik" => $author->bik ?? null,
                 "author_rs" => $author->rs ?? null,
                 "author_ks" => $author->ks ?? null,
-                "author_phone" => $author->phone,
+                "author_phone" => $author->phone ?? null,
                 "image_author" => Url::to([$item->user->getImage()->getUrl("75x75")], "https"),
                 "creator" => $item->company->name,
                 "creator_bank" => $item->company->bank,
