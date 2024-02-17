@@ -1114,7 +1114,7 @@ class B2bController extends BaseController
                 if (!$wherebank) {
                 foreach ($wherebank as $banks) {
                     if ($item->company_id == $banks->user_id) {
-                        break;
+                        $banker = 1;
                     } else {
                         continue;
                     }
