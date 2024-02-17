@@ -1111,6 +1111,7 @@ class B2bController extends BaseController
                 }
             }
             if ($bank) {
+                if (!$wherebank) {
                 foreach ($wherebank as $banks) {
                     if ($item->company_id == $banks->user_id) {
                         break;
@@ -1118,6 +1119,9 @@ class B2bController extends BaseController
                         continue;
                     }
                 }
+            } else {
+                continue;
+            }
                 
             }
             
