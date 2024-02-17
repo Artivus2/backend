@@ -1011,14 +1011,15 @@ class B2bController extends BaseController
 
         if (!$bank) {
             $wherebank = ["currency.active" => 1];
+            
         }
         else {
-            $wherebank = Company::find()->where(["bank" => $bank])->all();
+            $wherebank = ["company.bank" => $bank];
         }
         
                 
         $data = [];
-        $b2bAds_query = B2bAds::find()->joinwith(['chart','currency'])
+        $b2bAds_query = B2bAds::find()->joinwith(['chart','currency','company'])
         ->where($whereid)
         ->andwhere($wheretype)
         ->andwhere($wherechart)
@@ -1029,6 +1030,7 @@ class B2bController extends BaseController
         ->andWhere($wheresummmin)
         ->andWhere($wheresummmax)
         ->andWhere($wherediscount)
+        ->andWhere($wherebank)
         ->all();
 
         foreach ($b2bAds_query as $item)
@@ -1110,21 +1112,7 @@ class B2bController extends BaseController
                     }
                 }
             }
-            if ($bank) {
-                if (!$wherebank) {
-                foreach ($wherebank as $banks) {
-                    if ($item->company_id == $banks->user_id) {
-                        $banker = 1;
-                    } else {
-                        continue;
-                    }
-                }
-            } else {
-                continue;
-            }
-                
-            }
-            
+
 
             $can_delete = 1; 
             // if ($item->start_amount<$item->amount) {
@@ -1168,6 +1156,7 @@ class B2bController extends BaseController
                 "order_id" => $item->id,
                 "uuid" => (int)$item->uuid,
 	            "date" => date("Y-m-d H:i:s", $item->date),
+                "bank" => $bank,
                 "company_id" => $item->user->id,
                 "company" => $item->company->name,
                 "verify_status" => $item->user->verify_status,
