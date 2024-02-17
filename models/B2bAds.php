@@ -32,6 +32,7 @@ use Yii;
  * @SWG\Property(property="can_delete", type="integer", description="Возможность удаления ордера")
  * @SWG\Property(property="image", type="string", description="Платежный документ (при наличии оплаты)")
  * @SWG\Property(property="description", type="string", description="Условия сделки")
+ * @SWG\Property(property="discount", type="string", description="% дисконт")
  */
 
 class B2bAds extends \yii\db\ActiveRecord
@@ -54,7 +55,7 @@ class B2bAds extends \yii\db\ActiveRecord
         return [
             [['company_id', 'chart_id', 'wallet_id', 'min_limit', 'max_limit', 'amount', 'start_amount', 'course', 'date'], 'required'],
             [['company_id', 'chart_id', 'wallet_id', 'type', 'date', 'status', 'currency_id','main_okved'], 'integer'],
-            [['min_limit', 'amount','start_amount','course', 'max_limit'], 'number'],
+            [['min_limit', 'amount','start_amount','course', 'max_limit','discount'], 'number'],
             [['description'], 'string', 'max' => 255]
             
         ];
@@ -128,7 +129,8 @@ class B2bAds extends \yii\db\ActiveRecord
             'status' => 'Status',
             'main_okved' => 'Оквед',
             'uuid' => 'uuid',
-            'description' => 'Description'
+            'description' => 'Description',
+            'discount' => 'Discount'
         ];
     }
 

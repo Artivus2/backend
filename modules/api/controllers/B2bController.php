@@ -93,6 +93,12 @@ class B2bController extends BaseController
      *      @SWG\Schema(type="number")
      *     ),
      *    @SWG\Parameter(
+     *      name="discount",
+     *      in="body",
+     *      description="%",
+     *      @SWG\Schema(type="number")
+     *     ),
+     *    @SWG\Parameter(
      *      name="main_okved",
      *      in="body",
      *      description="ид основного ОКВЕД",
@@ -177,6 +183,7 @@ class B2bController extends BaseController
 
         
         $b2b->max_limit = (float)Yii::$app->request->post("max_limit");
+        $b2b->discount = (float)Yii::$app->request->post("discount", 0);
         if(!$b2b->max_limit) {
             Yii::$app->response->statusCode = 401;
             return ["success" => false, "message" => "Не указан максимальный лимит для сделки"];
@@ -215,17 +222,7 @@ class B2bController extends BaseController
         }
         
         $paymentsIDs = [1000];
-        // $paymentIDs = array();
-        // $payments = Yii::$app->request->post("payments");
-        // $paymentsIDs = explode(",", $payments);
-        // if(!$payments) {
-        //     Yii::$app->response->statusCode = 400;
-        //     return ["success" => false, "message" => "Выберите способы оплаты"];
-        // }
-        // if(count($paymentsIDs) > 10 ) {
-        // Yii::$app->response->statusCode = 400;
-        // return ["success" => false, "message" => "Превышено количество способов оплаты в рамках одного ордера"];
-        // }
+
         
         $wallet = Wallet::findOne(["user_id" => $this->user->id, "chart_id" =>$chart->id]); //
         if(!$wallet) {
@@ -248,10 +245,9 @@ class B2bController extends BaseController
         return ["success" => false, "message" => "Минимальный лимит меньше максимального"];
         }
 
-        // if ($b2b->min_limit / $b2b->course > $b2b->amount) {
-        // return ["success" => false, "message" => "Минимальный лимит меньше суммы предложения"];
-        // }
-        
+        if ($b2b->discount < 0 && $b2b->discount > 30) {
+            return ["success" => false, "message" => "Вне допустимого предела"];
+            }
 
 
         if($b2b->type == 2) {
@@ -278,16 +274,7 @@ class B2bController extends BaseController
                 return ["success" => false, "message" => "Не все обязательные реквизиты заполнены для создания ордера, заполните их в профиле компании"];
             }
         }
-        // foreach ($paymentsIDs as $payment) {
-        //     $b2b_payment = new B2bPayment(["b2b_ads_id" => $b2b->id, "payment_id" => $payment, "company_id" => $this->user->id]);
-        //     $b2b_payment_user = PaymentUser::find()->where(['user_id' => $this->user->id, 'payment_id' => $payment, 'active'=>1])->one();
 
-        //     if (!$b2b_payment_user) {
-        //         return ["success" => false, "message" => "Вы не заполнили реквизиты для выбранного метода оплаты"];
-        //     } else {
-        //         $b2b_payment->save();
-        //     }
-        // }
         if(!$b2b->save()) {
             Yii::$app->response->statusCode = 400;
             return ["success" => false, "message" => "Ошибка сохранения объявления"];
@@ -348,6 +335,12 @@ class B2bController extends BaseController
      *      @SWG\Schema(type="number")
      *     ),
      *    @SWG\Parameter(
+     *      name="discount",
+     *      in="body",
+     *      description="%",
+     *      @SWG\Schema(type="number")
+     *     ),
+     *    @SWG\Parameter(
      *      name="main_okved",
      *      in="body",
      *      description="ид основного ОКВЕД",
@@ -405,6 +398,7 @@ class B2bController extends BaseController
 
 
         $b2b->course = (float)Yii::$app->request->post("course"); //курс
+        $b2b->discount = (float)Yii::$app->request->post("discount", 0); //курс
         if(!$b2b->course) {
             Yii::$app->response->statusCode = 401;
             return ["success" => false, "message" => "Не указан курс"];
@@ -436,21 +430,7 @@ class B2bController extends BaseController
         }
 
         $b2b->duration = 900;
-    //     $duration = Yii::$app->request->post("duration") * 60 * 60 * 24;
-    // if(!$duration) {
-    //     $n = date("w", mktime(0,0,0,date("m"),date("d"),date("Y")));
-    //     if ($n == 4 || $n == 5 || $n == 6 || $n == 0) {
-    //         $b2b->duration = 5 * 60 * 60 * 24;
-    //     } else {
-    //         $b2b->duration = 3 * 60 * 60 * 24;
-    //     }
-    // } else {
-    //     if ($duration < 3*60*60*24) {
-    //         $b2b->duration = 3*60*60*24;
-    //     } else {
-    //         $b2b->duration = $duration;
-    //     }
-    // }
+
         
         $b2b->type = 1; //buy
         $status = -1;  //создать ордер
@@ -467,18 +447,6 @@ class B2bController extends BaseController
             return ["success" => false, "message" => "Валюта не входит в список доступных для b2b"];
         }
         
-        //$paymentsIDs = [1000];
-        // $paymentIDs = array();
-        // $payments = Yii::$app->request->post("payments");
-        // $paymentsIDs = explode(",", $payments);
-        // if(!$payments) {
-        //     Yii::$app->response->statusCode = 400;
-        //     return ["success" => false, "message" => "Выберите способы оплаты"];
-        // }
-        // if(count($paymentsIDs) > 10 ) {
-        // Yii::$app->response->statusCode = 400;
-        // return ["success" => false, "message" => "Превышено количество способов оплаты в рамках одного ордера"];
-        // }
         
         $wallet = Wallet::findOne(["user_id" => $this->user->id, "chart_id" =>$chart->id]); //
         if(!$wallet) {
@@ -491,9 +459,7 @@ class B2bController extends BaseController
             return ["success" => false, "message" => "Минимальное количество должно быть больше 500 руб"];
             }
         }
-    //  if ($b2b->max_limit > $wallet->balance || $b2b->max_limit < $b2b->amount) {
-    //     return ["success" => false, "message" => "Превышен лимит текущего баланса"];
-    //  }
+
         if ($b2b->max_limit < $b2b->min_limit) {
         return ["success" => false, "message" => "Минимальный лимит меньше максимального"];
         }
@@ -501,12 +467,11 @@ class B2bController extends BaseController
         if ($b2b->min_limit / $b2b->course > $b2b->amount) {
         return ["success" => false, "message" => "Минимальный лимит меньше суммы предложения"];
         }
+
+        if ($b2b->discount < 0 && $b2b->discount > 30) {
+            return ["success" => false, "message" => "Вне допустимого предела"];
+            }
         
-
-
-    //  if($b2b->type == 1) {
-    //      $wallet->balance -= $b2b->amount; //резервирование средств с финансового кошелька для продажи криптовалюты
-    //  }
 
         if(!$wallet->save()) {
             Yii::$app->response->statusCode = 400;
@@ -528,16 +493,7 @@ class B2bController extends BaseController
                 return ["success" => false, "message" => "Не все обязательные реквизиты заполнены для создания ордера, заполните их в профиле компании"];
             }
         }
-        // foreach ($paymentsIDs as $payment) {
-        //     $b2b_payment = new B2bPayment(["b2b_ads_id" => $b2b->id, "payment_id" => $payment, "company_id" => $this->user->id]);
-        //     $b2b_payment_user = PaymentUser::find()->where(['user_id' => $this->user->id, 'payment_id' => $payment, 'active'=>1])->one();
 
-        //     if (!$b2b_payment_user) {
-        //         return ["success" => false, "message" => "Вы не заполнили реквизиты для выбранного метода оплаты"];
-        //     } else {
-        //         $b2b_payment->save();
-        //     }
-        // }
         if(!$b2b->save()) {
             Yii::$app->response->statusCode = 400;
             return ["success" => false, "message" => "Ошибка сохранения объявления"];
@@ -602,6 +558,12 @@ class B2bController extends BaseController
      *      name="max_limit",
      *      in="body",
      *      description="Максимальное лимит",
+     *      @SWG\Schema(type="number")
+     *     ),
+     *    @SWG\Parameter(
+     *      name="discount",
+     *      in="body",
+     *      description="%",
      *      @SWG\Schema(type="number")
      *     ),
      *    @SWG\Parameter(
@@ -683,6 +645,7 @@ class B2bController extends BaseController
             $currency_id = $result->currency_id;
         } 
         $amount = (float)Yii::$app->request->post("amount");
+        $discount = (float)Yii::$app->request->post("discount", 0);
         if(!$amount) {
             $amount = $result->amount;
 
@@ -724,6 +687,7 @@ class B2bController extends BaseController
             $result->min_limit = $min_limit;
             $result->max_limit = $max_limit;
             $result->course = $course;
+            $result->discount = $discount;
             $result->description = Yii::$app->request->post("description", $result->description);
             $result->status = -1; //PENDING again
             $result->date = time();
@@ -867,6 +831,18 @@ class B2bController extends BaseController
      *      type="integer",
      *     ),
      *    @SWG\Parameter(
+     *      name="discount",
+     *      in="path",
+     *      description="%",
+     *      type="number",
+     *     ),
+     *    @SWG\Parameter(
+     *      name="bank",
+     *      in="path",
+     *      description="фильтр по банку",
+     *      type="integer",
+     *     ),
+     *    @SWG\Parameter(
      *      name="author_id",
      *      in="path",
      *      description="История ордеров по author_id в history",
@@ -945,12 +921,6 @@ class B2bController extends BaseController
              $all_orders = 1;
         }
         
-        // else {
-        //     $whereid = ["b2b_ads.uuid" => $b2b_ads_id]; 
-        // }
-
-        
-
         $companyIDs = array();
         $companys = Yii::$app->request->get("company_id");
         $companyIDs = explode(",", $companys);
@@ -1030,6 +1000,22 @@ class B2bController extends BaseController
             
         }
 
+        $discount = (float)Yii::$app->request->get("discount");
+        if (!$discount) {
+            $wherediscount = ["currency.active" => 1];
+        } else {
+            $wherediscount = ['>=','discount', $discount]; 
+        }
+
+        $bank = Yii::$app->request->get("bank_id");
+
+        if (!$bank) {
+            $wherebank = ["currency.active" => 1];
+        }
+        else {
+            $wherebank = Company::find()->where(["bank" => $bank])->all();
+        }
+        
                 
         $data = [];
         $b2bAds_query = B2bAds::find()->joinwith(['chart','currency'])
@@ -1042,6 +1028,7 @@ class B2bController extends BaseController
         ->andWhere($whereokved)
         ->andWhere($wheresummmin)
         ->andWhere($wheresummmax)
+        ->andWhere($wherediscount)
         ->all();
 
         foreach ($b2bAds_query as $item)
@@ -1123,7 +1110,16 @@ class B2bController extends BaseController
                     }
                 }
             }
-            
+            if ($bank) {
+                foreach ($wherebank as $banks) {
+                    if ($item->company_id == $banks->user_id) {
+                        break;
+                    } else {
+                        continue;
+                    }
+                }
+                
+            }
             
 
             $can_delete = 1; 
@@ -1188,7 +1184,8 @@ class B2bController extends BaseController
                 "user_orders_count" => (int)$b2bAds_query_count,
                 "user_orders_oount_complete_percent" =>(int)$complete,
                 "okved" => $item->main_okved,
-                'description' => $item->description
+                'description' => $item->description,
+                'discount' => $item->discount
                 
             ];
         }
@@ -1271,37 +1268,12 @@ class B2bController extends BaseController
         }
 
         
-        // $b2b_payment = (int)Yii::$app->request->post("payment");
-        // if(!$b2b_payment) {
-        //     Yii::$app->response->statusCode = 401;
-        //     return ["success" => false, "message" => "Не выбран способ орлаты"];
-            
-        // }
-        // $b2b_author = PaymentUser::find()->where(['user_id' => $this->user->id, "payment_id" => $b2b_payment])->all();
-        // if(!$b2b_author) {
-        //     Yii::$app->response->statusCode = 401;
-        //     return ["success" => false, "message" => "Добавьте тип оплаты, выбранный вами тип оплаты не доступен для сделки"];
-            
-        // }
-        
         $b2bAds_history = B2bHistory::find()->where(["author_id" => $this->user->id, "status" => [1,2]])->one();
         if($b2bAds_history) {
             Yii::$app->response->statusCode = 401;
             return ["success" => false, "message" => "У вас есть активный ордер с текущим ользователем"];
         }
 
-        // $payments_seller = B2bPayment::find()->where(['b2b_ads_id' => $b2b_ads->id])->all();
-        // foreach ($payments_seller as $payment_seller) {
-        //     $flag = False;
-        //     if ($b2b_payment == $payment_seller->payment_id) {
-        //         $flag = True;
-        //         break;
-        //     }
-        // }
-        // if (!$flag) {
-        //     Yii::$app->response->statusCode = 401;
-        //     return ["success" => false, "message" => "Не ооответствует способу оплаты"];
-        // }
         $chart_name = Chart::find()->where(['id' => $b2b_ads->chart_id])->one();
         $currency_name = Currency::find()->where(['id' => $b2b_ads->currency_id])->one();
 
@@ -1378,9 +1350,6 @@ class B2bController extends BaseController
                 Yii::$app->response->statusCode = 400;
                 return ["success" => false, "message" => "Сумма ордера больше максимального остатка", $ostatok. " " . $chart_name->symbol . " (" . $ostatok * $b2b_ads->course . " " . $currency_name->name . ")"];
             }
-
-            //$b2b_ads->status = $status;
-            //$b2b_h->payment_id = Yii::$app->request->post("payment");
 
             if(!$b2b_ads->save()) {
                 
@@ -1626,34 +1595,7 @@ class B2bController extends BaseController
             return ["success" => false, "message" => "Сделка в истории не найдена"];
         }
 
-        /*
-        $image = UploadedFile::getInstanceByName('image');
-        if (!$image) {
-            Yii::$app->response->statusCode = 401;
-            return ["success" => false, "message" => "Необходимо прикрепить платежный документ (jpg, png, pdf)", $image];
-        }
-        if ($image->extension != "jpg" && $image->extension != "png" && $image->extension != "pdf") {
-            Yii::$app->response->statusCode = 400;
-            return ["success" => false, "message" => "Вы можете прикрепить jpg, png, pdf"];
-        }
-        if ($image->size > 1000000) {
-            Yii::$app->response->statusCode = 400;
-            return ["success" => false, "message" => "Размер файла не более 1мб", $image->size];
-        }
-        
-        $path = 'yii2images/payed/' . Yii::$app->security->generateRandomString(6) . '.' . $image->extension;
-        
-        if (!$image->saveAs($path)) {
-            Yii::$app->response->statusCode = 400;
-            return ["success" => false, "message" => "Не удалось сохранить документ"];
-        }
-    
-        //$b2b_h->removeImages();
-    
-        $b2b_h->attachImage($path, true);
-        $b2b_h->file_path = Url::to([$b2b_h->getImage()->getUrl()], "https");
-        @unlink($path);
-*/
+      
         if ((int)$b2b_h->end_date < time()) {
             if ($b2b_ads->type==2) {
                 //$b2b_ads->status = 7;
@@ -1753,12 +1695,7 @@ class B2bController extends BaseController
         $history_id = Yii::$app->request->post("b2b_ads_id");
         //$desc_id = Yii::$app->request->post("description_id", 6);
         $b2b_ads = B2bAds::find()->where(['id' => $history_id, 'company_id'=> $this->user->id])->one();
-        // $b2b_h = B2bHistory::find()->where(['b2b_ads_id' => $history_id, 'author_id' => $this->user->id])->one();
 
-        // if (!$b2b_h) {
-        //     Yii::$app->response->statusCode = 400;
-        //     return ["success" => false, "message" => "Сделка не найдена (история)"];
-        // }
         if ($b2b_ads->status == 5) {
             return ["success" => false, "message" => "Ордер не может быть отменен, статус В аппеляции, обратитесь к администратору"];
         }
@@ -1768,14 +1705,7 @@ class B2bController extends BaseController
         }
         if ($b2b_ads->status == -1) 
         {
-                //$b2b_ads->status = 6;
-                //$b2b_h->status = 1;
-                //$b2b_h->description_id = $desc_id;
-                // if ($b2b_ads->type == 1) {
-                //     $b2b_ads->amount += $b2b_h->price; //вернуть средства продавцу
-                // }
 
-                //$b2b_h->price = 0;
                 
                 if ($b2b_ads->type == 2) {
                     $wallet_seller = Wallet::find()->where(["user_id" => $b2b_ads->company_id, "chart_id" => $b2b_ads->chart_id])->one();
@@ -1791,10 +1721,7 @@ class B2bController extends BaseController
                     }
 
                 }
-//                if(!$b2b_h->save()) {
-//                    Yii::$app->response->statusCode = 400;
-//                    return ["success" => false, "message" => "Ошибка сохранения ордера"];
-//                }
+
                 if(!$b2b_ads->save()) {
                     Yii::$app->response->statusCode = 400;
                     return ["success" => false, "message" => "Ошибка сохранения ордера"];
@@ -1884,15 +1811,7 @@ class B2bController extends BaseController
             return ["success" => false, "message" => "Нельзя отменить, ордер уже оплачен"];
         }
         
-        // if (!$b2b_h) {
-        //     Yii::$app->response->statusCode = 400;
-        //     return ["success" => false, "message" => "Сделка не найдена (история)"];
-        // }
 
-        // if (!$b2b_ads) {
-        //     Yii::$app->response->statusCode = 400;
-        //     return ["success" => false, "message" => "Сделка не найдена"];
-        // }
         if ($b2b_ads->status == -1) 
         {
                 //$b2b_ads->status = 6;
@@ -1927,11 +1846,8 @@ class B2bController extends BaseController
                 return ["success" => true, "message" => "Сделка отменена"];
         }
 
-
      
      }
-
-
 
 
      /**
@@ -2005,9 +1921,7 @@ class B2bController extends BaseController
             return ["success" => false, "message" => "Сделка еще не оплачена"];
         }
         
-        // $b2b_ads->amount += $b2b_h->price / $b2b_ads->course;
-        // $b2b_h->price = 0;
-        
+
         //разбор
     
         if(!$b2b_h->save()) {
@@ -2227,9 +2141,6 @@ class B2bController extends BaseController
         if(!$author_id) {
              $all_orders = 1;
         }
-        // else {
-        //     $whereid = ["b2b_ads.uuid" => $b2b_ads_id]; 
-        // }
 
         
 
@@ -2298,28 +2209,14 @@ class B2bController extends BaseController
 
         }
 
-        
-        // $paymentsIDs = array();
-        // $paymentsss = Yii::$app->request->get("payments");
-        // $paymentsIDs = explode(",", $paymentsss);
-        // if(!$paymentsss) {
-        //     $wherepayments = ["payment_type.active" => 1];
-        // } else {
-        //     $wherepayments = ["in","payment_type.id", $paymentsIDs];
-        // }
 
                 
         $data = [];
         $b2bAds_query = B2bHistory::find()->joinwith(['ads'])
         ->where($whereid)
-        //->andwhere($wheretype)
-        //->andwhere($wherechart)
-        //->andwhere($wherecurrency)
+
         ->andwhere($wherestatush)
-        //->andWhere($whereusers)
-        //->andWhere($whereduration)
-        //->andWhere(['b2b_history.author_id' => $this->user->id])
-        //->andWhere($wherestatush)
+
         ->all();
 
         foreach ($b2bAds_query as $item)
@@ -2444,13 +2341,6 @@ class B2bController extends BaseController
                         $item->ads->course = number_format($item->ads->course, 2, '.','');
                     }
                     
-                    // $payment[] = [
-                    //     "id" => $b2b_reqs->payment_id,
-                    //     "name" => $b2b_reqs->type->name,
-                    //     "value" => $b2b_reqs->value,
-                    //     "payment_receiver" => $b2b_reqs->payment_receiver
-                        
-                    // ];
                     
                     $data[] = [
                         "b2b_ads_id" => $item->ads->id,
