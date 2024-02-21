@@ -6,11 +6,10 @@ use Yii;
 use yii\helpers\Url;
 use yii\web\Controller;
 use app\models\Chart;
+use app\modules\api\controller\ChartController;
 use app\models\Chain;
 use app\models\Wallet;
 use app\models\PaymentUser;
-use app\models\WalletInv;
-use app\models\WalletTrade;
 use app\models\User;
 use app\models\History;
 use app\models\ChartChain;
@@ -34,6 +33,7 @@ use Endroid\QrCode\Writer\ValidationException;
 class WalletController extends BaseController
 {
     const VERIFY_STATUS = [2];
+    const WALLET_B2B = 5;
 
     /**
      * @SWG\Post(
@@ -1092,7 +1092,7 @@ class WalletController extends BaseController
      *      in="path",
      *      type="integer",
      
-     *      description="Тип кошелька (финансовый(1), инвестиционный(2), торговый(3), 0 - общий список), 10 - на вывод (заморожено)",
+     *      description="Тип кошелька  0 - фин, 1 - b2b, 2 - спот, 3 - марж, 4 - торговый, 5 - инв, 6 - все, 10 - вывод ",
      *      @SWG\Schema(type="integer")
      *     ),
      *	  @SWG\Response(
@@ -1125,432 +1125,120 @@ class WalletController extends BaseController
             return ["success" => false, "message" => "Token не найден"];
         }
 
-
-        $wallettype = Yii::$app->request->get("wallettype");
-        $all = array(0,1,2,3,10);
-        if(!in_array($wallettype, $all)) {
-            Yii::$app->response->statusCode = 401;
-            return ["success" => false, "message" => "Неверно выбран тип кошелька"];
+        
+        $wallettype = (string)Yii::$app->request->get("wallettype");
+        
+        if((string)!$wallettype !== "" || $wallettype == "6") {
+            $wallettype = array(0,1,2,3,4,5);
         }
 
+        
+        $wallet_query_fin = Wallet::find()->joinWith("chart")
+        ->where(["active" => 1, 'wallet.user_id' => $this->user->id])
+        ->andWhere([">", "wallet.balance", 0])
+        ->andWhere(["type" => $wallettype])
+        ->all();
+        
+        // 0 - фин, 1 - b2b, 2 - спот, 3 - марж, 4 - торговый, 5 - инв, 6 - все, 10 - вывод
 
+        //to do рефакторинг убрать walletInv, trade
+        $data = [];
 
-        $type = 5; //b2b рубль
-
-        if ($wallettype == 10){
-            
-            $wallet_query_fin = Wallet::find()->joinWith("chart")->where(["active" => 1, 'wallet.user_id' => $this->user->id])->andWhere([">", "wallet.balance", 0])
-            ->andWhere(["=", "wallet.type", 10])
-            ->all();
-            return $wallet_query_fin;
-        }
-
-        if ($wallettype == 1){
-            $data = [];
-            $nodata = false;
-            $wallet_query_fin = Wallet::find()->joinWith("chart")->where(["active" => 1, 'wallet.user_id' => $this->user->id])->andWhere([">", "wallet.balance", 0])->all();
-            $wallers = [];
-            $symbols = [];
-            foreach ($wallet_query_fin as $wallet) {
-                if((int)$wallet->chart_id == 2024) {
-                    $data[] = [
-                        "id" => $wallet->chart_id,
-                        "name" => $wallet->chart->symbol,
-                        "symbol" => $wallet->chart->name,
-                        "price" => 1,
-                        "balance" => $wallet->balance,
-                        "blocked" => $wallet->blocked ?? null,
-                        "percent" => "0",
-                        "wallet" => "fin",
-                        "icon" => Url::to(["/images/icons/" . $wallet->chart->symbol . ".png"], "https"),
-                    ];
-                }
-
-            }
-            
-            foreach ($wallet_query_fin as $wallet) {
-                if($wallet->chart->symbol == "RUB") {
-                    continue;
-                }
-
-                if($wallet->chart->symbol != "USDT") {
-                    
-                    $symbol = $wallet->chart->symbol . "USDT";
-                    $symbols[] = $symbol;
-                    $wallers[$symbol] = $wallet;
-                } else {
-                    $wallers["USDT"] = $wallet;
-                }
-
-            }
-            if(count($wallet_query_fin) == 0) return $data;
-            if (!empty($symbols)) {
-                $ch = curl_init("https://api.binance.com/api/v3/ticker/24hr?symbols=" . json_encode($symbols));
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-                curl_setopt($ch, CURLOPT_HEADER, false);
-                $res = curl_exec($ch);
-                curl_close($ch);
-                $result = json_decode($res);
-                } else {
-                    $nodata = true;
-                }
-    
-            if(isset($wallers["USDT"])) {
-                $wallet = $wallers["USDT"];
-                $data[] = [
-                    "id" => $wallet->chart->id,
-                    "name" => $wallet->chart->name,
-                    "symbol" => $wallet->chart->symbol,
-                    "price" => "1",
-                    "balance" => $wallet->balance,
-                    "blocked" => $wallet->blocked ?? null,
-                    "percent" => "0",
-                    "wallet" => "fin",
-                    "icon" => Url::to(["/images/icons/" . $wallet->chart->symbol . ".png"], "https"),
-                ];
-            }
-            if (!$nodata) {
-                foreach ($result as $item) {
-                    $wallet = $wallers[$item->symbol];
-                    $data[] = [
-                        "id" => $wallet->chart->id,
-                        "name" => $wallet->chart->name,
-                        "symbol" => $wallet->chart->symbol,
-                        "price" => $item->lastPrice,
-                        "balance" => $wallet->balance,
-                        "blocked" => $wallet->blocked ?? null,
-                        "percent" => $item->priceChangePercent,
-                        "wallet" => "fin",
-                        "icon" => Url::to(["/images/icons/" . $wallet->chart->symbol . ".png"], "https"),
-                    ];
-
-                }
-            }
+        $nodata = false;
+        if (!$wallet_query_fin) {
+            $data[]='нет данных';
+            return $data;
 
         }
+        $wallers = [];
+        $symbols = [];
+        
 
-        if ($wallettype == 2){
-            $data = [];
-            $nodata = false;
-            $wallet_query_trade = WalletTrade::find()->joinWith("chart")->where(["active" => 1, 'wallettrade.user_id' => $this->user->id])->andWhere([">", "wallettrade.balance", 0])->all();
-            $wallers = [];
-            $symbols = [];
-         
-            foreach ($wallet_query_trade as $wallet) {
+
+
+        foreach ($wallet_query_fin as $wallet) {
+            //if((int)$wallet->chart_id == 2024) {
+            $data[] = [
+                "id" => $wallet->chart_id,
+                "name" => $wallet->chart->name,
+                "symbol" => $wallet->chart->symbol,
+                "price" => $this->price($wallet->chart->symbol, "USD"),
+                "balance" => $wallet->balance,
+                "blocked" => $wallet->blocked,
+                //"percent" => 0,
+                "type" => $wallet->walletType->title,
+                "icon" => Url::to(["/images/icons/" . $wallet->chart->symbol . ".png"], "https"),
+            ];
+            //}
+
+        }
+        
+        // foreach ($wallet_query_fin as $wallet) {
+        //     if($wallet->chart->symbol == "RUB") {
+        //         continue;
+        //     }
+
+        //     if($wallet->chart->symbol != "USDT") {
                 
-                if($wallet->chart->symbol != "USDT") {
-                    $symbol = $wallet->chart->symbol . "USDT";
-                    $symbols[] = $symbol;
-                    $wallers[$symbol] = $wallet;
-                } else {
-                    $wallers["USDT"] = $wallet;
-                }
-            }
+        //         $symbol = $wallet->chart->symbol . "USDT";
+        //         $symbols[] = $symbol;
+        //         $wallers[$symbol] = $wallet;
+        //     } else {
+        //         $wallers["USDT"] = $wallet;
+        //     }
 
-
-            if(count($wallet_query_trade) == 0) return $data;
-            if (!empty($symbols)) {
-                $ch = curl_init("https://api.binance.com/api/v3/ticker/24hr?symbols=" . json_encode($symbols));
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-                curl_setopt($ch, CURLOPT_HEADER, false);
-                $res = curl_exec($ch);
-                curl_close($ch);
-                $result = json_decode($res);
-                } else {
-                    $nodata = true;
-                }
-    
-                if(isset($wallers["USDT"])) {
-                    $wallet = $wallers["USDT"];
-                    $data[] = [
-                        "id" => $wallet->chart->id,
-                        "name" => $wallet->chart->name,
-                        "symbol" => $wallet->chart->symbol,
-                        "price" => "1",
-                        "balance" => $wallet->balance,
-                        "percent" => "0",
-                        "wallet" => "trade",
-                        "icon" => Url::to(["/images/icons/" . $wallet->chart->symbol . ".png"], "https"),
-                    ];
-                }
-                if (!$nodata) {
-                    foreach ($result as $item) {
-                        $wallet = $wallers[$item->symbol];
-                        $data[] = [
-                            "id" => $wallet->chart->id,
-                            "name" => $wallet->chart->name,
-                            "symbol" => $wallet->chart->symbol,
-                            "price" => $item->lastPrice,
-                            "balance" => $wallet->balance,
-                            "percent" => $item->priceChangePercent,
-                            "wallet" => "trade",
-                            "icon" => Url::to(["/images/icons/" . $wallet->chart->symbol . ".png"], "https"),
-                        ];
-    
-                    }
-                }
+        // }
+        
+        // if (!empty($symbols)) {
+        //     //coinbase
+        //     $ch = curl_init("https://api.binance.com/api/v3/ticker/24hr?symbols=" . json_encode($symbols));
             
+        //     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        //     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        //     curl_setopt($ch, CURLOPT_HEADER, false);
+        //     $res = curl_exec($ch);
+        //     curl_close($ch);
+        //     $result = json_decode($res);
+        //     } else {
+        //         $nodata = true;
+        //     }
 
-            
-        }
+        // if(isset($wallers["USDT"])) {
+        //     $wallet = $wallers["USDT"];
+        //     $data[] = [
+        //         "id" => $wallet->chart->id,
+        //         "name" => $wallet->chart->name,
+        //         "symbol" => $wallet->chart->symbol,
+        //         "price" => 1,
+        //         "balance" => $wallet->balance,
+        //         "blocked" => $wallet->blocked ?? null,
+        //         "percent" => 0,
+        //         "type" => $wallet->type,
+        //         "icon" => Url::to(["/images/icons/" . $wallet->chart->symbol . ".png"], "https"),
+        //     ];
+        // }
+        // if (!$nodata) {
+        //     foreach ($result as $item) {
+        //         $wallet = $wallers[$item->symbol];
+        //         $data[] = [
+        //             "id" => $wallet->chart->id,
+        //             "name" => $wallet->chart->name,
+        //             "symbol" => $wallet->chart->symbol,
+        //             "price" => $item->lastPrice,
+        //             "balance" => $wallet->balance,
+        //             "blocked" => $wallet->blocked,
+        //             "percent" => $item->priceChangePercent,
+        //             "type" => $wallet->walletType->title,
+        //             "icon" => Url::to(["/images/icons/" . $wallet->chart->symbol . ".png"], "https"),
+        //         ];
 
-        if ($wallettype == 3){
-            $data = [];
-            $nodata = false;
-            $wallet_query_inv = WalletInv::find()->joinWith("chart")->where(["active" => 1, 'walletInv.user_id' => $this->user->id])->andWhere([">", "walletInv.balance", 0])->all();
-            $wallers = [];
-            $symbols = [];
-            foreach ($wallet_query_inv as $wallet) {
-                if($wallet->chart->symbol != "USDT") {
-                    $symbol = $wallet->chart->symbol . "USDT";
-                    $symbols[] = $symbol;
-                    $wallers[$symbol] = $wallet;
-                } else {
-                    $wallers["USDT"] = $wallet;
-                }
-            }
-            if(count($wallet_query_inv) == 0) return $data;
-            if (!empty($symbols)) {
-            $ch = curl_init("https://api.binance.com/api/v3/ticker/24hr?symbols=" . json_encode($symbols));
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-            curl_setopt($ch, CURLOPT_HEADER, false);
-            $res = curl_exec($ch);
-            curl_close($ch);
-            $result = json_decode($res);
-            } else {
-                $nodata = true;
-            }
+        //     }
+        // }
 
-            if(isset($wallers["USDT"])) {
-                $wallet = $wallers["USDT"];
-                $data[] = [
-                    "id" => $wallet->chart->id,
-                    "name" => $wallet->chart->name,
-                    "symbol" => $wallet->chart->symbol,
-                    "price" => "1",
-                    "balance" => $wallet->balance,
-                    "percent" => "0",
-                    "wallet" => "inv",
-                    "icon" => Url::to(["/images/icons/" . $wallet->chart->symbol . ".png"], "https"),
-                ];
-            }
-            if (!$nodata) {
-                foreach ($result as $item) {
-                    $wallet = $wallers[$item->symbol];
-                    $data[] = [
-                        "id" => $wallet->chart->id,
-                        "name" => $wallet->chart->name,
-                        "symbol" => $wallet->chart->symbol,
-                        "price" => $item->lastPrice,
-                        "balance" => $wallet->balance,
-                        "percent" => $item->priceChangePercent,
-                        "wallet" => "inv",
-                        "icon" => Url::to(["/images/icons/" . $wallet->chart->symbol . ".png"], "https"),
-                    ];
-
-                }
-            }
-
-        }
-
-        if ($wallettype == 0){
+    
 
         
-            $data= [];
-            $wallet_query_fin = Wallet::find()->joinWith("chart")->where(["active" => 1, 'wallet.user_id' => $this->user->id])->andWhere([">", "wallet.balance", 0])->all();
-            $wallers = [];
-            $symbols = [];
-            $nodata = false;
-            foreach ($wallet_query_fin as $wallet) {
-                if((int)$wallet->chart_id == 2024) {
-                    $data[] = [
-                        "id" => $wallet->chart_id,
-                        "name" => $wallet->chart->symbol,
-                        "symbol" => $wallet->chart->name,
-                        "price" => 1,
-                        "balance" => $wallet->balance,
-                        "blocked" => $wallet->blocked ?? null,
-                        "percent" => "0",
-                        "wallet" => "fin",
-                        "icon" => Url::to(["/images/icons/" . $wallet->chart->symbol . ".png"], "https"),
-                    ];
-                }
-
-            }
-            foreach ($wallet_query_fin as $wallet) {
-                if($wallet->chart->symbol == "RUB") {
-                    continue;
-                }
-                if($wallet->chart->symbol != "USDT") {
-                    $symbol = $wallet->chart->symbol . "USDT";
-                    $symbols[] = $symbol;
-                    $wallers[$symbol] = $wallet;
-                } else {
-                    $wallers["USDT"] = $wallet;
-                }
-            }
-            if(count($wallet_query_fin) == 0) return $data;
-            if (!empty($symbols)) {
-                $ch = curl_init("https://api.binance.com/api/v3/ticker/24hr?symbols=" . json_encode($symbols));
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-                curl_setopt($ch, CURLOPT_HEADER, false);
-                $res = curl_exec($ch);
-                curl_close($ch);
-                $result = json_decode($res);
-                } else {
-                    $nodata = true;
-                }
-    
-                if(isset($wallers["USDT"])) {
-                    $wallet = $wallers["USDT"];
-                    $data[] = [
-                        "id" => $wallet->chart->id,
-                        "name" => $wallet->chart->name,
-                        "symbol" => $wallet->chart->symbol,
-                        "price" => "1",
-                        "balance" => $wallet->balance,
-                        "blocked" => $wallet->blocked ?? null,
-                        "percent" => "0",
-                        "wallet" => "fin",
-                        "icon" => Url::to(["/images/icons/" . $wallet->chart->symbol . ".png"], "https"),
-                    ];
-                }
-                if (!$nodata) {
-                    foreach ($result as $item) {
-                        $wallet = $wallers[$item->symbol];
-                        $data[] = [
-                            "id" => $wallet->chart->id,
-                            "name" => $wallet->chart->name,
-                            "symbol" => $wallet->chart->symbol,
-                            "price" => $item->lastPrice,
-                            "balance" => $wallet->balance,
-                            "blocked" => $wallet->blocked ?? null,
-                            "percent" => $item->priceChangePercent,
-                            "wallet" => "fin",
-                            "icon" => Url::to(["/images/icons/" . $wallet->chart->symbol . ".png"], "https"),
-                        ];
-    
-                    }
-                }
-
         
-            $wallet_query_trade = WalletTrade::find()->joinWith("chart")->where(["active" => 1, 'wallettrade.user_id' => $this->user->id])->andWhere([">", "wallettrade.balance", 0])->all();
-            $wallers = [];
-            $symbols = [];
-            $nodata = false;
-            foreach ($wallet_query_trade as $wallet) {
-                if($wallet->chart->symbol != "USDT") {
-                    $symbol = $wallet->chart->symbol . "USDT";
-                    $symbols[] = $symbol;
-                    $wallers[$symbol] = $wallet;
-                } else {
-                    $wallers["USDT"] = $wallet;
-                }
-            }
-
-
-            if(count($wallet_query_trade) == 0) return $data;
-            if (!empty($symbols)) {
-                $ch = curl_init("https://api.binance.com/api/v3/ticker/24hr?symbols=" . json_encode($symbols));
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-                curl_setopt($ch, CURLOPT_HEADER, false);
-                $res = curl_exec($ch);
-                curl_close($ch);
-                $result = json_decode($res);
-                } else {
-                    $nodata = true;
-                }
-    
-                if(isset($wallers["USDT"])) {
-                    $wallet = $wallers["USDT"];
-                    $data[] = [
-                        "id" => $wallet->chart->id,
-                        "name" => $wallet->chart->name,
-                        "symbol" => $wallet->chart->symbol,
-                        "price" => "1",
-                        "balance" => $wallet->balance,
-                        "percent" => "0",
-                        "wallet" => "trade",
-                        "icon" => Url::to(["/images/icons/" . $wallet->chart->symbol . ".png"], "https"),
-                    ];
-                }
-                if (!$nodata) {
-                    foreach ($result as $item) {
-                        $wallet = $wallers[$item->symbol];
-                        $data[] = [
-                            "id" => $wallet->chart->id,
-                            "name" => $wallet->chart->name,
-                            "symbol" => $wallet->chart->symbol,
-                            "price" => $item->lastPrice,
-                            "balance" => $wallet->balance,
-                            "percent" => $item->priceChangePercent,
-                            "wallet" => "trade",
-                            "icon" => Url::to(["/images/icons/" . $wallet->chart->symbol . ".png"], "https"),
-                        ];
-    
-                    }
-                }
-
-            $wallet_query_inv = WalletInv::find()->joinWith("chart")->where(["active" => 1, 'walletInv.user_id' => $this->user->id])->andWhere([">", "walletInv.balance", 0])->all();
-            $wallers = [];
-            $symbols = [];
-            foreach ($wallet_query_inv as $wallet) {
-                if($wallet->chart->symbol != "USDT") {
-                    $symbol = $wallet->chart->symbol . "USDT";
-                    $symbols[] = $symbol;
-                    $wallers[$symbol] = $wallet;
-                } else {
-                    $wallers["USDT"] = $wallet;
-                }
-            }
-            if(count($wallet_query_inv) == 0) return $data;
-            if (!empty($symbols)) {
-                $ch = curl_init("https://api.binance.com/api/v3/ticker/24hr?symbols=" . json_encode($symbols));
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-                curl_setopt($ch, CURLOPT_HEADER, false);
-                $res = curl_exec($ch);
-                curl_close($ch);
-                $result = json_decode($res);
-                } else {
-                    $nodata = true;
-                }
-    
-                if(isset($wallers["USDT"])) {
-                    $wallet = $wallers["USDT"];
-                    $data[] = [
-                        "id" => $wallet->chart->id,
-                        "name" => $wallet->chart->name,
-                        "symbol" => $wallet->chart->symbol,
-                        "price" => "1",
-                        "balance" => $wallet->balance,
-                        "percent" => "0",
-                        "wallet" => "inv",
-                        "icon" => Url::to(["/images/icons/" . $wallet->chart->symbol . ".png"], "https"),
-                    ];
-                }
-                if (!$nodata) {
-                    foreach ($result as $item) {
-                        $wallet = $wallers[$item->symbol];
-                        $data[] = [
-                            "id" => $wallet->chart->id,
-                            "name" => $wallet->chart->name,
-                            "symbol" => $wallet->chart->symbol,
-                            "price" => $item->lastPrice,
-                            "balance" => $wallet->balance,
-                            "percent" => $item->priceChangePercent,
-                            "wallet" => "inv",
-                            "icon" => Url::to(["/images/icons/" . $wallet->chart->symbol . ".png"], "https"),
-                        ];
-    
-                    }
-                }
-        }
         
         return $data;
     }
@@ -1866,5 +1554,31 @@ class WalletController extends BaseController
 
         return ["success" => true, "message" => "Перевод успешно выполнен"];
     }
+    
+    protected function price($chart, $currency){
+        //$data = ["price" => 0];
 
+
+        $curl = curl_init();
+    
+        curl_setopt_array($curl, array(
+    
+            CURLOPT_URL => "https://api.coinbase.com/v2/prices/".$chart."-".$currency."/spot",
+            
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_CUSTOMREQUEST => 'GET',
+            CURLOPT_USERAGENT => 'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1)'
+        ));
+        //}
+
+        $result = json_decode(curl_exec($curl));
+   
+
+        curl_close($curl);
+        if ($chart == 'RUB') {
+            $result->data->amount = 1;
+        }
+        return number_format($result->data->amount, 2, '.','') ?? null;
+    }
 }
