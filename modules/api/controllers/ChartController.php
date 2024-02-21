@@ -421,13 +421,21 @@ class ChartController extends BaseController
             return ["success" => false, "message" => "Криптовалюта не указана"];
         }
         
-        $data = ["price" => 0];
+        
+        
+        return ["price" => $this->price($chart->symbol, $currency->symbol)];
+    }
+
+    protected function price($chart, $currency){
+        //$data = ["price" => 0];
 
 
         $curl = curl_init();
         //if ($chart->id != 2024) {
         curl_setopt_array($curl, array(
-            CURLOPT_URL => "https://api.binance.com/api/v3/ticker/price?symbol=" . $chart->symbol . $currency->symbol,
+            //CURLOPT_URL => "https://api.binance.com/api/v3/ticker/price?symbol=" . $chart->symbol . $currency->symbol,
+            CURLOPT_URL => "https://api.coinbase.com/v2/prices/".$chart."-".$currency."/spot",
+            
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_FOLLOWLOCATION => true,
             CURLOPT_CUSTOMREQUEST => 'GET',
@@ -439,12 +447,11 @@ class ChartController extends BaseController
         //$data = ["price" => $result->price??null];
 
         curl_close($curl);
-        if ($chart_id == 2024) {
-            $result->price = 1;
+        if ($chart == 'RUB') {
+            $result->data->amount = 1;
         }
-        return ["price" => $result->price??'нет данных'];
+        return number_format($result->data->amount, 2, '.','') ?? null;
     }
-
 
     /**
      * @SWG\Post(
