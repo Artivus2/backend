@@ -33,6 +33,7 @@ use Endroid\QrCode\Writer\ValidationException;
 class WalletController extends BaseController
 {
     const VERIFY_STATUS = [2];
+    const COMISSION = 0.1; //0.1% КОМИССИЯ
     const WALLET_TRANSFER_DIRECTION_FROM_FIN_TO_INV = 10; // 0 -> 5
     const WALLET_TRANSFER_DIRECTION_FROM_FIN_TO_TRADE = 20; // 0 -> 4
     const WALLET_TRANSFER_DIRECTION_FROM_INV_TO_FIN = 30; // 5-> 0
@@ -120,7 +121,7 @@ class WalletController extends BaseController
 
         curl_close($curl);
 
-        $history->end_price = 1 * $history->start_price / (float)$result->data->amount;
+        $history->end_price = $history->start_price / (float)$result->data->amount - ($history->start_price / (float)$result->data->amount) * self::COMISSION / 100;
 
         if(!$history->save()) {
             Yii::$app->response->statusCode = 400;
@@ -196,6 +197,12 @@ class WalletController extends BaseController
         if(!$this->user) {
             Yii::$app->response->statusCode = 401;
             return ["success" => false, "message" => "Token не найден"];
+        }
+        
+        if (!in_array($this->user->verify_status, self::VERIFY_STATUS))
+        {
+            Yii::$app->response->statusCode = 401;
+            return ["success" => false, "message" => "Вам необходимо пройти полную верификацию для осуществления данной операции"];
         }
 
         $history = History::find()->where(['user_id' => $this->user->id, 'status' => 0, 'type' => 2])->all();
