@@ -33,213 +33,12 @@ use Endroid\QrCode\Writer\ValidationException;
 class WalletController extends BaseController
 {
     const VERIFY_STATUS = [2];
-    const WALLET_B2B = 5;
+    const WALLET_TRANSFER_DIRECTION_FROM_FIN_TO_INV = 10; // 0 -> 5
+    const WALLET_TRANSFER_DIRECTION_FROM_FIN_TO_TRADE = 20; // 0 -> 4
+    const WALLET_TRANSFER_DIRECTION_FROM_INV_TO_FIN = 30; // 5-> 0
+    const WALLET_TRANSFER_DIRECTION_FROM_TRADE_TO_FIN = 40; // 4-> 0 
 
-    /**
-     * @SWG\Post(
-     *    path = "/wallet/input",
-     *    tags = {"Wallet"},
-     *    summary = "Ввод криптовалюты",
-     *    security={{"access_token":{}}},
-     *    @SWG\Parameter(
-     *      name="id",
-     *      in="body",
-     *      description="ID криптовалюты и сети",
-     *      required=true,
-     *      @SWG\Schema(type="integer")
-     *     ),
-     *	  @SWG\Response(
-     *      response = 200,
-     *      description = "Адрес кошелька",
-     *      @SWG\Definition(
-     *         required={"address"},
-     *         @SWG\Property(
-     *             property="address",
-     *             type="string"
-     *         ),
-     *         required={"symbol"},
-     *         @SWG\Property(
-     *             property="symbol",
-     *             type="string"
-     *         ),
-     *         required={"network"},
-     *         @SWG\Property(
-     *             property="network",
-     *             type="string"
-     *         ),
-     
-     * 		   required={"qrcode"},
-     *         @SWG\Property(
-     *             property="qrcode",
-     *             type="string"
-     *         )
-
-     *      )
-     *    ),
-     *    ),
-     *    @SWG\Response(
-     *      response = 400,
-     *      description = "Ошибка запроса",
-     *      @SWG\Schema(ref = "#/definitions/Result")
-     *    ),
-     *    @SWG\Response(
-     *      response = 403,
-     *      description = "Ошибка авторизации",
-     *      @SWG\Schema(ref = "#/definitions/Result")
-     *    ),
-     *)
-     * @throws HttpException
-     */
-
-     public function actionCallBack()
-     {
-        Yii::$app->response->statusCode = 401;
-        return ["success" => false, "message" => "Платеж не произведен"];
-     }
-
-    public function actionInput()
-    {
-        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
-        $PAYOUT_KEY='';
-        $PAYMENT_KEY = '';
-        $MERCHANT_UUID = 'b2b19ba5-7879-4135-8d48-dfb165d8f904';
-        $payment_cryptomus = \Cryptomus\Api\Client::payment($PAYMENT_KEY, $MERCHANT_UUID);
-        $payout_cryptomus = \Cryptomus\Api\Client::payout($PAYOUT_KEY, $MERCHANT_UUID);
-        
-        if(!$this->user) {
-            Yii::$app->response->statusCode = 401;
-            return ["success" => false, "message" => "Token не найден"];
-        }
-
-        $chart_chain_id = Yii::$app->request->post("chain_id");
-
-        $chart_chain = ChartChain::find()->Where(['id'=>$chart_chain_id, "cryptomus" => 1])->one();
-        $chain_name = Chain::find()->Where(['id'=>$chart_chain->chain_id])->one();
-        $chart_name = Chart::find()->Where(['id'=>$chart_chain->chart_id])->one();
-	    $qr = '';
-        if (!$chart_chain) {
-            Yii::$app->response->statusCode = 400;
-            return ["success" => false, "message" => "Валюта не найдена"];
-        }
-	    $result=[];
-        $result["url"] = "Кошелек существует";
-        $datauri="Ссылка не будет получена";
-
-       
-        $wallet = WalletAddress::findOne(["chain_id" => $chart_chain->id, "user_id" => $this->user->id]);
-        
-        $data = [
-            'network' => $chain_name->name,
-            'currency' => $chart_name->symbol,
-            'order_id' => (string)rand(100000000,999999999),
-            'url_callback' => 'https://greenavi.com/api/wallet/call-back'
-            ];
-        $result = $payment_cryptomus->createWallet($data);
-        if (!$result) {
-            Yii::$app->response->statusCode = 400;
-            return ["success" => false, "message" => "Ошибка API Cryptomus"];
-        }
-        
-        if (!$wallet) {
-        $wallet = new WalletAddress(["chain_id" => $chart_chain->id, "user_id" => $this->user->id]);
-        $wallet->value = $result["address"];
-        $wallet->save();
-        }
-
-        $writer = new PngWriter();
-
-        // Create QR code
-        $qrCode = QrCode::create($result["url"])
-        ->setEncoding(new Encoding('UTF-8'))
-        ->setErrorCorrectionLevel(new ErrorCorrectionLevelLow())
-        ->setSize(300)
-        ->setMargin(10)
-        ->setRoundBlockSizeMode(new RoundBlockSizeModeMargin())
-        ->setForegroundColor(new Color(0, 0, 0))
-        ->setBackgroundColor(new Color(255, 255, 255));
-
-        // Create generic logo
-        $logo = Logo::create(__DIR__.'/home-logo.png')
-        ->setResizeToWidth(10)
-        ->setPunchoutBackground(true);
-        
-        // Create generic label
-        $label = Label::create('GREENAVI')
-        ->setTextColor(new Color(255, 255, 255));
-
-        $resultqr = $writer->write($qrCode, $logo,  $label);
-        //$result->saveToFile(__DIR__.'/qrcode.png'); 
-        $datauri = $resultqr->getDataUri();
-
-        return ["address" => $wallet->value, "symbol" => $chart_name->symbol, "Network" => $chain_name->name, "qrcode"=>$datauri];
-    }
-
-    public function actionInput_old()
-    {
-        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
-
-        if(!$this->user) {
-            Yii::$app->response->statusCode = 401;
-            return ["success" => false, "message" => "Token не найден"];
-        }
-
-        $chain_id = Yii::$app->request->post("chain_id");
-
-        $chain = ChartChain::find()->Where(['id'=>$chain_id])->one();
-	    $qr = '';
-        if (!$chain) {
-            Yii::$app->response->statusCode = 400;
-            return ["success" => false, "message" => "Валюта не найдена"];
-        }
-
-
-
-        $wallet = WalletAddress::findOne(["chain_id" => $chain->id, "user_id" => $this->user->id]);
-
-    //     if (!$wallet) {
-    //         $cps_api = new CoinpaymentsAPI('76479a5aF47AAaEf758Cb1297880FB59Cb724f62012c3E1b1f7685cF3Ab4Db91', 'fdc2cb0894961d95b7bace09cdd7aeab28171ba4d961a3b54c4ff23fa6ecdf9e', 'json');
-    //         //$cps_api->Setup('76479a5aF47AAaEf758Cb1297880FB59Cb724f62012c3E1b1f7685cF3Ab4Db91', 'fdc2cb0894961d95b7bace09cdd7aeab28171ba4d961a3b54c4ff23fa6ecdf9e');
-    //         //$data = $cps_api->GetCallbackAddressWithIpn($chain->symbol,  Url::to(["/api/payment/notice-ipn"], "https"));
-	//     //if ($chain->symbol=="BTC.LN") {$chain->symbol = "BTC";}
-	//     $data = $cps_api->GetDepositAddress($chain->symbol);
-
-    //         $wallet = new WalletAddress(["chain_id" => $chain->id, "user_id" => $this->user->id]);
-    //         $wallet->value = $data["result"]["address"];
-	    
-    //         $wallet->save();
-	// }
-	
-    //     $writer = new PngWriter();
-
-    //     // Create QR code
-    //     $qrCode = QrCode::create($wallet->value)
-    //     ->setEncoding(new Encoding('UTF-8'))
-    //     ->setErrorCorrectionLevel(new ErrorCorrectionLevelLow())
-    //     ->setSize(300)
-    //     ->setMargin(10)
-    //     ->setRoundBlockSizeMode(new RoundBlockSizeModeMargin())
-    //     ->setForegroundColor(new Color(0, 0, 0))
-    //     ->setBackgroundColor(new Color(255, 255, 255));
-
-    //     // Create generic logo
-    //     $logo = Logo::create(__DIR__.'/home-logo.png')
-    //     ->setResizeToWidth(10)
-    //     ->setPunchoutBackground(true);
-        
-    //     // Create generic label
-    //     $label = Label::create('GREENAVI')
-    //     ->setTextColor(new Color(255, 255, 255));
-
-    //     $result = $writer->write($qrCode, $logo,  $label);
-    //     //$result->saveToFile(__DIR__.'/qrcode.png'); 
-    //     $datauri = $result->getDataUri();
-
-
-        return ["address" => $wallet->value, "chain" => $chain->symbol, "qrcode"=>$datauri];
-    }
-
-
-
+  
     
 
     /**
@@ -309,7 +108,8 @@ class WalletController extends BaseController
 
         $curl = curl_init();
         curl_setopt_array($curl, array(
-            CURLOPT_URL => "https://api.binance.com/api/v3/ticker/price?symbol=" . $chart->symbol . "RUB",
+            //CURLOPT_URL => "https://api.binance.com/api/v3/ticker/price?symbol=" . $chart->symbol . "RUB",
+            CURLOPT_URL => "https://api.coinbase.com/v2/prices/".$chart->symbol."-RUB/spot",
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_FOLLOWLOCATION => true,
             CURLOPT_CUSTOMREQUEST => 'GET',
@@ -320,7 +120,7 @@ class WalletController extends BaseController
 
         curl_close($curl);
 
-        $history->end_price = 1 * $history->start_price / (float)$result->price;
+        $history->end_price = 1 * $history->start_price / (float)$result->data->amount;
 
         if(!$history->save()) {
             Yii::$app->response->statusCode = 400;
@@ -1162,10 +962,9 @@ class WalletController extends BaseController
                 "id" => $wallet->chart_id,
                 "name" => $wallet->chart->name,
                 "symbol" => $wallet->chart->symbol,
-                "price" => $this->price($wallet->chart->symbol, "USD"),
-                "balance" => $wallet->balance,
-                "blocked" => $wallet->blocked,
-                //"percent" => 0,
+                "price" => (float)$this->price($wallet->chart->symbol, "USD"),
+                "balance" => (float)$wallet->balance,
+                "blocked" => (float)$wallet->blocked,
                 "type" => $wallet->walletType->title,
                 "icon" => Url::to(["/images/icons/" . $wallet->chart->symbol . ".png"], "https"),
             ];
