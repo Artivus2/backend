@@ -742,8 +742,14 @@ class WalletController extends BaseController
             Yii::$app->response->statusCode = 400;
             return ["success" => false, "message" => "Ошибка сохранения счета входящего"];   
         }
-
-        return ["success" => true, "message" => "Перевод успешно выполнен"];
+        $data = [
+            "fromwallet" => $from_wallet_id,
+            "towallet" => $to_wallet_id,
+            "fromchart" => $from_chart_id,
+            "tochart" => $to_chart_id,
+            "summa" => $summa
+        ];
+        return ["success" => true, "message" => "Перевод успешно выполнен", $data];
     }
     
     /**
