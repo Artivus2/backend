@@ -726,9 +726,11 @@ class WalletController extends BaseController
 
 
         $history->status = 1;
+        $history->start_price = $summa;
+        $history->end_price = $summa / (float)$this->price($from_chart_id, $to_chart_id);
         if (!$history->save()) {
             Yii::$app->response->statusCode = 400;
-            return ["success" => false, "message" => "Ошибка перевода"];   
+            return ["success" => false, "message" => "Ошибка перевода", $history];   
         }
 
         if (!$from_wallet->save()) {
