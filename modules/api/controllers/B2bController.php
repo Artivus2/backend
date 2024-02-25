@@ -224,9 +224,9 @@ class B2bController extends BaseController
         $paymentsIDs = [1000];
 
         
-        $wallet = Wallet::findOne(["user_id" => $this->user->id, "chart_id" =>$chart->id]); //
+        $wallet = Wallet::findOne(["user_id" => $this->user->id, "chart_id" =>$chart->id, 'type' => 1]); //
         if(!$wallet) {
-            $wallet = new Wallet(["user_id" => $this->user->id, "chart_id" => $chart->id, "balance" => 0, "type" => 0]);
+            $wallet = new Wallet(["user_id" => $this->user->id, "chart_id" => $chart->id, "balance" => 0, "type" => 1]);
             return ["success" => false, "message" => "Необходимо пополнить кошелек перед созданием ордера на продажу"];
         }
 
