@@ -32,12 +32,10 @@ use Endroid\QrCode\Writer\ValidationException;
  */
 class WalletController extends BaseController
 {
-    const VERIFY_STATUS = [2];
-    const COMISSION = 0.1; //0.1% КОМИССИЯ
-    const WALLET_TRANSFER_DIRECTION_FROM_FIN_TO_INV = 10; // 0 -> 5
-    const WALLET_TRANSFER_DIRECTION_FROM_FIN_TO_TRADE = 20; // 0 -> 4
-    const WALLET_TRANSFER_DIRECTION_FROM_INV_TO_FIN = 30; // 5-> 0
-    const WALLET_TRANSFER_DIRECTION_FROM_TRADE_TO_FIN = 40; // 4-> 0 
+    const VERIFY_STATUS = [0,1,2];
+    const COMISSION_IN = 0; //0% КОМИССИЯ
+    const COMISSION_OUT = 1; //1% КОМИССИЯ
+
 
   
     
@@ -121,7 +119,7 @@ class WalletController extends BaseController
 
         curl_close($curl);
 
-        $history->end_price = $history->start_price / (float)$result->data->amount - ($history->start_price / (float)$result->data->amount) * self::COMISSION / 100;
+        $history->end_price = $history->start_price / (float)$result->data->amount - ($history->start_price / (float)$result->data->amount) * self::COMISSION_IN / 100;
 
         if(!$history->save()) {
             Yii::$app->response->statusCode = 400;
@@ -238,8 +236,8 @@ class WalletController extends BaseController
         if(!$wallet) {
             $wallet = new Wallet(["user_id" => $this->user->id, "chart_id" => $chart->id, "balance" => 0, "type" => 10]);
         }
-        $wallet->balance -= $history->start_price;
-        $wallet->blocked += $history->start_price;
+        $wallet->balance -= $history->start_price + $history->start_price * self::COMISSION_OUT / 100;
+        $wallet->blocked += $history->start_price + $history->start_price * self::COMISSION_OUT / 100;
         if ($wallet->balance < 0) {
             Yii::$app->response->statusCode = 400;
             return ["success" => false, "message" => "Недостаточно средств на балансе"];
@@ -248,7 +246,8 @@ class WalletController extends BaseController
 
         $curl = curl_init();
         curl_setopt_array($curl, array(
-            CURLOPT_URL => "https://api.binance.com/api/v3/ticker/price?symbol=" . $chart->symbol . "RUB",
+            //CURLOPT_URL => "https://api.binance.com/api/v3/ticker/price?symbol=" . $chart->symbol . "RUB",
+            CURLOPT_URL => "https://api.coinbase.com/v2/prices/".$chart->symbol."-RUB/spot",
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_FOLLOWLOCATION => true,
             CURLOPT_CUSTOMREQUEST => 'GET',
@@ -258,10 +257,10 @@ class WalletController extends BaseController
         $result = json_decode(curl_exec($curl));
         curl_close($curl);
         
-        if (!$result->price) {
+        if (!$result->data->amount) {
             $history->end_price = 0;
         } else {
-        $history->end_price = (float)$result->price * $history->start_price / 1;
+        $history->end_price = (float)$result->data->amount * $history->start_price / 1;
         }
 
         if(!$history->save()) {
@@ -426,397 +425,6 @@ class WalletController extends BaseController
     }
 
 
-    /**
-     * @SWG\Post(
-     *    path = "/wallet/exchangeInv",
-     *    tags = {"Wallet"},
-     *    summary = "Обмен криптовалюты на инвестиционном счете",
-     *    security={{"access_token":{}}},
-     *    @SWG\Parameter(
-     *      name="from_chart_id",
-     *      in="body",
-     *      description="ID криптовалюты",
-     *      required=true,
-     *      @SWG\Schema(type="integer")
-     *     ),
-     *    @SWG\Parameter(
-     *      name="to_chart_id",
-     *      in="body",
-     *      description="ID криптовалюты",
-     *      required=true,
-     *      @SWG\Schema(type="integer")
-     *     ),
-     *    @SWG\Parameter(
-     *      name="price",
-     *      in="body",
-     *      description="Сумма обмена",
-     *      required=true,
-     *      @SWG\Schema(type="number")
-     *     ),
-     *	  @SWG\Response(
-     *      response = 200,
-     *      description = "Обмен успешно выполнен",
-     *      @SWG\Schema(ref = "#/definitions/Result")
-     *    ),
-     *    @SWG\Response(
-     *      response = 400,
-     *      description = "Ошибка запроса",
-     *      @SWG\Schema(ref = "#/definitions/Result")
-     *    ),
-     *    @SWG\Response(
-     *      response = 403,
-     *      description = "Ошибка авторизации",
-     *      @SWG\Schema(ref = "#/definitions/Result")
-     *    ),
-     *)
-     * @throws HttpException
-     */
-    public function actionExchangeInv()
-    {
-        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
-
-        if(!$this->user) {
-            Yii::$app->response->statusCode = 401;
-            return ["success" => false, "message" => "Token не найден"];
-        }
-
-        $type = Yii::$app->request->post("type", 0);
-
-        $history = new History(["date" => time(), "user_id" => $this->user->id, "type" => 2]);
-
-        $history->start_chart_id = Yii::$app->request->post("from_chart_id");
-        $history->end_chart_id = Yii::$app->request->post("to_chart_id");
-        $history->start_price = (float)Yii::$app->request->post("price");
-
-        $fromChart = Chart::findOne($history->start_chart_id);
-        if (!$fromChart) {
-            Yii::$app->response->statusCode = 400;
-            return ["success" => false, "message" => "Валюта не найдена"];
-        }
-
-        $toChart = Chart::findOne($history->end_chart_id);
-        if (!$toChart) {
-            Yii::$app->response->statusCode = 400;
-            return ["success" => false, "message" => "Валюта не найдена"];
-        }
-
-        $price = 0;
-
-        $curl = curl_init();
-        curl_setopt_array($curl, array(
-            CURLOPT_URL => "https://api.binance.com/api/v3/ticker/price?symbol=" . $fromChart->symbol . $toChart->symbol,
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_CUSTOMREQUEST => 'GET',
-            CURLOPT_USERAGENT => 'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1)'
-        ));
-
-        $result = json_decode(curl_exec($curl));
-
-        curl_close($curl);
-
-        if(empty($result->price)) {
-            $curl = curl_init();
-            curl_setopt_array($curl, array(
-                CURLOPT_URL => "https://api.binance.com/api/v3/ticker/price?symbol=" . $toChart->symbol . $fromChart->symbol,
-                CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_FOLLOWLOCATION => true,
-                CURLOPT_CUSTOMREQUEST => 'GET',
-                CURLOPT_USERAGENT => 'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1)'
-            ));
-
-            $result = json_decode(curl_exec($curl));
-            curl_close($curl);
-
-            if(empty($result->price)) {
-                Yii::$app->response->statusCode = 400;
-                return ["success" => false, "message" => "Котировка не найдена"];
-            }
-
-            $price = 1 / $result->price;
-        } else {
-            $price = $result->price;
-        }
-
-        $fromWallet = WalletInv::findOne(["user_id" => $this->user->id, "chart_id" => $fromChart->id, "type" => $type]);
-        if(!$fromWallet) {
-            $fromWallet = new WalletInv(["user_id" => $this->user->id, "chart_id" => $fromChart->id, "balance" => 0, "type" => $type]);
-        }
-        $fromWallet->balance -= $history->start_price;
-        if ($fromWallet->balance < 0) {
-            Yii::$app->response->statusCode = 400;
-            return ["success" => false, "message" => "Недостаточно на балансе"];
-        }
-
-        if(!$fromWallet->save()) {
-            Yii::$app->response->statusCode = 400;
-            return ["success" => false, "message" => "Ошибка сохранения счета"];
-        }
-
-        $history->end_price = (float)$price * $history->start_price;
-
-        $toWallet = WalletInv::findOne(["user_id" => $this->user->id, "chart_id" => $toChart->id, "type" => $type]);
-        if(!$toWallet) {
-            $toWallet = new WalletInv(["user_id" => $this->user->id, "chart_id" => $toChart->id, "balance" => 0, "type" => $type]);
-        }
-        $toWallet->balance += $history->end_price;
-
-        if(!$toWallet->save()) {
-            Yii::$app->response->statusCode = 400;
-            return ["success" => false, "message" => "Ошибка сохранения счета"];
-        }
-
-        if(!$history->save()) {
-            Yii::$app->response->statusCode = 400;
-            return ["success" => false, "message" => "Ошибка создания запроса"];
-        }
-
-        return ["success" => true, "message" => "Обмен успешно выполнен"];
-    }
-
-
-    /**
-     * @SWG\Post(
-     *    path = "/wallet/exchangeTrade",
-     *    tags = {"Wallet"},
-     *    summary = "Обмен криптовалюты на торговом счете",
-     *    security={{"access_token":{}}},
-     *    @SWG\Parameter(
-     *      name="from_chart_id",
-     *      in="body",
-     *      description="ID криптовалюты",
-     *      required=true,
-     *      @SWG\Schema(type="integer")
-     *     ),
-     *    @SWG\Parameter(
-     *      name="to_chart_id",
-     *      in="body",
-     *      description="ID криптовалюты",
-     *      required=true,
-     *      @SWG\Schema(type="integer")
-     *     ),
-     *    @SWG\Parameter(
-     *      name="price",
-     *      in="body",
-     *      description="Сумма обмена",
-     *      required=true,
-     *      @SWG\Schema(type="number")
-     *     ),
-     *	  @SWG\Response(
-     *      response = 200,
-     *      description = "Обмен успешно выполнен",
-     *      @SWG\Schema(ref = "#/definitions/Result")
-     *    ),
-     *    @SWG\Response(
-     *      response = 400,
-     *      description = "Ошибка запроса",
-     *      @SWG\Schema(ref = "#/definitions/Result")
-     *    ),
-     *    @SWG\Response(
-     *      response = 403,
-     *      description = "Ошибка авторизации",
-     *      @SWG\Schema(ref = "#/definitions/Result")
-     *    ),
-     *)
-     * @throws HttpException
-     */
-    public function actionExchangeTrade()
-    {
-        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
-
-        if(!$this->user) {
-            Yii::$app->response->statusCode = 401;
-            return ["success" => false, "message" => "Token не найден"];
-        }
-
-        $type = Yii::$app->request->post("type", 0);
-
-        $history = new History(["date" => time(), "user_id" => $this->user->id, "type" => 2]);
-
-        $history->start_chart_id = Yii::$app->request->post("from_chart_id");
-        $history->end_chart_id = Yii::$app->request->post("to_chart_id");
-        $history->start_price = (float)Yii::$app->request->post("price");
-
-        $fromChart = Chart::findOne($history->start_chart_id);
-        if (!$fromChart) {
-            Yii::$app->response->statusCode = 400;
-            return ["success" => false, "message" => "Валюта не найдена"];
-        }
-
-        $toChart = Chart::findOne($history->end_chart_id);
-        if (!$toChart) {
-            Yii::$app->response->statusCode = 400;
-            return ["success" => false, "message" => "Валюта не найдена"];
-        }
-
-        $price = 0;
-
-        $curl = curl_init();
-        curl_setopt_array($curl, array(
-            CURLOPT_URL => "https://api.binance.com/api/v3/ticker/price?symbol=" . $fromChart->symbol . $toChart->symbol,
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_CUSTOMREQUEST => 'GET',
-            CURLOPT_USERAGENT => 'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1)'
-        ));
-
-        $result = json_decode(curl_exec($curl));
-
-        curl_close($curl);
-
-        if(empty($result->price)) {
-            $curl = curl_init();
-            curl_setopt_array($curl, array(
-                CURLOPT_URL => "https://api.binance.com/api/v3/ticker/price?symbol=" . $toChart->symbol . $fromChart->symbol,
-                CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_FOLLOWLOCATION => true,
-                CURLOPT_CUSTOMREQUEST => 'GET',
-                CURLOPT_USERAGENT => 'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1)'
-            ));
-
-            $result = json_decode(curl_exec($curl));
-            curl_close($curl);
-
-            if(empty($result->price)) {
-                Yii::$app->response->statusCode = 400;
-                return ["success" => false, "message" => "Котировка не найдена"];
-            }
-
-            $price = 1 / $result->price;
-        } else {
-            $price = $result->price;
-        }
-
-        $fromWallet = WalletTrade::findOne(["user_id" => $this->user->id, "chart_id" => $fromChart->id, "type" => $type]);
-        if(!$fromWallet) {
-            $fromWallet = new WalletTrade(["user_id" => $this->user->id, "chart_id" => $fromChart->id, "balance" => 0, "type" => $type]);
-        }
-        $fromWallet->balance -= $history->start_price;
-        if ($fromWallet->balance < 0) {
-            Yii::$app->response->statusCode = 400;
-            return ["success" => false, "message" => "Недостаточно на балансе"];
-        }
-
-        if(!$fromWallet->save()) {
-            Yii::$app->response->statusCode = 400;
-            return ["success" => false, "message" => "Ошибка сохранения счета"];
-        }
-
-        $history->end_price = (float)$price * $history->start_price;
-
-        $toWallet = WalletTrade::findOne(["user_id" => $this->user->id, "chart_id" => $toChart->id, "type" => $type]);
-        if(!$toWallet) {
-            $toWallet = new WalletTrade(["user_id" => $this->user->id, "chart_id" => $toChart->id, "balance" => 0, "type" => $type]);
-        }
-        $toWallet->balance += $history->end_price;
-
-        if(!$toWallet->save()) {
-            Yii::$app->response->statusCode = 400;
-            return ["success" => false, "message" => "Ошибка сохранения счета"];
-        }
-
-        if(!$history->save()) {
-            Yii::$app->response->statusCode = 400;
-            return ["success" => false, "message" => "Ошибка создания запроса"];
-        }
-
-        return ["success" => true, "message" => "Обмен успешно выполнен"];
-    }
-
-
-    /**
-     * @SWG\Post(
-     *    path = "/wallet/translation",
-     *    tags = {"Wallet"},
-     *    summary = "Перевод криптовалюты",
-     *    security={{"access_token":{}}},
-     *    @SWG\Parameter(
-     *      name="from_type",
-     *      in="body",
-     *      description="ID счета",
-     *      required=true,
-     *      @SWG\Schema(type="integer")
-     *     ),
-     *    @SWG\Parameter(
-     *      name="to_type",
-     *      in="body",
-     *      description="ID счета",
-     *      required=true,
-     *      @SWG\Schema(type="integer")
-     *     ),
-     *    @SWG\Parameter(
-     *      name="price",
-     *      in="body",
-     *      description="Сумма перевода",
-     *      required=true,
-     *      @SWG\Schema(type="number")
-     *     ),
-     *	  @SWG\Response(
-     *      response = 200,
-     *      description = "Перевод успешно выполнен",
-     *      @SWG\Schema(ref = "#/definitions/Result")
-     *    ),
-     *    @SWG\Response(
-     *      response = 400,
-     *      description = "Ошибка запроса",
-     *      @SWG\Schema(ref = "#/definitions/Result")
-     *    ),
-     *    @SWG\Response(
-     *      response = 403,
-     *      description = "Ошибка авторизации",
-     *      @SWG\Schema(ref = "#/definitions/Result")
-     *    ),
-     *)
-     * @throws HttpException
-     */
-    public function actionTranslation()
-    {
-        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
-
-        if(!$this->user) {
-            Yii::$app->response->statusCode = 401;
-            return ["success" => false, "message" => "Token не найден"];
-        }
-
-        $chart = Chart::findOne(Yii::$app->request->post("chart_id"));
-        if (!$chart) {
-            Yii::$app->response->statusCode = 400;
-            return ["success" => false, "message" => "Валюта не найдена"];
-        }
-
-        $from_type = Yii::$app->request->post("from_type", 0);
-        $to_type = Yii::$app->request->post("to_type", 0);
-
-        $price = (float)Yii::$app->request->post("price");
-
-        $fromWallet = Wallet::findOne(["user_id" => $this->user->id, "chart_id" => $chart->id, "type" => $from_type]);
-        if(!$fromWallet) {
-            $fromWallet = new Wallet(["user_id" => $this->user->id, "chart_id" => $chart->id, "balance" => 0, "type" => $from_type]);
-        }
-        $fromWallet->balance -= $price;
-        if ($fromWallet->balance < 0) {
-            Yii::$app->response->statusCode = 400;
-            return ["success" => false, "message" => "Недостаточно на балансе"];
-        }
-
-        if(!$fromWallet->save()) {
-            Yii::$app->response->statusCode = 400;
-            return ["success" => false, "message" => "Ошибка сохранения счета"];
-        }
-
-        $toWallet = Wallet::findOne(["user_id" => $this->user->id, "chart_id" => $chart->id, "type" => $to_type]);
-        if(!$toWallet) {
-            $toWallet = new Wallet(["user_id" => $this->user->id, "chart_id" => $chart->id, "balance" => 0, "type" => $to_type]);
-        }
-        $toWallet->balance += $price;
-
-        if(!$toWallet->save()) {
-            Yii::$app->response->statusCode = 400;
-            return ["success" => false, "message" => "Ошибка сохранения счета"];
-        }
-
-        return ["success" => true, "message" => "Перевод успешно выполнен"];
-    }
 
     /**
      * @SWG\Post(
@@ -941,14 +549,14 @@ class WalletController extends BaseController
 
         
         $wallet_query_fin = Wallet::find()->joinWith("chart")
-        ->where(["active" => 1, 'wallet.user_id' => $this->user->id])
+        ->where(['wallet.user_id' => $this->user->id])
         ->andWhere([">", "wallet.balance", 0])
         ->andWhere(["type" => $wallettype])
         ->all();
         
         // 0 - фин, 1 - b2b, 2 - спот, 3 - марж, 4 - торговый, 5 - инв, 6 - все, 10 - вывод
 
-        //to do рефакторинг убрать walletInv, trade
+
         $data = [];
 
         $nodata = false;
@@ -979,76 +587,10 @@ class WalletController extends BaseController
 
         }
         
-        // foreach ($wallet_query_fin as $wallet) {
-        //     if($wallet->chart->symbol == "RUB") {
-        //         continue;
-        //     }
-
-        //     if($wallet->chart->symbol != "USDT") {
-                
-        //         $symbol = $wallet->chart->symbol . "USDT";
-        //         $symbols[] = $symbol;
-        //         $wallers[$symbol] = $wallet;
-        //     } else {
-        //         $wallers["USDT"] = $wallet;
-        //     }
-
-        // }
-        
-        // if (!empty($symbols)) {
-        //     //coinbase
-        //     $ch = curl_init("https://api.binance.com/api/v3/ticker/24hr?symbols=" . json_encode($symbols));
-            
-        //     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        //     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        //     curl_setopt($ch, CURLOPT_HEADER, false);
-        //     $res = curl_exec($ch);
-        //     curl_close($ch);
-        //     $result = json_decode($res);
-        //     } else {
-        //         $nodata = true;
-        //     }
-
-        // if(isset($wallers["USDT"])) {
-        //     $wallet = $wallers["USDT"];
-        //     $data[] = [
-        //         "id" => $wallet->chart->id,
-        //         "name" => $wallet->chart->name,
-        //         "symbol" => $wallet->chart->symbol,
-        //         "price" => 1,
-        //         "balance" => $wallet->balance,
-        //         "blocked" => $wallet->blocked ?? null,
-        //         "percent" => 0,
-        //         "type" => $wallet->type,
-        //         "icon" => Url::to(["/images/icons/" . $wallet->chart->symbol . ".png"], "https"),
-        //     ];
-        // }
-        // if (!$nodata) {
-        //     foreach ($result as $item) {
-        //         $wallet = $wallers[$item->symbol];
-        //         $data[] = [
-        //             "id" => $wallet->chart->id,
-        //             "name" => $wallet->chart->name,
-        //             "symbol" => $wallet->chart->symbol,
-        //             "price" => $item->lastPrice,
-        //             "balance" => $wallet->balance,
-        //             "blocked" => $wallet->blocked,
-        //             "percent" => $item->priceChangePercent,
-        //             "type" => $wallet->walletType->title,
-        //             "icon" => Url::to(["/images/icons/" . $wallet->chart->symbol . ".png"], "https"),
-        //         ];
-
-        //     }
-        // }
-
-    
-
-        
-        
-        
+         
         return $data;
     }
-
+    
     /**
      * @SWG\Post(
      *    path = "/wallet/transfer",
@@ -1056,10 +598,16 @@ class WalletController extends BaseController
      *    summary = "Перевод между счетами",
      *    security={{"access_token":{}}},
      *    @SWG\Parameter(
-     *      name="WALLET_TRANSFER_DIRECTION",
+     *      name="from_wallet_id",
      *      in="body",
-     *      description="ID операции (10 - перевод с фин на инв, 20 - с фин на торг, 30 - с инв на фин, 40 - с торг на фин)",
+     *      description="ID кошелька (0	Финансовый, 1	B2B,   2	Спотовый,    3	Маржинальный,    4	Торговый,    5	Инвестиционный)",
      *      required=true,
+     *      @SWG\Schema(type="integer")
+     *     ),
+     *    @SWG\Parameter(
+     *      name="to_wallet_id",
+     *      in="body",
+     *      description="ID кошелька (0	Финансовый, 1	B2B,   2	Спотовый,    3	Маржинальный,    4	Торговый,    5	Инвестиционный)",
      *      @SWG\Schema(type="integer")
      *     ),
      *    @SWG\Parameter(
@@ -1076,7 +624,7 @@ class WalletController extends BaseController
      *      @SWG\Schema(type="integer")
      *     ),
      *    @SWG\Parameter(
-     *      name="price",
+     *      name="summa",
      *      in="body",
      *      description="Сумма перевода",
      *      required=true,
@@ -1108,262 +656,148 @@ class WalletController extends BaseController
             Yii::$app->response->statusCode = 401;
             return ["success" => false, "message" => "Token не найден"];
         }
-
-        $wallet_direct_id = Yii::$app->request->post("WALLET_TRANSFER_DIRECTION");
-	    $direction = array(10,20,30,40);
         
-	    if(!in_array($wallet_direct_id, $direction)) {
+        if (!in_array($this->user->verify_status, self::VERIFY_STATUS))
+        {
             Yii::$app->response->statusCode = 401;
-            return ["success" => false, "message" => "Не задано направление перевода"];
+            return ["success" => false, "message" => "Вам необходимо пройти полную верификацию для осуществления данной операции"];
         }
         
-	    $status = 0;
-	    $history = new History(["date" => time(), "user_id" => $this->user->id, "type" => 0, "wallet_direct_id" => $wallet_direct_id, "status" => $status]);
-        $history->start_chart_id = Yii::$app->request->post("from_chart_id");
-        $history->end_chart_id = Yii::$app->request->post("to_chart_id", $history->start_chart_id);
-        $history->start_price = (float)Yii::$app->request->post("price", 0);
+        
+        $from_wallet_id = Yii::$app->request->post("from_wallet_id");
+        
+        $to_wallet_id = Yii::$app->request->post("to_wallet_id");
 
+        if (!$from_wallet_id || !$to_wallet_id || $from_wallet_id == $to_wallet_id) {
+            Yii::$app->response->statusCode = 401;
+            return ["success" => false, "message" => "Не корректное ИД кошелька"];
+        }
+
+        $from_chart_id = Yii::$app->request->post("from_chart_id");
+        $to_chart_id = Yii::$app->request->post("to_chart_id");
+
+        if (!$from_chart_id || !$to_chart_id) {
+            Yii::$app->response->statusCode = 401;
+            return ["success" => false, "message" => "Не корректное ИД кошелька"];
+        }
+
+        $convert = true;
+        if ($to_chart_id == $from_chart_id) {
+            $convert = false;
+        }
+        
+        $summa = Yii::$app->request->post("summa");
+        if (!$summa || $summa < 0) {
+            Yii::$app->response->statusCode = 401;
+            return ["success" => false, "message" => "Не корректное сумма"];
+        }
+        $history = new History(["date" => time(), "user_id" => $this->user->id, "type" => $to_wallet_id, "wallet_direct_id" => $from_wallet_id, "status" => 0]);
+        $history->start_chart_id = $from_chart_id;
+        $history->end_chart_id = $to_chart_id;
         $fromChart = Chart::findOne($history->start_chart_id);
         if (!$fromChart) {
             Yii::$app->response->statusCode = 400;
             return ["success" => false, "message" => "Валюта не найдена"];
         }
-	
-	    if ($history->start_price <= 0) {
-            Yii::$app->response->statusCode = 400;
-            return ["success" => false, "message" => "Сумма должна быть больше 0"];
-        }
-
         $toChart = Chart::findOne($history->end_chart_id);
-        //if ($toChart == 0) {
-            //Yii::$app->response->statusCode = 400;
-            //return ["success" => false, "message" => "Валюта не найдена"];
-	    //    $toChart = $fromChart;
-        //}
-	
-	    //если с ковертацией
-	    $type = 0;
-        if ($fromChart != $toChart) {
-        $price = 0;
+        if (!$fromChart) {
+            Yii::$app->response->statusCode = 400;
+            return ["success" => false, "message" => "Валюта не найдена"];
+        }
+        $from_wallet = Wallet::find(['user_id' => $this->user->id, 'type' => $from_wallet_id, 'chart_id' => $from_chart_id])->one();
+        $to_wallet = Wallet::find(['user_id' => $this->user->id, 'type' => $to_wallet_id, 'chart_id' => $to_chart_id])->one();
+        if (!$from_wallet) {
+            Yii::$app->response->statusCode = 400;
+            return ["success" => false, "message" => "Счет не найден"];
+        }
 
-        $curl = curl_init();
-        curl_setopt_array($curl, array(
-            CURLOPT_URL => "https://api.binance.com/api/v3/ticker/price?symbol=" . $fromChart->symbol . $toChart->symbol,
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_CUSTOMREQUEST => 'GET',
-            CURLOPT_USERAGENT => 'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1)'
-        ));
-
-        $result = json_decode(curl_exec($curl));
-
-        curl_close($curl);
-
-        if(empty($result->price)) {
-            $curl = curl_init();
-            curl_setopt_array($curl, array(
-                CURLOPT_URL => "https://api.binance.com/api/v3/ticker/price?symbol=" . $toChart->symbol . $fromChart->symbol,
-                CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_FOLLOWLOCATION => true,
-                CURLOPT_CUSTOMREQUEST => 'GET',
-                CURLOPT_USERAGENT => 'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1)'
-            ));
-
-            $result = json_decode(curl_exec($curl));
-            curl_close($curl);
-
-            if(empty($result->price)) {
-                Yii::$app->response->statusCode = 400;
-                return ["success" => false, "message" => "Котировка не найдена"];
-            }
-
-            $price = 1 / $result->price;
+        if (!$to_wallet) {
+            $result = new Wallet(['user_id' => $this->user->id, 'type' => $to_wallet_id, 'chart_id' => $to_chart_id, 'balance' => 0, 'blocked' => null]);
         } else {
-            $price = $result->price;
+            $to_wallet->balance += $summa / (float)$this->price($from_chart_id, $to_chart_id);
+            $from_wallet->balance -= $summa;
         }
-        }
+
         
-        
-
-        $WALLET_TRANSFER_DIRECTION_FROM_FIN_TO_INV = 10;
-        $WALLET_TRANSFER_DIRECTION_FROM_FIN_TO_TRADE = 20;
-        $WALLET_TRANSFER_DIRECTION_FROM_INV_TO_FIN = 30;
-        $WALLET_TRANSFER_DIRECTION_FROM_TRADE_TO_FIN = 40;
-        //направление
-        if ($wallet_direct_id==$WALLET_TRANSFER_DIRECTION_FROM_FIN_TO_INV) {
-            
-        $fromWallet = Wallet::findOne(["user_id" => $this->user->id, "chart_id" => $fromChart->id]);
-        if(!$fromWallet) {
-            $fromWallet = new Wallet(["user_id" => $this->user->id, "chart_id" => $fromChart->id, "balance" => 0, "type" => $type]);
-        }
-        $fromWallet->balance -= $history->start_price;
-        if ($fromWallet->balance < 0) {
+        if ($from_wallet->balance < 0) {
             Yii::$app->response->statusCode = 400;
-            return ["success" => false, "message" => "Недостаточно на балансе"];
+            return ["success" => false, "message" => "Недостаточно средств на балансе"];
         }
 
-        if(!$fromWallet->save()) {
+
+        $history->status = 1;
+        if (!$history->save()) {
             Yii::$app->response->statusCode = 400;
-            return ["success" => false, "message" => "Ошибка сохранения счета"];
+            return ["success" => false, "message" => "Ошибка перевода"];   
         }
 
-        if ($fromChart!=$toChart) {
-        $history->end_price = (float)$price * $history->start_price;
-        } else {
-        $history->end_price = $history->start_price;
-        }
-
-        $toWallet = WalletInv::findOne(["user_id" => $this->user->id, "chart_id" => $toChart->id, "type" => $type]);
-        if(!$toWallet) {
-            $toWallet = new WalletInv(["user_id" => $this->user->id, "chart_id" => $toChart->id, "balance" => 0, "type" => $type]);
-        }
-        $toWallet->balance += $history->end_price;
-	
-
-        if(!$toWallet->save()) {
+        if (!$from_wallet->save()) {
             Yii::$app->response->statusCode = 400;
-            return ["success" => false, "message" => "Ошибка сохранения счета"];
+            return ["success" => false, "message" => "Ошибка сохранения счета исходящего"];   
         }
 
-        if(!$history->save()) {
+        if (!$to_wallet->save()) {
             Yii::$app->response->statusCode = 400;
-            return ["success" => false, "message" => "Ошибка создания запроса"];
+            return ["success" => false, "message" => "Ошибка сохранения счета входящего"];   
         }
-    }
-
-
-    if ($wallet_direct_id==$WALLET_TRANSFER_DIRECTION_FROM_FIN_TO_TRADE) {
-            
-        $fromWallet = Wallet::findOne(["user_id" => $this->user->id, "chart_id" => $fromChart->id]);
-        if(!$fromWallet) {
-            $fromWallet = new Wallet(["user_id" => $this->user->id, "chart_id" => $fromChart->id, "balance" => 0, "type" => $type]);
-        }
-        $fromWallet->balance -= $history->start_price;
-        if ($fromWallet->balance < 0) {
-            Yii::$app->response->statusCode = 400;
-            return ["success" => false, "message" => "Недостаточно на балансе"];
-        }
-
-        if(!$fromWallet->save()) {
-            Yii::$app->response->statusCode = 400;
-            return ["success" => false, "message" => "Ошибка сохранения счета"];
-        }
-
-        if ($fromChart!=$toChart) {
-        $history->end_price = (float)$price * $history->start_price;
-        } else {
-        $history->end_price = $history->start_price;
-        }
-
-        $toWallet = WalletTrade::findOne(["user_id" => $this->user->id, "chart_id" => $toChart->id, "type" => $type]);
-        if(!$toWallet) {
-            $toWallet = new WalletTrade(["user_id" => $this->user->id, "chart_id" => $toChart->id, "balance" => 0, "type" => $type]);
-        }
-        $toWallet->balance += $history->end_price;
-
-        if(!$toWallet->save()) {
-            Yii::$app->response->statusCode = 400;
-            return ["success" => false, "message" => "Ошибка сохранения счета"];
-        }
-
-        if(!$history->save()) {
-            Yii::$app->response->statusCode = 400;
-            return ["success" => false, "message" => "Ошибка создания запроса"];
-        }
-    }
-
-
-
-    
-    if ($wallet_direct_id==$WALLET_TRANSFER_DIRECTION_FROM_INV_TO_FIN) {
-            
-        $fromWallet = WalletInv::findOne(["user_id" => $this->user->id, "chart_id" => $fromChart->id]);
-        if(!$fromWallet) {
-            $fromWallet = new WalletInv(["user_id" => $this->user->id, "chart_id" => $fromChart->id, "balance" => 0, "type" => $type]);
-        }
-        $fromWallet->balance -= $history->start_price;
-        if ($fromWallet->balance < 0) {
-            Yii::$app->response->statusCode = 400;
-            return ["success" => false, "message" => "Недостаточно на балансе"];
-        }
-
-        if(!$fromWallet->save()) {
-            Yii::$app->response->statusCode = 400;
-            return ["success" => false, "message" => "Ошибка сохранения счета"];
-        }
-
-        if ($fromChart!=$toChart) {
-        $history->end_price = (float)$price * $history->start_price;
-        } else {
-        $history->end_price = $history->start_price;
-        }
-
-        $toWallet = Wallet::findOne(["user_id" => $this->user->id, "chart_id" => $toChart->id, "type" => $type]);
-        if(!$toWallet) {
-            $toWallet = new Wallet(["user_id" => $this->user->id, "chart_id" => $toChart->id, "balance" => 0, "type" => $type]);
-        }
-        $toWallet->balance += $history->end_price;
-
-        if(!$toWallet->save()) {
-            Yii::$app->response->statusCode = 400;
-            return ["success" => false, "message" => "Ошибка сохранения счета"];
-        }
-
-        if(!$history->save()) {
-            Yii::$app->response->statusCode = 400;
-            return ["success" => false, "message" => "Ошибка создания запроса"];
-        }
-    }
-
-
-    if ($wallet_direct_id==$WALLET_TRANSFER_DIRECTION_FROM_TRADE_TO_FIN) {
-            
-        $fromWallet = WalletTrade::findOne(["user_id" => $this->user->id, "chart_id" => $fromChart->id]);
-        if(!$fromWallet) {
-            $fromWallet = new WalletTrade(["user_id" => $this->user->id, "chart_id" => $fromChart->id, "balance" => 0, "type" => $type]);
-        }
-        $fromWallet->balance -= $history->start_price;
-        if ($fromWallet->balance < 0) {
-            Yii::$app->response->statusCode = 400;
-            return ["success" => false, "message" => "Недостаточно на балансе"];
-        }
-
-        if(!$fromWallet->save()) {
-            Yii::$app->response->statusCode = 400;
-            return ["success" => false, "message" => "Ошибка сохранения счета"];
-        }
-
-        if ($fromChart!=$toChart) {
-        $history->end_price = (float)$price * $history->start_price;
-        } else {
-        $history->end_price = $history->start_price;
-        }
-
-        $toWallet = Wallet::findOne(["user_id" => $this->user->id, "chart_id" => $toChart->id, "type" => $type]);
-        if(!$toWallet) {
-            $toWallet = new Wallet(["user_id" => $this->user->id, "chart_id" => $toChart->id, "balance" => 0, "type" => $type]);
-        }
-        $toWallet->balance += $history->end_price;
-
-        if(!$toWallet->save()) {
-            Yii::$app->response->statusCode = 400;
-            return ["success" => false, "message" => "Ошибка сохранения счета"];
-        }
-
-        if(!$history->save()) {
-            Yii::$app->response->statusCode = 400;
-            return ["success" => false, "message" => "Ошибка создания запроса"];
-        }
-    }
-
-
 
         return ["success" => true, "message" => "Перевод успешно выполнен"];
     }
     
-    protected function price($chart, $currency){
-        //$data = ["price" => 0];
+    /**
+     * @SWG\Get(
+     *    path = "/Wallet/types",
+     *    tags = {"Wallet"},
+     *    summary = "Список Счетов",
+     *    security={{"access_token":{}}},
+     *	  @SWG\Response(
+     *      response = 200,
+     *      description = "Список Счетов",
+     *      @SWG\Schema(
+     *          type="array",
+     *          @SWG\Items(ref="#/definitions/Result")
+     *      ),
+     *    ),
+     *    @SWG\Response(
+     *      response = 400,
+     *      description = "Ошибка запроса",
+     *      @SWG\Schema(ref = "#/definitions/Result")
+     *    ),
+     *    @SWG\Response(
+     *      response = 403,
+     *      description = "Ошибка авторизации",
+     *      @SWG\Schema(ref = "#/definitions/Result")
+     *    ),
+     *)
+     * @throws HttpException
+     */
 
+   
+     public function actionTypes()
+     {
+        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+
+        if(!$this->user) {
+            Yii::$app->response->statusCode = 401;
+            return ["success" => false, "message" => "Token не найден"];
+        }
+
+        if (!in_array($this->user->verify_status, self::VERIFY_STATUS))
+        {
+            Yii::$app->response->statusCode = 401;
+            return ["success" => false, "message" => "Вам необходимо пройти полную верификацию для осуществления данной операции"];
+        }
+
+        $result = WalletType::find(['active' => 1])->all();
+
+        
+
+        return $result;
+     }
+    
+    
+     protected function price($chart, $currency){
+        
 
         $curl = curl_init();
     
@@ -1378,13 +812,14 @@ class WalletController extends BaseController
         ));
         //}
 
-        $result = json_decode(curl_exec($curl));
+        $result = json_decode(curl_exec($curl)) ?? null;
    
 
         curl_close($curl);
-        if ($chart == 'RUB') {
+        if ($chart == 'RUB' && $result) {
             $result->data->amount = 1;
         }
-        return number_format($result->data->amount, 2, '.','') ?? null;
+        return number_format($result->data->amount ?? null, 2, '.','');
+        //return null;
     }
 }
