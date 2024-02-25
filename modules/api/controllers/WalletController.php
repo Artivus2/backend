@@ -667,9 +667,12 @@ class WalletController extends BaseController
         $from_wallet_id = Yii::$app->request->post("from_wallet_id", 0);
         
         $to_wallet_id = Yii::$app->request->post("to_wallet_id", 0);
-        // if ((string)!$from_wallet_id == "" || (string)!$to_wallet_id == "") {
-
-        // }
+        
+        if ($from_wallet_id == 1) {
+            if ($to_wallet_id !== 0)
+            Yii::$app->response->statusCode = 401;
+            return ["success" => false, "message" => "перевод с b2b только на финансовый кошелек"];
+        }
 
         if ($from_wallet_id == "" || $to_wallet_id == "" || $from_wallet_id == $to_wallet_id) {
             Yii::$app->response->statusCode = 401;
@@ -679,6 +682,7 @@ class WalletController extends BaseController
         $from_chart_id = Yii::$app->request->post("from_chart_id");
         $to_chart_id = Yii::$app->request->post("to_chart_id");
 
+        
         if (!$from_chart_id || !$to_chart_id) {
             Yii::$app->response->statusCode = 401;
             return ["success" => false, "message" => "Не корректное ИД криптовалют"];
@@ -720,7 +724,7 @@ class WalletController extends BaseController
         
         $history->start_price = $summa;
 
-        $history->end_price = $summa / (float)$this->price($fromChart->symbol, $toChart->symbol);
+        $history->end_price = $summa * (float)$this->price($fromChart->symbol, $toChart->symbol);
 
         $from_wallet->balance -= (float)$summa;
 
@@ -827,7 +831,7 @@ class WalletController extends BaseController
         $result = json_decode(curl_exec($curl));
         curl_close($curl);
       
-        return number_format($result->data->amount ?? null, 2, '.','');
+        return $result->data->amount;
    
     }
 }
