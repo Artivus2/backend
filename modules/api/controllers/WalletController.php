@@ -704,15 +704,15 @@ class WalletController extends BaseController
             Yii::$app->response->statusCode = 400;
             return ["success" => false, "message" => "Валюта не найдена"];
         }
-        $from_wallet = Wallet::find(['user_id' => $this->user->id, 'type' => $from_wallet_id, 'chart_id' => $from_chart_id])->one();
-        $to_wallet = Wallet::find(['user_id' => $this->user->id, 'type' => $to_wallet_id, 'chart_id' => $to_chart_id])->one();
+        $from_wallet = Wallet::find(['user_id' => $history->user_id, 'type' => $history->wallet_direct_id, 'chart_id' => $history->start_chart_id])->one();
+        $to_wallet = Wallet::find(['user_id' => $history->user_id, 'type' => $history->type, 'chart_id' => $history->end_chart_id])->one();
         if (!$from_wallet) {
             Yii::$app->response->statusCode = 400;
             return ["success" => false, "message" => "Счет не найден"];
         }
 
         if (!$to_wallet) {
-            $to_wallet = new Wallet(['user_id' => $this->user->id, 'type' => $to_wallet_id, 'chart_id' => $to_chart_id, 'balance' => 0, 'blocked' => null]);
+            $to_wallet = new Wallet(['user_id' => $this->user->id, 'type' => $history->type, 'chart_id' => $history->end_chart_id, 'balance' => 0, 'blocked' => null]);
         }
         
         $to_wallet->balance += (float)$summa / (float)$this->price($from_chart_id, $to_chart_id);
