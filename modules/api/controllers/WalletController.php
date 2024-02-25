@@ -165,7 +165,7 @@ class WalletController extends BaseController
      *    @SWG\Parameter(
      *      name="payment_id",
      *      in="body",
-     *      description="ID способа вывода",
+     *      description="ID способа вывода (курьер ид 2000)",
      *      required=true,
      *      @SWG\Schema(type="integer")
      *     ),
@@ -203,13 +203,13 @@ class WalletController extends BaseController
             return ["success" => false, "message" => "Вам необходимо пройти полную верификацию для осуществления данной операции"];
         }
 
-        $history = History::find()->where(['user_id' => $this->user->id, 'status' => 0, 'type' => 2])->all();
+        $history = History::find()->where(['user_id' => $this->user->id, 'status' => 0, 'type' => 0])->all();
         if ($history) {
             Yii::$app->response->statusCode = 400;
             return ["success" => false, "message" => "У вас уже есть не обработанные заявки на вывод"];
         }
         
-        $history = new History(["date" => time(), "user_id" => $this->user->id, "type" => 2]);
+        $history = new History(["date" => time(), "user_id" => $this->user->id, "type" => 0]);
 
         $history->start_chart_id = (int)Yii::$app->request->post("chart_id");
         $history->end_chart_id = 0;
@@ -228,13 +228,14 @@ class WalletController extends BaseController
             return ["success" => false, "message" => "Указан не существующий метод вывода/продажи"];
         }
         $history->payment_id = $payment_id;
-        $history->wallet_direct_id = 0;
+        $history->wallet_direct_id = 10;
         $history->status = 0;
 
 
-        $wallet = Wallet::findOne(["user_id" => $this->user->id, "chart_id" => $chart->id]);
+        $wallet = Wallet::findOne(["user_id" => $this->user->id, "chart_id" => $chart->id,'type' => 0]); //фин
         if(!$wallet) {
-            $wallet = new Wallet(["user_id" => $this->user->id, "chart_id" => $chart->id, "balance" => 0, "type" => 10]);
+            Yii::$app->response->statusCode = 400;
+            return ["success" => false, "message" => "Счет не найден"];
         }
         $wallet->balance -= $history->start_price + $history->start_price * self::COMISSION_OUT / 100;
         $wallet->blocked += $history->start_price + $history->start_price * self::COMISSION_OUT / 100;
@@ -275,6 +276,9 @@ class WalletController extends BaseController
 
         return ["success" => true, "message" => "Запрос отправлен в обработку"];
     }
+
+
+    
 
     /**
      * @SWG\Post(
@@ -669,9 +673,10 @@ class WalletController extends BaseController
         $to_wallet_id = Yii::$app->request->post("to_wallet_id", 0);
         
         if ($from_wallet_id == 1) {
-            if ($to_wallet_id !== 0)
+            if ((int)$to_wallet_id !== 0) {
             Yii::$app->response->statusCode = 401;
             return ["success" => false, "message" => "перевод с b2b только на финансовый кошелек"];
+            }
         }
 
         if ($from_wallet_id == "" || $to_wallet_id == "" || $from_wallet_id == $to_wallet_id) {

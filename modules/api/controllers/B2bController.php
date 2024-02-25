@@ -1004,7 +1004,7 @@ class B2bController extends BaseController
         if (!$discount) {
             $wherediscount = ["currency.active" => 1];
         } else {
-            $wherediscount = ['>=','discount', $discount]; 
+            $wherediscount = ['<=','discount', $discount]; 
         }
 
         $bank = Yii::$app->request->get("bank_id");
@@ -2437,6 +2437,9 @@ class B2bController extends BaseController
 
         return $result;
      }
+
+
+     
 
      protected function sendCode($company, $id, $email = null)
      {

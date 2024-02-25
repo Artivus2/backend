@@ -13,6 +13,7 @@ use app\models\PaymentType;
 use app\models\PaymentDesc;
 use app\models\PaymentUser;
 use app\models\P2pPayment;
+use app\models\B2bPayment;
 use app\models\P2pAds;
 use app\models\WalletAddress;
 
@@ -29,7 +30,7 @@ class PaymentController extends BaseController
         $cp_ipn_secret = '76479a5aF47AAaEf758Cb1297880FB59Cb724f62012c3E1b1f7685cF3Ab4Db91';
 
         Yii::$app->mailer->compose()
-            ->setTo("crypto.zeta2@gmail.com")
+            ->setTo("dukker11@yandex.ru")
             ->setFrom([Yii::$app->params['senderEmail'] => Yii::$app->params['senderName']])
             ->setSubject("Успешное пополнение")
             ->setTextBody(json_encode(Yii::$app->request->post()))
@@ -296,6 +297,48 @@ class PaymentController extends BaseController
      *      required=true,
      *      @SWG\Schema(type="string")
      *     ),
+     *    @SWG\Parameter(
+     *      name="b2b",
+     *      in="body",
+     *      description="для b2b",
+     *      @SWG\Schema(type="string")
+     *     ),
+     *    @SWG\Parameter(
+     *      name="fio_courier",
+     *      in="body",
+     *      description="для b2b",
+     *      @SWG\Schema(type="string")
+     *     ),
+     *    @SWG\Parameter(
+     *      name="phone_courier",
+     *      in="body",
+     *      description="для b2b",
+     *      @SWG\Schema(type="string")
+     *     ),
+     *    @SWG\Parameter(
+     *      name="street_for_courier",
+     *      in="body",
+     *      description="для b2b",
+     *      @SWG\Schema(type="string")
+     *     ),
+     *    @SWG\Parameter(
+     *      name="build_for_courier",
+     *      in="body",
+     *      description="для b2b",
+     *      @SWG\Schema(type="string")
+     *     ),
+     *    @SWG\Parameter(
+     *      name="pod_for_courier",
+     *      in="body",
+     *      description="для b2b",
+     *      @SWG\Schema(type="string")
+     *     ),
+     *    @SWG\Parameter(
+     *      name="description",
+     *      in="body",
+     *      description="для b2b",
+     *      @SWG\Schema(type="string")
+     *     ),
      *	  @SWG\Response(
      *      response = 200,
      *      description = "Успешно сохранено",
@@ -322,40 +365,71 @@ class PaymentController extends BaseController
             Yii::$app->response->statusCode = 401;
             return ["success" => false, "message" => "Token не найден"];
         }
-        $payment_id = Yii::$app->request->post("payment_id");
-        
-
-        $payment = PaymentUser::find()->where(["user_id" => $this->user->id, "payment_id" => $payment_id])->one();
-        if (!$payment) {
+        $b2b = Yii::$app->request->post("b2b");
+        if ((int)$b2b !== 1) {
             
-            $payment = new PaymentUser(["user_id" => $this->user->id]);
-            $payment->payment_id = $payment_id;
-            $payment->value = Yii::$app->request->post("value");
-            $payment->payment_receiver = Yii::$app->request->post("payment_receiver");
-            $payment->active = 1;
+            $payment_id = Yii::$app->request->post("payment_id");
+            
+
+            $payment = PaymentUser::find()->where(["user_id" => $this->user->id, "payment_id" => $payment_id])->one();
+            if (!$payment) {
+                
+                $payment = new PaymentUser(["user_id" => $this->user->id]);
+                $payment->payment_id = $payment_id;
+                $payment->value = Yii::$app->request->post("value");
+            
+                $payment->payment_receiver = Yii::$app->request->post("payment_receiver");
+                $payment->active = 1;
+
+            } else {
+                $payment->value = Yii::$app->request->post("value") ?? $payment->value;
+                $payment->payment_receiver = Yii::$app->request->post("payment_receiver") ?? $payment->payment_receiver;
+                $payment->active = 1;
+            }
+
+
+            $payments_count = PaymentUser::find()->where(["user_id" => $this->user->id, "active" => 1])->count();
+            
+
+
+            if ($payments_count > 14) {
+                Yii::$app->response->statusCode = 400;
+                return ["success" => false, "message" => "Превышено максимальное количество способов оплаты", $payments_count];
+            }
+
+            if(!$payment->save()) {
+                Yii::$app->response->statusCode = 400;
+                return ["success" => false, "message" => "Ошибка сохранения способа оплаты"];
+            }
 
         } else {
-            $payment->value = Yii::$app->request->post("value") ?? $payment->value;
-            $payment->payment_receiver = Yii::$app->request->post("payment_receiver") ?? $payment->payment_receiver;
-            $payment->active = 1;
+            $fio = Yii::$app->request->post("fio_courier");
+            $phone = Yii::$app->request->post("phone_courier");
+            $street = Yii::$app->request->post("street_for_courier");
+            $build = Yii::$app->request->post("build_for_courier");
+            $pod = Yii::$app->request->post("pod_for_courier");
+            $description = Yii::$app->request->post("description");
+            $b2bpayment = new B2bPayment(["company_id" => $this->user->id, 'payment_id' => 2000]);
+            $b2bpayment->fio_courier = $fio;
+            $b2bpayment->phone_courier = $phone;
+            $b2bpayment->street_for_courier = $street;
+            $b2bpayment->build_for_courier = $build;
+            $b2bpayment->pod_for_courier = $pod;
+            $b2bpayment->description = $description;
+            if(!$b2bpayment->save()) {
+                Yii::$app->response->statusCode = 400;
+                return ["success" => false, "message" => "Ошибка сохранения способа оплаты b2b"];
+            }
+
+
+
         }
-
-
-        $payments_count = PaymentUser::find()->where(["user_id" => $this->user->id, "active" => 1])->count();
         
 
 
-        if ($payments_count > 14) {
-            Yii::$app->response->statusCode = 400;
-            return ["success" => false, "message" => "Превышено максимальное количество способов оплаты", $payments_count];
-        }
+        
 
-        if(!$payment->save()) {
-            Yii::$app->response->statusCode = 400;
-            return ["success" => false, "message" => "Ошибка сохранения способа оплаты"];
-        }
-
-        return ["success" => true, "message" => "Способ оплаты успешно добавлен"];
+        return ["success" => true, "message" => "Способ оплаты / доставки / вывода успешно добавлен"];
     }
 
     /**
@@ -430,7 +504,7 @@ class PaymentController extends BaseController
 
         if(!$payment) {
             Yii::$app->response->statusCode = 400;
-            return ["success" => false, "message" => "Способ оплаты не найден"];
+            return ["success" => false, "message" => "Платеж не найден"];
         }
 
         $payment->payment_id = Yii::$app->request->post("payment_id") ?? $payment->payment_id;
@@ -551,16 +625,16 @@ class PaymentController extends BaseController
         }
 
         
-        // $statuses = [1,2,3,4,5,7,8,9];
-        // $p2p_payments = P2pPayment::find()->where(["user_id" => $this->user->id, "payment_id" => $payment->payment_id])->all();
-        // foreach ($p2p_payments as $p2p_payment) {
-        //     $p2p_ads_s = P2pAds::find()->where(["id" => $p2p_payment->p2p_ads_id])->andWhere(["in","status", $statuses])->one();
-        //     if ($p2p_ads_s) {
-        //         Yii::$app->response->statusCode = 401;
-        //         return ["success" => false, "message" => "Реквизит не может быть удален, есть активные или не завершенные ордера", "Текущий статус" => $p2p_ads_s->status];
-        //     }
+        $statuses = [1,2,3,4,5,7,8,9];
+        $p2p_payments = P2pPayment::find()->where(["user_id" => $this->user->id, "payment_id" => $payment->payment_id])->all();
+        foreach ($p2p_payments as $p2p_payment) {
+            $p2p_ads_s = P2pAds::find()->where(["id" => $p2p_payment->p2p_ads_id])->andWhere(["in","status", $statuses])->one();
+            if ($p2p_ads_s) {
+                Yii::$app->response->statusCode = 401;
+                return ["success" => false, "message" => "Реквизит не может быть удален, есть активные или не завершенные ордера", "Текущий статус" => $p2p_ads_s->status];
+            }
 
-        // }
+        }
         $payment->active = 0;
        
         if(!$payment->save()) {
