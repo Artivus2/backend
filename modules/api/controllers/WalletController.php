@@ -715,8 +715,8 @@ class WalletController extends BaseController
             $to_wallet = new Wallet(['user_id' => $this->user->id, 'type' => $to_wallet_id, 'chart_id' => $to_chart_id, 'balance' => 0, 'blocked' => null]);
         }
         
-        $to_wallet->balance += $summa / (float)$this->price($from_chart_id, $to_chart_id);
-        $from_wallet->balance -= $summa;
+        $to_wallet->balance += (float)$summa / (float)$this->price($from_chart_id, $to_chart_id);
+        $from_wallet->balance -= (float)$summa;
             
         if ($from_wallet->balance < 0) {
             Yii::$app->response->statusCode = 400;
@@ -742,8 +742,11 @@ class WalletController extends BaseController
             return ["success" => false, "message" => "Ошибка сохранения счета входящего"];   
         }
 
-        
-        return ["success" => true, "message" => "Перевод успешно выполнен"];
+        $data= [
+            "from" => $from_wallet,
+            "to" => $to_wallet
+        ];
+        return ["success" => true, "message" => "Перевод успешно выполнен", $data];
     }
     
     /**
