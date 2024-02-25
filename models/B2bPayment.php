@@ -28,8 +28,9 @@ class B2bPayment extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['b2b_ads_id', 'payment_id',"company_id"], 'required'],
-            [['b2b_ads_id', 'payment_id',"company_id"], 'integer'],
+            [["company_id"], 'required'],
+            [['payment_id',"company_id"], 'integer'],
+
         ];
     }
 
@@ -52,9 +53,15 @@ class B2bPayment extends \yii\db\ActiveRecord
     {
         return [
             'id' => 'ID',
-            'b2b' => 'B2b Ads ID',
             'payment_id' => 'Payment ID',
             'company_id' => 'Company ID',
+            'fio_courier' => 'fio courier',
+            'phone_courier' => 'phone courier',
+            'street_for_courier' => 'street courier',
+            'build_for_courier' => 'build courier',
+            'pod_for_courier' => 'pod courier',
+            'description' => 'description',
         ];
+
     }
 }
