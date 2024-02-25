@@ -105,21 +105,7 @@ class WalletController extends BaseController
             return ["success" => false, "message" => "Валюта не найдена"];
         }
 
-        $curl = curl_init();
-        curl_setopt_array($curl, array(
-            //CURLOPT_URL => "https://api.binance.com/api/v3/ticker/price?symbol=" . $chart->symbol . "RUB",
-            CURLOPT_URL => "https://api.coinbase.com/v2/prices/".$chart->symbol."-RUB/spot",
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_CUSTOMREQUEST => 'GET',
-            CURLOPT_USERAGENT => 'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1)'
-        ));
-
-        $result = json_decode(curl_exec($curl));
-
-        curl_close($curl);
-
-        $history->end_price = $history->start_price / (float)$result->data->amount - ($history->start_price / (float)$result->data->amount) * self::COMISSION_IN / 100;
+        $history->end_price = $history->start_price / (float)$this->price($chart->symbol, "RUB") - $history->start_price / (float)$this->price($chart->symbol, "RUB") * self::COMISSION_IN / 100;
 
         if(!$history->save()) {
             Yii::$app->response->statusCode = 400;
@@ -209,7 +195,7 @@ class WalletController extends BaseController
             return ["success" => false, "message" => "У вас уже есть не обработанные заявки на вывод"];
         }
         
-        $history = new History(["date" => time(), "user_id" => $this->user->id, "type" => 0]);
+        $history = new History(["date" => time(), "user_id" => $this->user->id, "type" => 0, 'wallet_direct_id' => 10]);
 
         $history->start_chart_id = (int)Yii::$app->request->post("chart_id");
         $history->end_chart_id = 0;
@@ -228,7 +214,7 @@ class WalletController extends BaseController
             return ["success" => false, "message" => "Указан не существующий метод вывода/продажи"];
         }
         $history->payment_id = $payment_id;
-        $history->wallet_direct_id = 10;
+        
         $history->status = 0;
 
 
@@ -245,23 +231,23 @@ class WalletController extends BaseController
         }
 
 
-        $curl = curl_init();
-        curl_setopt_array($curl, array(
-            //CURLOPT_URL => "https://api.binance.com/api/v3/ticker/price?symbol=" . $chart->symbol . "RUB",
-            CURLOPT_URL => "https://api.coinbase.com/v2/prices/".$chart->symbol."-RUB/spot",
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_CUSTOMREQUEST => 'GET',
-            CURLOPT_USERAGENT => 'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1)'
-        ));
+        // $curl = curl_init();
+        // curl_setopt_array($curl, array(
+        //     //CURLOPT_URL => "https://api.binance.com/api/v3/ticker/price?symbol=" . $chart->symbol . "RUB",
+        //     CURLOPT_URL => "https://api.coinbase.com/v2/prices/".$chart->symbol."-RUB/spot",
+        //     CURLOPT_RETURNTRANSFER => true,
+        //     CURLOPT_FOLLOWLOCATION => true,
+        //     CURLOPT_CUSTOMREQUEST => 'GET',
+        //     CURLOPT_USERAGENT => 'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1)'
+        // ));
 
-        $result = json_decode(curl_exec($curl));
-        curl_close($curl);
+        // $result = json_decode(curl_exec($curl));
+        // curl_close($curl);
         
-        if (!$result->data->amount) {
+        if (!(float)$this->price($chart->symbol, "RUB")) {
             $history->end_price = 0;
         } else {
-        $history->end_price = (float)$result->data->amount * $history->start_price / 1;
+        $history->end_price = (float)$this->price($chart->symbol, "RUB") * $history->start_price / 1;
         }
 
         if(!$history->save()) {
@@ -612,6 +598,7 @@ class WalletController extends BaseController
      *      name="to_wallet_id",
      *      in="body",
      *      description="ID кошелька (0	Финансовый, 1	B2B,   2	Спотовый,    3	Маржинальный,    4	Торговый,    5	Инвестиционный)",
+     *      required=true,
      *      @SWG\Schema(type="integer")
      *     ),
      *    @SWG\Parameter(
@@ -625,6 +612,7 @@ class WalletController extends BaseController
      *      name="to_chart_id",
      *      in="body",
      *      description="ID криптовалюты",
+     *      required=true,
      *      @SWG\Schema(type="integer")
      *     ),
      *    @SWG\Parameter(
@@ -697,6 +685,8 @@ class WalletController extends BaseController
         if ($to_chart_id == $from_chart_id) {
             $convert = false;
         }
+
+
         
         $summa = Yii::$app->request->post("summa");
         if (!$summa || $summa < 0) {
