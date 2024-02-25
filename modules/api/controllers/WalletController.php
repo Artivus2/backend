@@ -712,13 +712,12 @@ class WalletController extends BaseController
         }
 
         if (!$to_wallet) {
-            $result = new Wallet(['user_id' => $this->user->id, 'type' => $to_wallet_id, 'chart_id' => $to_chart_id, 'balance' => 0, 'blocked' => null]);
-        } else {
-            $to_wallet->balance += $summa / (float)$this->price($from_chart_id, $to_chart_id);
-            $from_wallet->balance -= $summa;
+            $to_wallet = new Wallet(['user_id' => $this->user->id, 'type' => $to_wallet_id, 'chart_id' => $to_chart_id, 'balance' => 0, 'blocked' => null]);
         }
-
         
+        $to_wallet->balance += $summa / (float)$this->price($from_chart_id, $to_chart_id);
+        $from_wallet->balance -= $summa;
+            
         if ($from_wallet->balance < 0) {
             Yii::$app->response->statusCode = 400;
             return ["success" => false, "message" => "Недостаточно средств на балансе"];
@@ -742,14 +741,9 @@ class WalletController extends BaseController
             Yii::$app->response->statusCode = 400;
             return ["success" => false, "message" => "Ошибка сохранения счета входящего"];   
         }
-        $data = [
-            "fromwallet" => $from_wallet_id,
-            "towallet" => $to_wallet_id,
-            "fromchart" => $from_chart_id,
-            "tochart" => $to_chart_id,
-            "summa" => $summa
-        ];
-        return ["success" => true, "message" => "Перевод успешно выполнен", $data];
+
+        
+        return ["success" => true, "message" => "Перевод успешно выполнен"];
     }
     
     /**
