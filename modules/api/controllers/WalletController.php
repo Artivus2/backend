@@ -718,9 +718,13 @@ class WalletController extends BaseController
             $to_wallet = new Wallet(['user_id' => $this->user->id, 'type' => $history->type, 'chart_id' => $history->end_chart_id, 'balance' => 0, 'blocked' => null]);
         }
         
+        $history->start_price = $summa;
+
+        $history->end_price = $summa / (float)$this->price($fromChart->symbol, $toChart->symbol);
+
         $from_wallet->balance -= (float)$summa;
 
-        $to_wallet->balance += (float)$summa / (float)$this->price($from_chart_id, $to_chart_id);
+        $to_wallet->balance += $history->end_price;
         
             
         if ($from_wallet->balance < 0) {
@@ -730,8 +734,7 @@ class WalletController extends BaseController
 
 
         $history->status = 1;
-        $history->start_price = $summa;
-        $history->end_price = $summa / (float)$this->price($from_chart_id, $to_chart_id);
+        
         if (!$history->save()) {
             Yii::$app->response->statusCode = 400;
             return ["success" => false, "message" => "Ошибка перевода", $history];   
@@ -820,16 +823,11 @@ class WalletController extends BaseController
             CURLOPT_CUSTOMREQUEST => 'GET',
             CURLOPT_USERAGENT => 'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1)'
         ));
-        //}
 
-        $result = json_decode(curl_exec($curl)) ?? 1;
-   
-
+        $result = json_decode(curl_exec($curl));
         curl_close($curl);
-        if ($chart1 == 'RUB' && $result) {
-            $result->data->amount = 1;
-        }
-        return number_format($result->data->amount ?? 1, 2, '.','');
-        //return null;
+      
+        return number_format($result->data->amount ?? null, 2, '.','');
+   
     }
 }
