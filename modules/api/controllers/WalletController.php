@@ -664,11 +664,14 @@ class WalletController extends BaseController
         }
         
         
-        $from_wallet_id = Yii::$app->request->post("from_wallet_id");
+        $from_wallet_id = Yii::$app->request->post("from_wallet_id", 0);
         
-        $to_wallet_id = Yii::$app->request->post("to_wallet_id");
+        $to_wallet_id = Yii::$app->request->post("to_wallet_id", 0);
+        // if ((string)!$from_wallet_id == "" || (string)!$to_wallet_id == "") {
 
-        if (!$from_wallet_id || !$to_wallet_id || $from_wallet_id == $to_wallet_id) {
+        // }
+
+        if ($from_wallet_id == "" || $to_wallet_id == "" || $from_wallet_id == $to_wallet_id) {
             Yii::$app->response->statusCode = 401;
             return ["success" => false, "message" => "Не корректное ИД кошелька"];
         }
@@ -678,7 +681,7 @@ class WalletController extends BaseController
 
         if (!$from_chart_id || !$to_chart_id) {
             Yii::$app->response->statusCode = 401;
-            return ["success" => false, "message" => "Не корректное ИД кошелька"];
+            return ["success" => false, "message" => "Не корректное ИД криптовалют"];
         }
 
         $convert = true;
@@ -704,8 +707,8 @@ class WalletController extends BaseController
             Yii::$app->response->statusCode = 400;
             return ["success" => false, "message" => "Валюта не найдена"];
         }
-        $from_wallet = Wallet::find(['user_id' => $history->user_id, 'type' => $history->wallet_direct_id, 'chart_id' => $history->start_chart_id])->one();
-        $to_wallet = Wallet::find(['user_id' => $history->user_id, 'type' => $history->type, 'chart_id' => $history->end_chart_id])->one();
+        $from_wallet = Wallet::findOne(['user_id' => $history->user_id, 'type' => $history->wallet_direct_id, 'chart_id' => $history->start_chart_id]);
+        $to_wallet = Wallet::findOne(['user_id' => $history->user_id, 'type' => $history->type, 'chart_id' => $history->end_chart_id]);
         if (!$from_wallet) {
             Yii::$app->response->statusCode = 400;
             return ["success" => false, "message" => "Счет не найден"];
@@ -715,8 +718,10 @@ class WalletController extends BaseController
             $to_wallet = new Wallet(['user_id' => $this->user->id, 'type' => $history->type, 'chart_id' => $history->end_chart_id, 'balance' => 0, 'blocked' => null]);
         }
         
-        $to_wallet->balance += (float)$summa / (float)$this->price($from_chart_id, $to_chart_id);
         $from_wallet->balance -= (float)$summa;
+
+        $to_wallet->balance += (float)$summa / (float)$this->price($from_chart_id, $to_chart_id);
+        
             
         if ($from_wallet->balance < 0) {
             Yii::$app->response->statusCode = 400;
@@ -801,14 +806,14 @@ class WalletController extends BaseController
      }
     
     
-     protected function price($chart, $currency){
+     protected function price($chart1, $chart2){
         
 
         $curl = curl_init();
     
         curl_setopt_array($curl, array(
     
-            CURLOPT_URL => "https://api.coinbase.com/v2/prices/".$chart."-".$currency."/spot",
+            CURLOPT_URL => "https://api.coinbase.com/v2/prices/".$chart1."-".$chart2."/spot",
             
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_FOLLOWLOCATION => true,
@@ -817,14 +822,14 @@ class WalletController extends BaseController
         ));
         //}
 
-        $result = json_decode(curl_exec($curl)) ?? null;
+        $result = json_decode(curl_exec($curl)) ?? 1;
    
 
         curl_close($curl);
-        if ($chart == 'RUB' && $result) {
+        if ($chart1 == 'RUB' && $result) {
             $result->data->amount = 1;
         }
-        return number_format($result->data->amount ?? null, 2, '.','');
+        return number_format($result->data->amount ?? 1, 2, '.','');
         //return null;
     }
 }
