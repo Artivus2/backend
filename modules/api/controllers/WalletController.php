@@ -130,9 +130,12 @@ class WalletController extends BaseController
     }
 
     public function actionInput() {
+        
+        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+
         $params = [
             'coin'=>'BTC', //coin for which you want to use this object.
-            'api_key'=>'Y$2y$10$mz1G3jtfe2ZbfiJlRvkDau6Zmwhf5R5eq4Tfxvs5ofZeHzgKG8n.y', //api key from coinremitter wallet
+            'api_key'=>'$2y$10$mz1G3jtfe2ZbfiJlRvkDau6Zmwhf5R5eq4Tfxvs5ofZeHzgKG8n.y', //api key from coinremitter wallet
             'password'=>'12345678' //password for selected wallet
          ];
          $obj = new CoinRemitter($params);
