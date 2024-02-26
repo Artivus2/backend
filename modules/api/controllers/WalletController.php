@@ -9,6 +9,7 @@ use app\models\Chart;
 use app\modules\api\controller\ChartController;
 use app\models\Chain;
 use app\models\Wallet;
+use app\models\WalletType;
 use app\models\PaymentUser;
 use app\models\User;
 use app\models\History;
@@ -767,7 +768,7 @@ class WalletController extends BaseController
      *      description = "Список Счетов",
      *      @SWG\Schema(
      *          type="array",
-     *          @SWG\Items(ref="#/definitions/Result")
+     *          @SWG\Items(ref="#/definitions/WalletType")
      *      ),
      *    ),
      *    @SWG\Response(

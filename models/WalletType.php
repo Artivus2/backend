@@ -3,13 +3,12 @@
 namespace app\models;
 
 use Yii;
-
 /**
- * This is the model class for table "wallet_type".
+ * @SWG\Definition(required={"id", "title"})
  *
- * @property int $id
- * @property int $title
- * @property float $active
+ * @SWG\Property(property="id", type="integer")
+ * @SWG\Property(property="title", type="string")
+ * @SWG\Property(property="active", type="integer")
  */
 class WalletType extends \yii\db\ActiveRecord
 {
