@@ -129,7 +129,7 @@ class WalletController extends BaseController
         return ["url" => $url];
     }
 
-    public function actionInput() {
+    protected function get_balance() {
         
         Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
 
@@ -148,6 +148,36 @@ class WalletController extends BaseController
             'password'=>'12345678' //password for selected wallet
          ];
         $balance = $obj->get_balance();
+        
+        return $balance;
+    }
+
+    public function actionInput(){
+        $params = [
+            'coin'=>'TCN', //coin for which you want to use this object.
+            'api_key'=>'$2y$10$UK8VoHoh/kTDP2u0XW6TDOCYWx87cF0eRmZRyuG35FmsrDgSKkqRy', //api key from coinremitter wallet
+            'password'=>'12345678' //password for selected wallet
+         ];
+        $obj = new CoinRemitter($params);
+        
+
+        Yii::$app->response->format = \yii\web\Response::FORMAT_RAW;
+
+        //$MERCHANT_ID = Yii::$app->request->post("MERCHANT_ID");
+        $amount = Yii::$app->request->post("amount");
+        $currency = Yii::$app->request->post("currency");
+        //$MERCHANT_ORDER_ID = Yii::$app->request->post("MERCHANT_ORDER_ID");
+
+         $param = [
+            'amount'=>$amount, //required.
+            'notify_url'=>'https://greenavi.com/api/wallet/notify', //required,you will receive notification on this url,
+            'name'=>'invoice-' .rand(100000000,999999999),//optional,
+            'currency'=>$currency,//optional,
+            'expire_time'=>60,//in minutes,optional,
+            'description'=>'подробности',//optional,
+        ];
+        
+        $invoice  = $obj->create_invoice($param);
         
         return $balance;
     }
