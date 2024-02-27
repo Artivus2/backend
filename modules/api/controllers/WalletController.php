@@ -133,17 +133,23 @@ class WalletController extends BaseController
         
         Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
 
+        // $params = [
+        //     'coin'=>'BTC', //coin for which you want to use this object.
+        //     'api_key'=>'$2y$10$mz1G3jtfe2ZbfiJlRvkDau6Zmwhf5R5eq4Tfxvs5ofZeHzgKG8n.y', //api key from coinremitter wallet
+        //     'password'=>'12345678' //password for selected wallet
+        //  ];
+        //  $obj = new CoinRemitter($params);
+
+        //  //$balance = $obj->get_balance();
+        //  $address = $obj->get_new_address();
         $params = [
-            'coin'=>'LTC', //coin for which you want to use this object.
-            'api_key'=>'$2y$10$mz1G3jtfe2ZbfiJlRvkDau6Zmwhf5R5eq4Tfxvs5ofZeHzgKG8n.y', //api key from coinremitter wallet
+            'coin'=>'TCN', //coin for which you want to use this object.
+            'api_key'=>'$2y$10$UK8VoHoh/kTDP2u0XW6TDOCYWx87cF0eRmZRyuG35FmsrDgSKkqRy', //api key from coinremitter wallet
             'password'=>'12345678' //password for selected wallet
          ];
-         $obj = new CoinRemitter($params);
-
-         //$balance = $obj->get_balance();
-         $address = $obj->get_new_address();
-
-         return $balance;
+        $balance = $obj->get_balance();
+        
+        return $balance;
     }
 
     public function actionNotice() {
@@ -572,17 +578,11 @@ class WalletController extends BaseController
 
         $data = [];
 
-        $nodata = false;
         if (!$wallet_query_fin) {
             $data[]='нет данных';
             return $data;
 
         }
-        $wallers = [];
-        $symbols = [];
-        
-
-
 
         foreach ($wallet_query_fin as $wallet) {
             //if((int)$wallet->chart_id == 2024) {
@@ -596,8 +596,6 @@ class WalletController extends BaseController
                 "type" => $wallet->walletType->title,
                 "icon" => Url::to(["/images/icons/" . $wallet->chart->symbol . ".png"], "https"),
             ];
-            //}
-
         }
         
          
