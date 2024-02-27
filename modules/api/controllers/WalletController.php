@@ -35,8 +35,8 @@ class WalletController extends BaseController
 {
     const VERIFY_STATUS = [0,1,2];
     const COMISSION_IN = 0; //0% КОМИССИЯ
-    const COMISSION_OUT = 1; //1% КОМИССИЯ
-
+    const COMISSION_OUT = 0.1; //0.1% КОМИССИЯ
+    //to do комисся в настройках админа
 
   
     
@@ -134,13 +134,15 @@ class WalletController extends BaseController
         Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
 
         $params = [
-            'coin'=>'BTC', //coin for which you want to use this object.
+            'coin'=>'LTC', //coin for which you want to use this object.
             'api_key'=>'$2y$10$mz1G3jtfe2ZbfiJlRvkDau6Zmwhf5R5eq4Tfxvs5ofZeHzgKG8n.y', //api key from coinremitter wallet
             'password'=>'12345678' //password for selected wallet
          ];
          $obj = new CoinRemitter($params);
 
-         $balance = $obj->get_balance();
+         //$balance = $obj->get_balance();
+         $address = $obj->get_new_address();
+
          return $balance;
     }
 
@@ -518,7 +520,7 @@ class WalletController extends BaseController
      *      in="path",
      *      type="integer",
      
-     *      description="Тип кошелька  0 - фин, 1 - b2b, 2 - спот, 3 - марж, 4 - торговый, 5 - инв, 6 - все, 10 - вывод ",
+     *      description="Тип кошелька  0 - фин, 1 - b2b, 2 - спот, 3 - марж, 4 - торговый, 5 - инв, 6 - все (кроме b2b), 10 - вывод ",
      *      @SWG\Schema(type="integer")
      *     ),
      *	  @SWG\Response(
@@ -555,7 +557,7 @@ class WalletController extends BaseController
         $wallettype = (string)Yii::$app->request->get("wallettype");
         
         if((string)!$wallettype !== "" || $wallettype == "6") {
-            $wallettype = array(0,1,2,3,4,5);
+            $wallettype = array(0,2,3,4,5);
         }
 
         
@@ -681,14 +683,14 @@ class WalletController extends BaseController
         
         $to_wallet_id = Yii::$app->request->post("to_wallet_id", 0);
         
-        if ($from_wallet_id == 1) {
+        if ((int)$from_wallet_id == 1) {
             if ((int)$to_wallet_id !== 0) {
             Yii::$app->response->statusCode = 401;
             return ["success" => false, "message" => "перевод с b2b только на финансовый кошелек"];
             }
         }
 
-        if ($from_wallet_id == "" || $to_wallet_id == "" || $from_wallet_id == $to_wallet_id) {
+        if ($from_wallet_id == "" || $to_wallet_id == "" || (int)$from_wallet_id == (int)$to_wallet_id) {
             Yii::$app->response->statusCode = 401;
             return ["success" => false, "message" => "Не корректное ИД кошелька"];
         }
