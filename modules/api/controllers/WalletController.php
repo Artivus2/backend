@@ -102,10 +102,14 @@ class WalletController extends BaseController
         $history->start_price = (float)Yii::$app->request->post("price");
 
         $chart = Chart::findOne($history->end_chart_id);
+
+
         if (!$chart) {
             Yii::$app->response->statusCode = 400;
             return ["success" => false, "message" => "Валюта не найдена"];
         }
+
+        
 
         $history->end_price = $history->start_price / (float)$this->price($chart->symbol, "RUB") - $history->start_price / (float)$this->price($chart->symbol, "RUB") * self::COMISSION_IN / 100;
 
@@ -933,6 +937,12 @@ class WalletController extends BaseController
     
      protected function price($chart1, $chart2){
         
+        if ($chart1 == "TCN") {
+            $chart1 = "USDT";
+        }
+        if ($chart2 == "TCN") {
+            $chart2 = "USDT";
+        }
 
         $curl = curl_init();
     
