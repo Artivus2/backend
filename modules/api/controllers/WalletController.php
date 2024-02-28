@@ -224,7 +224,7 @@ class WalletController extends BaseController
             'fail_url'=>'https://greenavi.com/api/payment/fail-ipn', //required,you will receive notification on this url,
             'success_url'=>'https://greenavi.com/api/payment/success-ipn', //required,you will receive notification on this url,
             'name'=>'i' .rand(100000000,999999999),//optional,
-            //'currency'=>$currency->symbol,//optional,
+            //'currency'=>"RUB",//optional,
             'expire_time'=>10,//in minutes,optional,
             'description'=>'test',//optional,
         ];

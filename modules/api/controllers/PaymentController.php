@@ -47,13 +47,13 @@ class PaymentController extends BaseController
         $invoice = $obj->get_invoice($param);
         $coin = $invoice["data"]["coin"];
         $base_currency = $invoice["data"]["base_currency"];
-        $paid_amount = $invoice["data"]["paid_amount"][$coin];
-        $total_amount = $invoice["data"]["total_amount"][$coin];
+        $paid_amount = $invoice["data"]["paid_amount"][$coin] ?? 0;
+        $total_amount = $invoice["data"]["total_amount"][$coin] ?? 0;
         $data[] = [
-            "coin" => $invoice["data"]["coin"],
-            "base_currency" => $invoice["data"]["base_currency"],
-            "paid_amount" => $invoice["data"]["paid_amount"][$coin],
-            "total_amount" => $invoice["data"]["total_amount"][$coin],
+            "coin" => $coin,
+            "base_currency" => $base_currency,
+            "paid_amount" => (float)$paid_amount,
+            "total_amount" => (float)$total_amount,
             "status_code" => $invoice["data"]["status_code"]
         ];
         
@@ -141,7 +141,7 @@ class PaymentController extends BaseController
             return 'wrong sign';
         };
 
-        $history =  History::findOne(["id" => $MERCHANT_ORDER_ID, "status" => 0, "type" => 1]);
+        $history =  History::findOne(["id" => $MERCHANT_ORDER_ID, "status" => 0, "type" => 0]);
         if(!$history) {
             Yii::$app->response->statusCode = 400;
             Yii::warning('wrong order', 'freekass-notice');
@@ -308,6 +308,12 @@ class PaymentController extends BaseController
      *      @SWG\Schema(type="integer")
      *     ),
      *    @SWG\Parameter(
+     *      name="type",
+     *      in="body",
+     *      description="для b2b",
+     *      @SWG\Schema(type="integer")
+     *     ),
+     *    @SWG\Parameter(
      *      name="value",
      *      in="body",
      *      description="Реквизиты платежа",
@@ -362,6 +368,18 @@ class PaymentController extends BaseController
      *      in="body",
      *      description="для b2b",
      *      @SWG\Schema(type="string")
+     *     ),
+     *    @SWG\Parameter(
+     *      name="summa",
+     *      in="body",
+     *      description="для b2b",
+     *      @SWG\Schema(type="string")
+     *     ),
+     *    @SWG\Parameter(
+     *      name="bank_id",
+     *      in="body",
+     *      description="для b2b",
+     *      @SWG\Schema(type="integer")
      *     ),
      *	  @SWG\Response(
      *      response = 200,
@@ -433,6 +451,11 @@ class PaymentController extends BaseController
             $build = Yii::$app->request->post("build_for_courier");
             $pod = Yii::$app->request->post("pod_for_courier");
             $description = Yii::$app->request->post("description");
+            $summa = Yii::$app->request->post("summa");
+            $value = Yii::$app->request->post("value");
+            $payment_receiver = Yii::$app->request->post("payment_receiver");
+            $type = Yii::$app->request->post("type");
+
             $b2bpayment = new B2bPayment(["company_id" => $this->user->id, 'payment_id' => 2000]);
             $b2bpayment->fio_courier = $fio;
             $b2bpayment->phone_courier = $phone;
@@ -440,6 +463,10 @@ class PaymentController extends BaseController
             $b2bpayment->build_for_courier = $build;
             $b2bpayment->pod_for_courier = $pod;
             $b2bpayment->description = $description;
+            $b2bpayment->summa = $summa;
+            $b2bpayment->value = $value;
+            $b2bpayment->payment_receiver = $payment_receiver;
+            $b2bpayment->type = $type;
             if(!$b2bpayment->save()) {
                 Yii::$app->response->statusCode = 400;
                 return ["success" => false, "message" => "Ошибка сохранения способа оплаты b2b"];

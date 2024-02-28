@@ -19,6 +19,8 @@ use Yii;
  * @SWG\Property(property="pod_for_courier", type="string")
  * @SWG\Property(property="active", type="integer")
  * @SWG\Property(property="description", type="string")
+ * @SWG\Property(property="summa", type="number")
+ * @SWG\Property(property="type", type="integer")
  */
 class B2bPayment extends \yii\db\ActiveRecord
 {
@@ -69,6 +71,10 @@ class B2bPayment extends \yii\db\ActiveRecord
             'build_for_courier' => 'build courier',
             'pod_for_courier' => 'pod courier',
             'description' => 'description',
+            'summa' => 'summa',
+            'type' => 'type',
+            'value' => 'value',
+            'payment_receiver' => 'payment_receiver',
         ];
 
     }
