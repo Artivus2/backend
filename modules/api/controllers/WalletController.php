@@ -208,8 +208,6 @@ class WalletController extends BaseController
         $obj = new CoinRemitter($params);
 
         $amount = $history->end_chart_id;
-        $currency = $currency->symbol;
-        
 
          $param = [
             'amount'=>$history->start_price, //required.
@@ -221,7 +219,7 @@ class WalletController extends BaseController
         ];
         
         $invoice  = $obj->create_invoice($param);
-        //$history->ipn_id = $invoice->data->invoice_id;
+        $history->ipn_id = $invoice["data"]["invoice_id"];
         if(!$history->save()) {
             Yii::$app->response->statusCode = 400;
             return ["success" => false, "message" => "Ошибка создания ссылки"];
