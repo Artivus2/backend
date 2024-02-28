@@ -27,7 +27,7 @@ class PaymentController extends BaseController
     public function actionCheckPayment() {
         Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
 
-        $history = History::find()->where(["user_id" => $this->user->id, "type" => 0, 'wallet_direct_id' => 11, 'status' => 0])->one();
+        $history = History::find()->where(["user_id" => $this->user->id, "type" => 0, 'wallet_direct_id' => 12, 'status' => 3])->one();
         if (!$history) {
             Yii::$app->response->statusCode = 401;
             return ["success" => false, "message" => "Платеж не найден, обратитесь к администратору"];
@@ -45,33 +45,36 @@ class PaymentController extends BaseController
         ];
         
         $invoice = $obj->get_invoice($param);
+        $data[] = [
+            "coin" => $invoice["data"]["coin"],
+            "base_currency" => $invoice["data"]["base_currency"],
+            "paid_amount" => $invoice["data"]["paid_amount"][$coin],
+            "total_amount" => $invoice["data"]["total_amount"][$coin],
+            "status_code" => $invoice["data"]["status_code"]
+        ];
         
-        return $invoice;
+        return $data;
     }
 
     public function actionFailIpn (){
         Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
 
-        $history = History::find()->where(["user_id" => $this->user->id, "type" => 0, 'wallet_direct_id' => 12, 'status' => 0])->one();
-        if (!$history) {
-            Yii::$app->response->statusCode = 401;
-            return ["success" => false, "message" => "Платеж не найден, обратитесь к администратору"];
-        }
-
-        $params = [
-            'coin'=>'TCN', //coin for which you want to use this object.
-            'api_key'=>'$2y$10$UK8VoHoh/kTDP2u0XW6TDOCYWx87cF0eRmZRyuG35FmsrDgSKkqRy', //api key from coinremitter wallet
-            'password'=>'12345678' //password for selected wallet
-         ];
-        $obj = new CoinRemitter($params);
-
-        $param = [
-            'invoice_id'=>$history->ipn_id
-        ];
         
-        $invoice = $obj->get_invoice($param);
+
+        // $params = [
+        //     'coin'=>'TCN', //coin for which you want to use this object.
+        //     'api_key'=>'$2y$10$UK8VoHoh/kTDP2u0XW6TDOCYWx87cF0eRmZRyuG35FmsrDgSKkqRy', //api key from coinremitter wallet
+        //     'password'=>'12345678' //password for selected wallet
+        //  ];
+        // $obj = new CoinRemitter($params);
+
+        // $param = [
+        //     'invoice_id'=>$history->ipn_id
+        // ];
         
-        return $invoice;
+        // $invoice = $obj->get_invoice($param);
+        
+        return "fail";
     }
 
     public function actionNoticeIpn()
