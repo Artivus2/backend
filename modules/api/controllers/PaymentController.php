@@ -23,79 +23,70 @@ use CoinRemitter\CoinRemitter;
  */
 class PaymentController extends BaseController
 {
+    
+    public function actionCheckPayment() {
+        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+
+        $history = History::find()->where(["user_id" => $this->user->id, "type" => 0, 'wallet_direct_id' => 11, 'status' => 0])->one();
+        if (!$history) {
+            Yii::$app->response->statusCode = 401;
+            return ["success" => false, "message" => "Платеж не найден, обратитесь к администратору"];
+        }
+        
+        $params = [
+            'coin'=>'TCN', //coin for which you want to use this object.
+            'api_key'=>'$2y$10$UK8VoHoh/kTDP2u0XW6TDOCYWx87cF0eRmZRyuG35FmsrDgSKkqRy', //api key from coinremitter wallet
+            'password'=>'12345678' //password for selected wallet
+         ];
+        $obj = new CoinRemitter($params);
+
+        $param = [
+            'invoice_id'=>$history->idn_id
+        ];
+        
+        $invoice = $obj->get_invoice($param);
+        
+        return $invoice;
+    }
+
+
     public function actionNoticeIpn()
     {
         Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
 
+        // $status = 0;
         
-        // $cp_merchant_id = '';
-        // $cp_ipn_secret = '76479a5aF47AAaEf758Cb1297880FB59Cb724f62012c3E1b1f7685cF3Ab4Db91';
-
-        // // Yii::$app->mailer->compose()
-        // //     ->setTo("dukker11@yandex.ru")
-        // //     ->setFrom([Yii::$app->params['senderEmail'] => Yii::$app->params['senderName']])
-        // //     ->setSubject("Успешное пополнение")
-        // //     ->setTextBody(json_encode(Yii::$app->request->post()))
-        // //     ->send();
-
-        // $merchant = Yii::$app->request->post("merchant");
-        // $hmac = Yii::$app->request->post("hmac");
-        // $address = Yii::$app->request->post("address");
-        // $amount = floatval(Yii::$app->request->post("amount"));
-        // $currency = Yii::$app->request->post("currency");
-        // $status = Yii::$app->request->post("status");
+        
 
 
-        // if ($hmac != 'hmac') {
-        //     return 'IPN Mode is not HMAC';
+        // if ($status >= 100 || $status == 2) {
+
+        //     $chart = Chart::findOne(["symbol" => $currency]);
+        //     if (!$chart) return 'error chart';
+
+        //     $address = WalletAddress::findOne(["value" => $address]);
+        //     if (!$address) return 'error address';
+
+        //     $history = new History(["date" => time(), "user_id" => $address->user_id, "status" => 1, "type" => 0]);
+        //     $history->start_chart_id = 0;
+        //     $history->start_price = 0;
+        //     $history->end_chart_id = $chart->id;
+        //     $history->end_price = $amount;
+        //     if(!$history->save()) return 'error save order';
+
+        //     $wallet = Wallet::findOne(["user_id" => $history->user_id, "chart_id" => $chart->id, "type" => 0]);
+        //     if(!$wallet) {
+        //         $wallet = new Wallet(["user_id" => $history->user_id, "chart_id" => $chart->id, "balance" => 0, "type" => 0]);
+        //     }
+        //     $wallet->balance += $history->end_price;
+
+        //     if(!$wallet->save()) return 'error save wallet';
+        // } else if ($status < 0) {
+        //     // ошибка
+        // } else {
+        //     // на рассмотрении
         // }
-
-        // if (empty($_SERVER['HTTP_HMAC'])) {
-        //     return 'No HMAC signature sent.';
-        // }
-
-        // $request = file_get_contents('php://input');
-        // if (empty($request)) {
-        //     return 'Error reading POST data';
-        // }
-
-        // if ($merchant != $cp_merchant_id) {
-        //     return 'No or incorrect Merchant ID passed';
-        // }
-
-        // $hmac = hash_hmac("sha512", $request, trim($cp_ipn_secret));
-        // if (!hash_equals($hmac, $_SERVER['HTTP_HMAC'])) {
-        //     return 'HMAC signature does not match';
-        // }
-
-        if ($status >= 100 || $status == 2) {
-
-            $chart = Chart::findOne(["symbol" => $currency]);
-            if (!$chart) return 'error chart';
-
-            $address = WalletAddress::findOne(["value" => $address]);
-            if (!$address) return 'error address';
-
-            $history = new History(["date" => time(), "user_id" => $address->user_id, "status" => 1, "type" => 0]);
-            $history->start_chart_id = 0;
-            $history->start_price = 0;
-            $history->end_chart_id = $chart->id;
-            $history->end_price = $amount;
-            if(!$history->save()) return 'error save order';
-
-            $wallet = Wallet::findOne(["user_id" => $history->user_id, "chart_id" => $chart->id, "type" => 0]);
-            if(!$wallet) {
-                $wallet = new Wallet(["user_id" => $history->user_id, "chart_id" => $chart->id, "balance" => 0, "type" => 0]);
-            }
-            $wallet->balance += $history->end_price;
-
-            if(!$wallet->save()) return 'error save wallet';
-        } else if ($status < 0) {
-            // ошибка
-        } else {
-            // на рассмотрении
-        }
-        return 'IPN OK';
+        return "IPN OK";
     }
 
     public function actionNotice()

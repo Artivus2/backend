@@ -183,8 +183,13 @@ class WalletController extends BaseController
             Yii::$app->response->statusCode = 401;
             return ["success" => false, "message" => "Token не найден"];
         }
-
-        $history = new History(["date" => time(), "user_id" => $this->user->id, "type" => 0, 'wallet_direct_id' => 11]);
+        $history = History::find()->where(["user_id" => $this->user->id, "type" => 0, 'wallet_direct_id' => 11, 'status' => 0])->all;
+        if ($history) {
+            Yii::$app->response->statusCode = 400;
+            return ["success" => false, "message" => "Завершите предыдущие заявки на пополнение или обратитесь к технической поддержке"];
+        } else {
+            $history = new History(["date" => time(), "user_id" => $this->user->id, "type" => 0, 'wallet_direct_id' => 11, 'status' => 0]);
+        }
 
         
         $history->end_chart_id = Yii::$app->request->post("chart_id");
@@ -229,101 +234,33 @@ class WalletController extends BaseController
 
     }
 
-    public function actionGetBalance() {
+    // public function actionGetBalance() {
         
-        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+    //     Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
 
-        // $params = [
-        //     'coin'=>'BTC', //coin for which you want to use this object.
-        //     'api_key'=>'$2y$10$mz1G3jtfe2ZbfiJlRvkDau6Zmwhf5R5eq4Tfxvs5ofZeHzgKG8n.y', //api key from coinremitter wallet
-        //     'password'=>'12345678' //password for selected wallet
-        //  ];
-        //  $obj = new CoinRemitter($params);
+    //     // $params = [
+    //     //     'coin'=>'BTC', //coin for which you want to use this object.
+    //     //     'api_key'=>'$2y$10$mz1G3jtfe2ZbfiJlRvkDau6Zmwhf5R5eq4Tfxvs5ofZeHzgKG8n.y', //api key from coinremitter wallet
+    //     //     'password'=>'12345678' //password for selected wallet
+    //     //  ];
+    //     //  $obj = new CoinRemitter($params);
 
-        //  //$balance = $obj->get_balance();
-        //  $address = $obj->get_new_address();
-        $params = [
-            'coin'=>'TCN', //coin for which you want to use this object.
-            'api_key'=>'$2y$10$UK8VoHoh/kTDP2u0XW6TDOCYWx87cF0eRmZRyuG35FmsrDgSKkqRy', //api key from coinremitter wallet
-            'password'=>'12345678' //password for selected wallet
-         ];
-        $obj = new CoinRemitter($params);
-        $balance = $obj->get_balance();
+    //     //  //$balance = $obj->get_balance();
+    //     //  $address = $obj->get_new_address();
+    //     $params = [
+    //         'coin'=>'TCN', //coin for which you want to use this object.
+    //         'api_key'=>'$2y$10$UK8VoHoh/kTDP2u0XW6TDOCYWx87cF0eRmZRyuG35FmsrDgSKkqRy', //api key from coinremitter wallet
+    //         'password'=>'12345678' //password for selected wallet
+    //      ];
+    //     $obj = new CoinRemitter($params);
+    //     $balance = $obj->get_balance();
         
-        return $balance;
-    }
+    //     return $balance;
+    // }
 
-    public function actionInput2(){
-        $params = [
-            'coin'=>'TCN', //coin for which you want to use this object.
-            'api_key'=>'$2y$10$UK8VoHoh/kTDP2u0XW6TDOCYWx87cF0eRmZRyuG35FmsrDgSKkqRy', //api key from coinremitter wallet
-            'password'=>'12345678' //password for selected wallet
-         ];
-        $obj = new CoinRemitter($params);
-        
+    
 
-        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
-
-        //$MERCHANT_ID = Yii::$app->request->post("MERCHANT_ID");
-        $amount = Yii::$app->request->post("amount");
-        $currency = Yii::$app->request->post("currency");
-        //$MERCHANT_ORDER_ID = Yii::$app->request->post("MERCHANT_ORDER_ID");
-
-         $param = [
-            'amount'=>$amount, //required.
-            'notify_url'=>'https://greenavi.com/api/wallet/notice-ipn', //required,you will receive notification on this url,
-            'name'=>'i' .rand(100000000,999999999),//optional,
-            'currency'=>$currency,//optional,
-            'expire_time'=>60,//in minutes,optional,
-            'description'=>'test',//optional,
-        ];
-        
-        $invoice  = $obj->create_invoice($param);
-        
-        return $invoice;
-    }
-
-    public function actionNotice() {
-        $params = [
-            'coin'=>'TCN', //coin for which you want to use this object.
-            'api_key'=>'$2y$10$UK8VoHoh/kTDP2u0XW6TDOCYWx87cF0eRmZRyuG35FmsrDgSKkqRy', //api key from coinremitter wallet
-            'password'=>'12345678' //password for selected wallet
-         ];
-        $obj = new CoinRemitter($params);
-
-        $param = [
-            'invoice_id'=>'TCN001'
-        ];
-        $invoice = $obj->get_invoice($param);
-        // if ($status >= 100 || $status == 2) {
-
-        //     $chart = Chart::findOne(["symbol" => $currency]);
-        //     if (!$chart) return 'error chart';
-
-        //     $address = WalletAddress::findOne(["value" => $address]);
-        //     if (!$address) return 'error address';
-
-        //     $history = new History(["date" => time(), "user_id" => $address->user_id, "status" => 1, "type" => 0]);
-        //     $history->start_chart_id = 0;
-        //     $history->start_price = 0;
-        //     $history->end_chart_id = $chart->id;
-        //     $history->end_price = $amount;
-        //     if(!$history->save()) return 'error save order';
-
-        //     $wallet = Wallet::findOne(["user_id" => $history->user_id, "chart_id" => $chart->id, "type" => 0]);
-        //     if(!$wallet) {
-        //         $wallet = new Wallet(["user_id" => $history->user_id, "chart_id" => $chart->id, "balance" => 0, "type" => 0]);
-        //     }
-        //     $wallet->balance += $history->end_price;
-
-        //     if(!$wallet->save()) return 'error save wallet';
-        // } else if ($status < 0) {
-        //     // ошибка
-        // } else {
-        //     // на рассмотрении
-        // }
-        return "ok";
-    }
+    
 
     /**
      * @SWG\Post(
