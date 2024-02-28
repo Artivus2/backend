@@ -43,7 +43,7 @@ class UsersSearch extends User
      */
     public function search($params)
     {
-        $query = User::find()->JoinWith(['wallet', 'verify']);
+        $query = User::find()->JoinWith("wallet");
 
         // add conditions that should always apply here
 

@@ -40,11 +40,10 @@ class CompanyController extends Controller
     {
         $dataProvider = new ActiveDataProvider([
             'query' => Company::find(),
-            'pagination' => [
-                'pageSize' => 20
-            ],
             /*
-            
+            'pagination' => [
+                'pageSize' => 50
+            ],
             'sort' => [
                 'defaultOrder' => [
                     'id' => SORT_DESC,

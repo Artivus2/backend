@@ -29,12 +29,12 @@ class PaymentController extends BaseController
         $cp_merchant_id = '';
         $cp_ipn_secret = '76479a5aF47AAaEf758Cb1297880FB59Cb724f62012c3E1b1f7685cF3Ab4Db91';
 
-        Yii::$app->mailer->compose()
-            ->setTo("dukker11@yandex.ru")
-            ->setFrom([Yii::$app->params['senderEmail'] => Yii::$app->params['senderName']])
-            ->setSubject("Успешное пополнение")
-            ->setTextBody(json_encode(Yii::$app->request->post()))
-            ->send();
+        // Yii::$app->mailer->compose()
+        //     ->setTo("dukker11@yandex.ru")
+        //     ->setFrom([Yii::$app->params['senderEmail'] => Yii::$app->params['senderName']])
+        //     ->setSubject("Успешное пополнение")
+        //     ->setTextBody(json_encode(Yii::$app->request->post()))
+        //     ->send();
 
         $merchant = Yii::$app->request->post("merchant");
         $hmac = Yii::$app->request->post("hmac");
@@ -74,7 +74,7 @@ class PaymentController extends BaseController
             $address = WalletAddress::findOne(["value" => $address]);
             if (!$address) return 'error address';
 
-            $history = new History(["date" => time(), "user_id" => $address->user_id, "status" => 1, "type" => 1]);
+            $history = new History(["date" => time(), "user_id" => $address->user_id, "status" => 1, "type" => 0]);
             $history->start_chart_id = 0;
             $history->start_price = 0;
             $history->end_chart_id = $chart->id;
@@ -168,7 +168,7 @@ class PaymentController extends BaseController
      *     ),
      *	  @SWG\Response(
      *      response = 200,
-     *      description = "Спиоск доступных видов платяжей",
+     *      description = "Список доступных видов платежей",
      *      @SWG\Schema(
      *          type="array",
      *          @SWG\Items(ref="#/definitions/PaymentType")

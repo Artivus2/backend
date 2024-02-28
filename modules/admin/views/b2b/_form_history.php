@@ -28,17 +28,6 @@ use app\models\StatusType;
     <?= $form->field($model, 'price')->textInput() ?>
 
     <?= $form->field($model, 'author_id')->textInput() ?>
-    
-    <?= $form->field($model, 'end_date')->widget(TimePicker::className(), [
-         'options' => [
-                  'value' => strtotime($model),
-         ],
-         'clientOptions' => [
-            'showSecond' => false,
-            
-        ]
-         
-]) ?>
 
     <div class="form-group">
         <?= Html::submitButton('Сохранить', ['class' => 'btn btn-success']) ?>

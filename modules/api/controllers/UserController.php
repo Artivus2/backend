@@ -1259,7 +1259,6 @@ class UserController extends BaseController
         }
         $user = new User(["login" => $login, "email" => $email, "phone" => $phone]);
         $user->password = Yii::$app->getSecurity()->generatePasswordHash($password);
-        
         if (!$user->save()) {
             Yii::$app->response->statusCode = 400;
             return ["success" => false, "message" => $this->getError($user)];
@@ -1870,20 +1869,20 @@ class UserController extends BaseController
         $user->last_ip = $ip;
         $user->save();
         $authCode->save();
-        if ($phone){
-            Yii::warning('Отправка смс на номер: ' . $user->phone);
-            $smsResponse = Yii::$app->sms->send($phone || $user->phone,  "Ваш код подтверждения: " . $code . ".");
-        } else if ($email || $user->email) {
-            Yii::$app->mailer->compose()
-                ->setTo($user->email)
-                ->setFrom([Yii::$app->params['senderEmail'] => Yii::$app->params['senderName']])
-                ->setSubject("Код подтверждения")
-                ->setTextBody("Ваш код подтверждения: " . $code . ".")
-                ->send();
-        } else {
-            Yii::warning('Отправка смс на номер: ' . $user->phone);
-            $smsResponse = Yii::$app->sms->send($user->phone,  "Ваш код подтверждения: " . $code . ".");
-        }
+        // if ($phone){
+        //     Yii::warning('Отправка смс на номер: ' . $user->phone);
+        //     $smsResponse = Yii::$app->sms->send($phone || $user->phone,  "Ваш код подтверждения: " . $code . ".");
+        // } else if ($email || $user->email) {
+        //     Yii::$app->mailer->compose()
+        //         ->setTo($user->email)
+        //         ->setFrom([Yii::$app->params['senderEmail'] => Yii::$app->params['senderName']])
+        //         ->setSubject("Код подтверждения")
+        //         ->setTextBody("Ваш код подтверждения: " . $code . ".")
+        //         ->send();
+        // } else {
+        //     Yii::warning('Отправка смс на номер: ' . $user->phone);
+        //     $smsResponse = Yii::$app->sms->send($user->phone,  "Ваш код подтверждения: " . $code . ".");
+        // }
     }
 
     protected function getProfile($user)

@@ -26,7 +26,7 @@ $this->params['breadcrumbs'][] = $this->title;
     <?= GridView::widget([
         'dataProvider' => $dataProvider,
         'columns' => [
-            ['class' => 'yii\grid\SerialColumn'],
+            //['class' => 'yii\grid\SerialColumn'],
 
             'id',
             'user_id',
@@ -37,7 +37,7 @@ $this->params['breadcrumbs'][] = $this->title;
             [
                 'label' => 'Оквед',
                 'attribute' => 'main_okved',
-                'value' => function($data){return $data->okved->okved_id??null;},
+                'value' => function($data){return $data->okved->okved_id??null . ' (' . $data->okved->title??null . ' )';},
                 
             ],
             'fio',

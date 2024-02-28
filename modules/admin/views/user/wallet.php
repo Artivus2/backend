@@ -37,11 +37,6 @@ $this->params['breadcrumbs'][] = ['label' => ' >>>> Пользователи >>>
             'value' => function($data){return $data->balance;}
            ],
            [
-            'label' => 'Заморожено',
-            'attribute' => 'balance',
-            'value' => function($data){return $data->blocked;}
-           ],
-           [
             'class' => 'yii\grid\ActionColumn',
             'template' => '{update} {delete}',
             'contentOptions' => ['style' => 'display: flex'],

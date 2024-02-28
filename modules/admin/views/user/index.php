@@ -42,7 +42,20 @@ $this->params['breadcrumbs'][] = '   >>>>  '.$this->title;
             'first_name',
             'last_name',
             'country',
-            
+            // [
+            //     'attribute'=>'dollars',
+            //     'label' => 'Счет',
+            //     'content'=>function($data){
+            //         return $data->wallet->dollars;
+            //     }
+            // ],
+            // [
+            //     'attribute'=>'virtual_dollars',
+            //     'label' => 'Демо-счет',
+            //     'content'=>function($data){
+            //         return $data->wallet->virtual_dollars;
+            //     }
+            // ],
             //'city',
             //'password',
             //'is_admin',
@@ -64,7 +77,7 @@ $this->params['breadcrumbs'][] = '   >>>>  '.$this->title;
 				'class' => 'yii\grid\ActionColumn',
 				'header' => 'Действия',
                 'contentOptions' => ['style' => 'display: flex'],
-                'template' => '{verify} {wallet} {view} {update} {delete} ',
+                'template' => '{view} {wallet} {update} {delete} ',
 				'buttons' => [
 					
                     'wallet' => function ($url,$model) {
@@ -72,11 +85,11 @@ $this->params['breadcrumbs'][] = '   >>>>  '.$this->title;
                             '<span class="wallet-icon"></span>',
                             $url);
                     },
-					'verify' => function ($url,$model) {
-						return Html::a(
-						'<span class="password-icon"></span>', 
-						$url);
-					},
+					// 'password' => function ($url,$model,$key) {
+					// 	return Html::a(
+					// 	'<span class="password-icon"></span>', 
+					// 	$url);
+					// },
 				],
 			],
         ],

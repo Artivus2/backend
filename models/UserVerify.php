@@ -58,6 +58,4 @@ class UserVerify extends \yii\db\ActiveRecord
             'comment' => 'Комментарий',
         ];
     }
-
-    
 }

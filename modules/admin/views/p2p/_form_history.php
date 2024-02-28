@@ -3,7 +3,6 @@
 use yii\helpers\Html;
 use yii\widgets\ActiveForm;
 use kartik\select2\Select2;
-use janisto\timepicker\TimePicker;
 use yii\helpers\ArrayHelper;
 use app\models\StatusType;
 
@@ -29,17 +28,6 @@ use app\models\StatusType;
     <?= $form->field($model, 'price')->textInput() ?>
 
     <?= $form->field($model, 'author_id')->textInput() ?>
-
-    <?= $form->field($model, 'end_date')->widget(TimePicker::className(), [
-         'options' => [
-                  'value' => Yii::$app->formatter->asDatetime($model->end_date),
-         ],
-         'clientOptions' => [
-            'showSecond' => false,
-            
-        ]
-         
-]) ?>
 
     <div class="form-group">
         <?= Html::submitButton('Сохранить', ['class' => 'btn btn-success']) ?>

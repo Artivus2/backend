@@ -11,7 +11,7 @@ use yii\filters\VerbFilter;
 /**
  * UserVerifyController implements the CRUD actions for UserVerify model.
  */
-class UserVerifyController extends Controller
+class UserverifyController extends Controller
 {
     /**
      * @inheritDoc

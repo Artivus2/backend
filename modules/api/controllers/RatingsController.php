@@ -100,7 +100,7 @@ class RatingsController extends BaseController
             ];
         }
         $data["FullRating"]=floor(100*$ratingsum)/100;
-        $data["CountRates"]=(int)$ratinghistorycount;
+        $data["CountRates"]=$ratinghistorycount;
 
         return $data;
     }

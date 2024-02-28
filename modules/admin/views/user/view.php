@@ -31,10 +31,9 @@ $this->params['breadcrumbs'][] = $this->title;
                 'attribute'=> 'verify_status',
                 'format' => 'raw',
                 'value' => function($data){
-                    return $data->verify_status ? 'Верифицирован' : 'Не верифицирован';
+                    return $data->verify_status ? '<span class="glyphicon glyphicon-ok"></span>' : '<span class="glyphicon glyphicon-remove"></span>';
                 }
             ],
-            
             'first_name',
             'last_name',
             'country',

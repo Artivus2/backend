@@ -189,7 +189,7 @@ class WalletController extends BaseController
             'password'=>'12345678' //password for selected wallet
          ];
         $obj = new CoinRemitter($params);
-        
+
         $param = [
             'invoice_id'=>'TCN001'
         ];
@@ -744,9 +744,9 @@ class WalletController extends BaseController
         }
         
         
-        $from_wallet_id = Yii::$app->request->post("from_wallet_id", 0);
+        $from_wallet_id = (int)Yii::$app->request->post("from_wallet_id");
         
-        $to_wallet_id = Yii::$app->request->post("to_wallet_id", 0);
+        $to_wallet_id = (int)Yii::$app->request->post("to_wallet_id");
         
         if ((int)$from_wallet_id == 1) {
             if ((int)$to_wallet_id !== 0) {
@@ -755,7 +755,7 @@ class WalletController extends BaseController
             }
         }
 
-        if ($from_wallet_id == "" || $to_wallet_id == "" || (int)$from_wallet_id == (int)$to_wallet_id) {
+        if ($from_wallet_id == $to_wallet_id) {
             Yii::$app->response->statusCode = 401;
             return ["success" => false, "message" => "Не корректное ИД кошелька"];
         }
@@ -837,11 +837,8 @@ class WalletController extends BaseController
             return ["success" => false, "message" => "Ошибка сохранения счета входящего"];   
         }
 
-        $data= [
-            "from" => $from_wallet,
-            "to" => $to_wallet
-        ];
-        return ["success" => true, "message" => "Перевод успешно выполнен", $data];
+        
+        return ["success" => true, "message" => "Перевод успешно выполнен"];
     }
     
     /**

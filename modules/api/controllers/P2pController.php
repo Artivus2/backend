@@ -2327,7 +2327,7 @@ class P2pController extends BaseController
         $data = [];
         $p2pAds_query = P2pHistory::find()->joinwith(['ads'])
         ->where($whereid)
-        ->where($whereusers)
+        //->where($whereusers)
         ->andwhere($wherestatush)
         ->all();
         
@@ -2337,122 +2337,253 @@ class P2pController extends BaseController
                 $payment=[];
 
 
-                $can_delete = 1; 
+                //вывод если свои ордера в активных
+                if ($item->creator_id == $this->user->id) {
 
-                if ($item->ads->status == 5 || $item->ads->status == 7 || $item->ads->status == 2) {
-                $can_delete = 0;
-                }
-                if ($item->ads->amount > 1) {
-                    $item->ads->amount = number_format($item->ads->amount, 2,'.','');
-                }
-                else {
-                    $item->ads->amount = number_format($item->ads->amount, 10,'.','');
-                    $item->ads->amount = (float)rtrim($item->ads->amount, '0');
-                }
-                if ($item->ads->amount == 0) {
-                    $item->ads->amount = 0;
-                }
-    
-                if ($item->ads->min_limit * $item->ads->course > 1) {
-                    $item->ads->min_limit = number_format($item->ads->min_limit, 2, '.', '');
-                }
-                
-    
-                if ($item->ads->max_limit * $item->ads->course > 1) {
-                    $item->ads->max_limit = number_format($item->ads->max_limit, 2, '.', '');
-    
-                }
-                
-                
-                if ($item->ads->course > 1) {
-                    $item->ads->course = number_format($item->ads->course, 2, '.','');
-                }
-                $payments_creator = [];
-                $payments_author = [];
-                $payments_order = [];
-                //реквизиты author_id
-                $reqs_author = PaymentUser::find()->where(['user_id' => $item->author_id])->all();
-                if (!$reqs_author) {
-                    $payments_author = null;
-                } else {
-                
-                    foreach ($reqs_author as $payment) {
-                        $payments_author[] = [
-                            "id" => $payment->type->id,
-                            "name" => $payment->type->name,
-                            "value" => $payment->value,
-                            "payment_receiver" => $payment->payment_receiver
-                            
+
+
+                    $can_delete = 1; 
+
+                    if ($item->ads->status == 5 || $item->ads->status == 7 || $item->ads->status == 2) {
+                    $can_delete = 0;
+                    }
+                    if ($item->ads->amount > 1) {
+                        $item->ads->amount = number_format($item->ads->amount, 2,'.','');
+                    }
+                    else {
+                        $item->ads->amount = number_format($item->ads->amount, 10,'.','');
+                        $item->ads->amount = (float)rtrim($item->ads->amount, '0');
+                    }
+                    if ($item->ads->amount == 0) {
+                        $item->ads->amount = 0;
+                    }
+        
+                    if ($item->ads->min_limit * $item->ads->course > 1) {
+                        $item->ads->min_limit = number_format($item->ads->min_limit, 2, '.', '');
+                    }
+                    
+        
+                    if ($item->ads->max_limit * $item->ads->course > 1) {
+                        $item->ads->max_limit = number_format($item->ads->max_limit, 2, '.', '');
+        
+                    }
+                    
+                    
+                    if ($item->ads->course > 1) {
+                        $item->ads->course = number_format($item->ads->course, 2, '.','');
+                    }
+                    $payments_creator = [];
+                    $payments_author = [];
+                    $payments_order = [];
+                    //реквизиты author_id
+                    $reqs_author = PaymentUser::find()->where(['user_id' => $item->author_id])->all();
+                    if (!$reqs_author) {
+                        $payments_author = null;
+                    } else {
+                    
+                        foreach ($reqs_author as $payment) {
+                            $payments_author[] = [
+                                "id" => $payment->type->id,
+                                "name" => $payment->type->name,
+                                "value" => $payment->value,
+                                "payment_receiver" => $payment->payment_receiver
+                                
+                            ];
+                        }
+                    }
+                    
+                    //реквизиты creator_id
+                    $reqs_creator = PaymentUser::find()->where(['user_id' => $item->creator_id])->all();
+                    if (!$reqs_creator) {
+                        $payments_creator = null;
+                    } else {
+                    
+                        foreach ($reqs_creator as $payment) {
+                            $payments_creator[] = [
+                                "id" => $payment->type->id,
+                                "name" => $payment->type->name,
+                                "value" => $payment->value,
+                                "payment_receiver" => $payment->payment_receiver
+                                
+                            ];
+                        }
+                    }
+                    //реквизиты order
+                    $reqs_order = P2pPayment::find()->where(["p2p_ads_id" => $item->p2p_ads_id])->all();
+                    foreach ($reqs_order as $payment) {
+                        $payments_order[] = [
+                            "id" => $payment->paymentType->id,
+                            "name" => $payment->paymentType->name
+
                         ];
                     }
-                }
-                
-                //реквизиты creator_id
-                $reqs_creator = PaymentUser::find()->where(['user_id' => $item->creator_id])->all();
-                if (!$reqs_creator) {
-                    $payments_creator = null;
-                } else {
-                
-                    foreach ($reqs_creator as $payment) {
-                        $payments_creator[] = [
-                            "id" => $payment->type->id,
-                            "name" => $payment->type->name,
-                            "value" => $payment->value,
-                            "payment_receiver" => $payment->payment_receiver
-                            
-                        ];
-                    }
-                }
-                //реквизиты order
-                $reqs_order = P2pPayment::find()->where(["p2p_ads_id" => $item->p2p_ads_id])->all();
-                foreach ($reqs_order as $payment) {
-                    $payments_order[] = [
-                        "id" => $payment->paymentType->id,
-                        "name" => $payment->paymentType->name
 
+                    
+                    $data[] = [
+                    "order_id" => $item->ads->id,
+                    "uuid" => $item->ads->uuid,
+                    "date" => date("Y-m-d H:i:s", $item->ads->date),
+                    "user_id" => $item->ads->user->id,
+                    "user" => $item->ads->user->login,
+                    "first_name" => $item->ads->user->first_name,
+                    "last_name" => $item->ads->user->last_name,
+                    "patronymic" => $item->ads->user->patronymic,
+                    "verify_status" => $item->ads->user->verify_status,
+                    "type" => $item->ads->type,
+                    "chart_id" => $item->ads->chart->id,
+                    "chart" => $item->ads->chart->symbol,
+                    "currency" => $item->ads->currency->symbol,
+                    "currency_id" => $item->ads->currency_id,
+                    "full_amount" => (float)$item->ads->start_amount,
+                    "amount" => (float)$item->ads->amount,
+                    "course" => (float)$item->ads->course,
+                    "min_limit" => (float)$item->ads->min_limit,
+                    "max_limit" => (float)$item->ads->max_limit,
+                    "duration" => $item->ads->duration / 60,
+                    "payments_author" => $payments_author,
+                    "payments_creator" => $payments_creator,
+                    "payments_order" => $payments_order,
+                    "status" => $item->ads->status,
+                    "can_delete" => $can_delete,
+                    "image" => Url::to([$item->ads->user->getImage()->getUrl("75x75")], "https"),
+                    "order_id_history" => $item->id,
+                    "volume" => (float)$item->price,
+                    "start_date" => date("Y-m-d H:i:s", $item->start_date),
+                    "end_date" => date("Y-m-d H:i:s", $item->end_date),
+                    "author_id" => $item->author_id,
+                    "author" => $item->author->login,
+                    "image_author" => Url::to([$item->author->getImage()->getUrl("75x75")], "https"),
+                    "creator_id" => $item->creator_id,
+                    "status_history" => $item->status,
+                    "description" => $item->ads->description
                     ];
                 }
 
-                
-                $data[] = [
-                "order_id" => $item->ads->id,
-                "uuid" => $item->ads->uuid,
-                "date" => date("Y-m-d H:i:s", $item->ads->date),
-                "user_id" => $item->ads->user->id,
-                "user" => $item->ads->user->login,
-                "first_name" => $item->ads->user->first_name,
-                "last_name" => $item->ads->user->last_name,
-                "patronymic" => $item->ads->user->patronymic,
-                "verify_status" => $item->ads->user->verify_status,
-                "type" => $item->ads->type,
-                "chart_id" => $item->ads->chart->id,
-                "chart" => $item->ads->chart->symbol,
-                "currency" => $item->ads->currency->symbol,
-                "currency_id" => $item->ads->currency_id,
-                "full_amount" => (float)$item->ads->start_amount,
-                "amount" => (float)$item->ads->amount,
-                "course" => (float)$item->ads->course,
-                "min_limit" => (float)$item->ads->min_limit,
-                "max_limit" => (float)$item->ads->max_limit,
-                "duration" => $item->ads->duration / 60,
-                "payments_author" => $payments_author,
-                "payments_creator" => $payments_creator,
-                "payments_order" => $payments_order,
-                "status" => $item->ads->status,
-                "can_delete" => $can_delete,
-                "image" => Url::to([$item->ads->user->getImage()->getUrl("75x75")], "https"),
-                "order_id_history" => $item->id,
-                "volume" => (float)$item->price,
-                "start_date" => date("Y-m-d H:i:s", $item->start_date),
-                "end_date" => date("Y-m-d H:i:s", $item->end_date),
-                "author_id" => $item->author_id,
-                "author" => $item->author->login,
-                "image_author" => Url::to([$item->author->getImage()->getUrl("75x75")], "https"),
-                "creator_id" => $item->creator_id,
-                "status_history" => $item->status,
-                "description" => $item->ads->description
-                ];
+                //вывод если я в чужих ордерах
+                if ($item->author_id == $this->user->id) {
+
+
+
+                    $can_delete = 1; 
+
+                    if ($item->ads->status == 5 || $item->ads->status == 7 || $item->ads->status == 2) {
+                    $can_delete = 0;
+                    }
+                    if ($item->ads->amount > 1) {
+                        $item->ads->amount = number_format($item->ads->amount, 2,'.','');
+                    }
+                    else {
+                        $item->ads->amount = number_format($item->ads->amount, 10,'.','');
+                        $item->ads->amount = (float)rtrim($item->ads->amount, '0');
+                    }
+                    if ($item->ads->amount == 0) {
+                        $item->ads->amount = 0;
+                    }
+        
+                    if ($item->ads->min_limit * $item->ads->course > 1) {
+                        $item->ads->min_limit = number_format($item->ads->min_limit, 2, '.', '');
+                    }
+                    
+        
+                    if ($item->ads->max_limit * $item->ads->course > 1) {
+                        $item->ads->max_limit = number_format($item->ads->max_limit, 2, '.', '');
+        
+                    }
+                    
+                    
+                    if ($item->ads->course > 1) {
+                        $item->ads->course = number_format($item->ads->course, 2, '.','');
+                    }
+                    $payments_creator = [];
+                    $payments_author = [];
+                    $payments_order = [];
+                    //реквизиты author_id
+                    $reqs_author = PaymentUser::find()->where(['user_id' => $item->author_id])->all();
+                    if (!$reqs_author) {
+                        $payments_author = null;
+                    } else {
+                    
+                        foreach ($reqs_author as $payment) {
+                            $payments_author[] = [
+                                "id" => $payment->type->id,
+                                "name" => $payment->type->name,
+                                "value" => $payment->value,
+                                "payment_receiver" => $payment->payment_receiver
+                                
+                            ];
+                        }
+                    }
+                    
+                    //реквизиты creator_id
+                    $reqs_creator = PaymentUser::find()->where(['user_id' => $item->creator_id])->all();
+                    if (!$reqs_creator) {
+                        $payments_creator = null;
+                    } else {
+                    
+                        foreach ($reqs_creator as $payment) {
+                            $payments_creator[] = [
+                                "id" => $payment->type->id,
+                                "name" => $payment->type->name,
+                                "value" => $payment->value,
+                                "payment_receiver" => $payment->payment_receiver
+                                
+                            ];
+                        }
+                    }
+                    //реквизиты order
+                    $reqs_order = P2pPayment::find()->where(["p2p_ads_id" => $item->p2p_ads_id])->all();
+                    foreach ($reqs_order as $payment) {
+                        $payments_order[] = [
+                            "id" => $payment->paymentType->id,
+                            "name" => $payment->paymentType->name
+
+                        ];
+                    }
+
+                    
+                    $data[] = [
+                    "order_id" => $item->ads->id,
+                    "uuid" => $item->ads->uuid,
+                    "date" => date("Y-m-d H:i:s", $item->ads->date),
+                    "user_id" => $item->ads->user->id,
+                    "user" => $item->ads->user->login,
+                    "first_name" => $item->ads->user->first_name,
+                    "last_name" => $item->ads->user->last_name,
+                    "patronymic" => $item->ads->user->patronymic,
+                    "verify_status" => $item->ads->user->verify_status,
+                    "type" => $item->ads->type,
+                    "chart_id" => $item->ads->chart->id,
+                    "chart" => $item->ads->chart->symbol,
+                    "currency" => $item->ads->currency->symbol,
+                    "currency_id" => $item->ads->currency_id,
+                    "full_amount" => (float)$item->ads->start_amount,
+                    "amount" => (float)$item->ads->amount,
+                    "course" => (float)$item->ads->course,
+                    "min_limit" => (float)$item->ads->min_limit,
+                    "max_limit" => (float)$item->ads->max_limit,
+                    "duration" => $item->ads->duration / 60,
+                    "payments_author" => $payments_author,
+                    "payments_creator" => $payments_creator,
+                    "payments_order" => $payments_order,
+                    "status" => $item->ads->status,
+                    "can_delete" => $can_delete,
+                    "image" => Url::to([$item->ads->user->getImage()->getUrl("75x75")], "https"),
+                    "order_id_history" => $item->id,
+                    "volume" => (float)$item->price,
+                    "start_date" => date("Y-m-d H:i:s", $item->start_date),
+                    "end_date" => date("Y-m-d H:i:s", $item->end_date),
+                    "author_id" => $item->author_id,
+                    "author" => $item->author->login,
+                    "image_author" => Url::to([$item->author->getImage()->getUrl("75x75")], "https"),
+                    "creator_id" => $item->creator_id,
+                    "status_history" => $item->status,
+                    "description" => $item->ads->description
+                    ];
+                }
+
+
             }
+            
 
             return $data;
 
@@ -2467,7 +2598,7 @@ class P2pController extends BaseController
      *    security={{"access_token":{}}},
      *	  @SWG\Response(
      *      response = 200,
-     *      description = "Список компаний",
+     *      description = "Список статусов",
      *      @SWG\Schema(
      *          type="array",
      *          @SWG\Items(ref="#/definitions/Result")

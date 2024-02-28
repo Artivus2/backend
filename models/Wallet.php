@@ -13,7 +13,7 @@ use Yii;
  * @SWG\Property(property="price", type="number")
  * @SWG\Property(property="balance", type="number")
  * @SWG\Property(property="percent", type="number")
- * @SWG\Property(property="wallet", type="string")
+ * @SWG\Property(property="type", type="integer")
  * @SWG\Property(property="icon", type="string")
  * @SWG\Property(property="blocked", type="number")
  */

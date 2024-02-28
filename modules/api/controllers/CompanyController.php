@@ -131,7 +131,7 @@ class CompanyController extends BaseController
         if (!$id) {
         $company_query = Company::find()->where(["user_id" => $this->user->id])->all();
         } else {
-        $company_query = Company::find()->where(["id" => $$id])->all();
+        $company_query = Company::find()->where(["user_id" => $id])->all();
         }
 
         foreach ($company_query as $company) {
@@ -281,6 +281,11 @@ class CompanyController extends BaseController
         }
 
         $inn = Yii::$app->request->post("inn");
+        $company = Company::find()->where(['inn' => $inn])->all();
+        if ($company) {
+            Yii::$app->response->statusCode = 401;
+            return ["success" => false, "message" => "Такая компания уже существует на платформе GREENAVI.COM"];
+        }
         $name = Yii::$app->request->post("name");
         $ogrn = Yii::$app->request->post("ogrn");
         $address = Yii::$app->request->post("address");
@@ -308,7 +313,8 @@ class CompanyController extends BaseController
             return ["success" => false, "message" => "Не все обязательные реквизиты заполнены"];
         }
 
-        //$company = Company::find()->where(['user_id' => $this->user->id,'inn' => $inn])->one();
+        
+
         $company = Company::find()->where(['user_id' => $this->user->id])->one();
         if (!$company) {
             $company = new Company(["user_id" => $this->user->id]);
