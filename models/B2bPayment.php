@@ -5,12 +5,20 @@ namespace app\models;
 use Yii;
 
 /**
- * This is the model class for table "b2b_payment".
+ * @SWG\Definition(required={"id", "name"})
  *
- * @property int $id
- * @property int $b2b
- * @property int $payment_id
- * @property int $user_id
+ * @SWG\Property(property="id", type="integer")
+ * @SWG\Property(property="payment_id", type="integer")
+ * @SWG\Property(property="name", type="string")
+ * @SWG\Property(property="value", type="string")
+ * @SWG\Property(property="payment_receiver", type="string")
+ * @SWG\Property(property="fio_courier", type="string")
+ * @SWG\Property(property="phone_courier", type="string")
+ * @SWG\Property(property="street_for_courier", type="string")
+ * @SWG\Property(property="build_for_courier", type="string")
+ * @SWG\Property(property="pod_for_courier", type="string")
+ * @SWG\Property(property="active", type="integer")
+ * @SWG\Property(property="description", type="string")
  */
 class B2bPayment extends \yii\db\ActiveRecord
 {

@@ -12,13 +12,6 @@ use Yii;
  * @SWG\Property(property="name", type="string")
  * @SWG\Property(property="value", type="string")
  * @SWG\Property(property="payment_receiver", type="string")
- * @SWG\Property(property="fio_courier", type="string")
- * @SWG\Property(property="phone_courier", type="string")
- * @SWG\Property(property="street_for_courier", type="string")
- * @SWG\Property(property="build_for_courier", type="string")
- * @SWG\Property(property="pod_for_courier", type="string")
- * @SWG\Property(property="active", type="integer")
- * @SWG\Property(property="description", type="string")
  */
 
 class PaymentUser extends \yii\db\ActiveRecord
