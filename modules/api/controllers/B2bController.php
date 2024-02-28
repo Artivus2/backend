@@ -964,7 +964,7 @@ class B2bController extends BaseController
         if(!$okved) {
             $whereokved = ["chart.active" => 1];
         } else {
-            $whereokved = ["main_okved" => $okved]; 
+            $whereokved = ["b2b_ads.main_okved" => $okved]; 
             
         }
         

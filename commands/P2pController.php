@@ -160,9 +160,16 @@ class P2pController extends BaseController
             
             $invoice = $obj->get_invoice($param);
             //просрочен
-            var_dump($invoice["data"]["status_code"]);
+            // 0: Pending
+            // 1: Paid
+            // 2: Underpaid
+            // 3: Over Paid
+            // 4: Expired
+            // 5: Cancelled
+            //var_dump($invoice["data"]["status_code"]);
             if ((int)$invoice["data"]["status_code"] == 4) {
                 $item->status = 2;
+                $item->save();
             }
 
 
