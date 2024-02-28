@@ -6,7 +6,6 @@ use Yii;
 use yii\helpers\Url;
 use yii\web\Controller;
 use app\models\Chart;
-use CoinRemitter\CoinRemitter;
 use app\models\Chain;
 use app\models\Wallet;
 use app\models\WalletType;
@@ -94,7 +93,7 @@ class WalletController extends BaseController
             return ["success" => false, "message" => "Token не найден"];
         }
 
-        $history = new History(["date" => time(), "user_id" => $this->user->id, "type" => 1]);
+        $history = new History(["date" => time(), "user_id" => $this->user->id, "type" => 0, 'wallet_direct_id' => 11, 'status' => 0]);
 
         $history->start_chart_id = 0;
         $history->end_chart_id = Yii::$app->request->post("chart_id");
@@ -129,7 +128,109 @@ class WalletController extends BaseController
         return ["url" => $url];
     }
 
-    protected function get_balance() {
+
+    /**
+     * @SWG\Post(
+     *    path = "/wallet/input",
+     *    tags = {"Wallet"},
+     *    summary = "Пополнить/внести криптовалюту",
+     *    security={{"access_token":{}}},
+     *    @SWG\Parameter(
+     *      name="chart_id",
+     *      in="body",
+     *      description="ID криптовалюты",
+     *      required=true,
+     *      @SWG\Schema(type="integer")
+     *     ),
+     *    @SWG\Parameter(
+     *      name="amount",
+     *      in="body",
+     *      description="Сумма ввода/пополнения",
+     *      required=true,
+     *      @SWG\Schema(type="number")
+     *     ),
+     *	  @SWG\Response(
+     *      response = 200,
+     *      description = "Ссылка на оплату",
+     *      @SWG\Definition(
+     *         required={"url"},
+     *         @SWG\Property(
+     *             property="url",
+     *             type="string"
+     *         )
+     *      ),
+     *    ),
+     *    @SWG\Response(
+     *      response = 400,
+     *      description = "Ошибка запроса",
+     *      @SWG\Schema(ref = "#/definitions/Result")
+     *    ),
+     *    @SWG\Response(
+     *      response = 403,
+     *      description = "Ошибка авторизации",
+     *      @SWG\Schema(ref = "#/definitions/Result")
+     *    ),
+     *)
+     * @throws HttpException
+     */
+    public function actionInput()
+    {
+        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+
+        if(!$this->user) {
+            Yii::$app->response->statusCode = 401;
+            return ["success" => false, "message" => "Token не найден"];
+        }
+
+        $history = new History(["date" => time(), "user_id" => $this->user->id, "type" => 0, 'wallet_direct_id' => 11]);
+
+        
+        $history->end_chart_id = Yii::$app->request->post("chart_id");
+        $history->start_chart_id = $history->end_chart_id;
+        
+        $history->start_price = (float)Yii::$app->request->post("price");
+
+        $chart = Chart::findOne($history->end_chart_id);
+        if (!$chart) {
+            Yii::$app->response->statusCode = 400;
+            return ["success" => false, "message" => "Валюта не найдена"];
+        }
+
+        //$history->end_price = $history->start_price / (float)$this->price($chart->symbol, "RUB") - $history->start_price / (float)$this->price($chart->symbol, "RUB") * self::COMISSION_IN / 100;
+
+        
+        $params = [
+            'coin'=>'TCN', //coin for which you want to use this object.
+            'api_key'=>'$2y$10$UK8VoHoh/kTDP2u0XW6TDOCYWx87cF0eRmZRyuG35FmsrDgSKkqRy', //api key from coinremitter wallet
+            'password'=>'12345678' //password for selected wallet
+         ];
+        $obj = new CoinRemitter($params);
+
+        $amount = $history->end_chart_id;
+        $currency = $history->start_price;
+        
+
+         $param = [
+            'amount'=>$amount, //required.
+            'notify_url'=>'https://greenavi.com/api/payment/notice-ipn', //required,you will receive notification on this url,
+            'name'=>'i' .rand(100000000,999999999),//optional,
+            'currency'=>$currency,//optional,
+            'expire_time'=>60,//in minutes,optional,
+            'description'=>'test',//optional,
+        ];
+        
+        $invoice  = $obj->create_invoice($param);
+        $history->ipn_id = $invoice->data->invoice_id;
+        if(!$history->save()) {
+            Yii::$app->response->statusCode = 400;
+            return ["success" => false, "message" => "Ошибка создания ссылки"];
+        }
+        
+        return $invoice;
+
+    }
+
+    public function actionGetBalance() {
         
         Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
 
@@ -147,12 +248,13 @@ class WalletController extends BaseController
             'api_key'=>'$2y$10$UK8VoHoh/kTDP2u0XW6TDOCYWx87cF0eRmZRyuG35FmsrDgSKkqRy', //api key from coinremitter wallet
             'password'=>'12345678' //password for selected wallet
          ];
+        $obj = new CoinRemitter($params);
         $balance = $obj->get_balance();
         
         return $balance;
     }
 
-    public function actionInput(){
+    public function actionInput2(){
         $params = [
             'coin'=>'TCN', //coin for which you want to use this object.
             'api_key'=>'$2y$10$UK8VoHoh/kTDP2u0XW6TDOCYWx87cF0eRmZRyuG35FmsrDgSKkqRy', //api key from coinremitter wallet
@@ -170,7 +272,7 @@ class WalletController extends BaseController
 
          $param = [
             'amount'=>$amount, //required.
-            'notify_url'=>'https://greenavi.com/api/wallet/notice', //required,you will receive notification on this url,
+            'notify_url'=>'https://greenavi.com/api/wallet/notice-ipn', //required,you will receive notification on this url,
             'name'=>'i' .rand(100000000,999999999),//optional,
             'currency'=>$currency,//optional,
             'expire_time'=>60,//in minutes,optional,

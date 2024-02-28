@@ -15,6 +15,7 @@ use Yii;
  * @SWG\Property(property="end_chart_id", type="integer")
  * @SWG\Property(property="date", type="integer")
  * @SWG\Property(property="status", type="integer")
+ * @SWG\Property(property="ipn", type="string")
  */
 class History extends \yii\db\ActiveRecord
 {
@@ -65,6 +66,7 @@ class History extends \yii\db\ActiveRecord
             'status' => 'Status',
             'wallet_direct_id' => 'direction',
             'payment_id' => 'Payment_id',
+            'ipn_id' => 'ipn_id',
         ];
     }
 }

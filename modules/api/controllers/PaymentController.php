@@ -16,6 +16,7 @@ use app\models\P2pPayment;
 use app\models\B2bPayment;
 use app\models\P2pAds;
 use app\models\WalletAddress;
+use CoinRemitter\CoinRemitter;
 
 /**
  * Default controller for the `api` module
@@ -24,47 +25,48 @@ class PaymentController extends BaseController
 {
     public function actionNoticeIpn()
     {
-        Yii::$app->response->format = \yii\web\Response::FORMAT_RAW;
+        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
 
-        $cp_merchant_id = '';
-        $cp_ipn_secret = '76479a5aF47AAaEf758Cb1297880FB59Cb724f62012c3E1b1f7685cF3Ab4Db91';
+        
+        // $cp_merchant_id = '';
+        // $cp_ipn_secret = '76479a5aF47AAaEf758Cb1297880FB59Cb724f62012c3E1b1f7685cF3Ab4Db91';
 
-        // Yii::$app->mailer->compose()
-        //     ->setTo("dukker11@yandex.ru")
-        //     ->setFrom([Yii::$app->params['senderEmail'] => Yii::$app->params['senderName']])
-        //     ->setSubject("Успешное пополнение")
-        //     ->setTextBody(json_encode(Yii::$app->request->post()))
-        //     ->send();
+        // // Yii::$app->mailer->compose()
+        // //     ->setTo("dukker11@yandex.ru")
+        // //     ->setFrom([Yii::$app->params['senderEmail'] => Yii::$app->params['senderName']])
+        // //     ->setSubject("Успешное пополнение")
+        // //     ->setTextBody(json_encode(Yii::$app->request->post()))
+        // //     ->send();
 
-        $merchant = Yii::$app->request->post("merchant");
-        $hmac = Yii::$app->request->post("hmac");
-        $address = Yii::$app->request->post("address");
-        $amount = floatval(Yii::$app->request->post("amount"));
-        $currency = Yii::$app->request->post("currency");
-        $status = Yii::$app->request->post("status");
+        // $merchant = Yii::$app->request->post("merchant");
+        // $hmac = Yii::$app->request->post("hmac");
+        // $address = Yii::$app->request->post("address");
+        // $amount = floatval(Yii::$app->request->post("amount"));
+        // $currency = Yii::$app->request->post("currency");
+        // $status = Yii::$app->request->post("status");
 
 
-        if ($hmac != 'hmac') {
-            return 'IPN Mode is not HMAC';
-        }
+        // if ($hmac != 'hmac') {
+        //     return 'IPN Mode is not HMAC';
+        // }
 
-        if (empty($_SERVER['HTTP_HMAC'])) {
-            return 'No HMAC signature sent.';
-        }
+        // if (empty($_SERVER['HTTP_HMAC'])) {
+        //     return 'No HMAC signature sent.';
+        // }
 
-        $request = file_get_contents('php://input');
-        if (empty($request)) {
-            return 'Error reading POST data';
-        }
+        // $request = file_get_contents('php://input');
+        // if (empty($request)) {
+        //     return 'Error reading POST data';
+        // }
 
-        if ($merchant != $cp_merchant_id) {
-            return 'No or incorrect Merchant ID passed';
-        }
+        // if ($merchant != $cp_merchant_id) {
+        //     return 'No or incorrect Merchant ID passed';
+        // }
 
-        $hmac = hash_hmac("sha512", $request, trim($cp_ipn_secret));
-        if (!hash_equals($hmac, $_SERVER['HTTP_HMAC'])) {
-            return 'HMAC signature does not match';
-        }
+        // $hmac = hash_hmac("sha512", $request, trim($cp_ipn_secret));
+        // if (!hash_equals($hmac, $_SERVER['HTTP_HMAC'])) {
+        //     return 'HMAC signature does not match';
+        // }
 
         if ($status >= 100 || $status == 2) {
 
