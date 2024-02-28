@@ -152,7 +152,7 @@ class P2pController extends BaseController
         $obj = new CoinRemitter($params);
 
         
-        $input_offers = History::find()->where(['wallet_direct_id' => 12, 'status' => 0])->all();
+        $input_offers = History::find()->where(['wallet_direct_id' => 12])->andWhere(['>=','status',0])->all();
         foreach ($input_offers as $item) {
             $param = [
                 'invoice_id'=>$item->ipn_id
@@ -177,10 +177,10 @@ class P2pController extends BaseController
             if ((int)$invoice["data"]["status_code"] == 4) {
 
 
-                $item->status = 4;
-                $wallet = Wallet::findOne(["user_id" => $history->user_id, "chart_id" => $chart->id, "type" => 0]);
+                $item->status = -1;
+                $wallet = Wallet::findOne(["user_id" => $item->user_id, "chart_id" => $item->start_chart_id, "type" => 0]);
                     if(!$wallet) {
-                        $wallet = new Wallet(["user_id" => $history->user_id, "chart_id" => $chart->id, "balance" => 0, "type" => 0,  'balance' => $paid_amount]);
+                        $wallet = new Wallet(["user_id" => $item->user_id, "chart_id" => $item->start_chart_id, "balance" => 0, "type" => 0,  'balance' => $paid_amount]);
                     }
                     $wallet->balance += $paid_amount;
                     $wallet->save();
@@ -188,19 +188,19 @@ class P2pController extends BaseController
             }
 
             if ((int)$invoice["data"]["status_code"] == 5) {
-                $item->status = 5;
+                $item->status = -1;
                 $item->save();
             }
 
             if ((int)$invoice["data"]["status_code"] == 2) {
                 //недоплачен ждем просрочки
                 
-                $item->status = 2;
+                $item->status = -1;
                 //потом 1
                 
-                $wallet = Wallet::findOne(["user_id" => $history->user_id, "chart_id" => $chart->id, "type" => 0]);
+                $wallet = Wallet::findOne(["user_id" => $item->user_id, "chart_id" => $item->start_chart_id, "type" => 0]);
                 if(!$wallet) {
-                    $wallet = new Wallet(["user_id" => $history->user_id, "chart_id" => $chart->id, "balance" => 0, "type" => 0,  'balance' => $paid_amount]);
+                    $wallet = new Wallet(["user_id" => $item->user_id, "chart_id" => $item->start_chart_id, "balance" => 0, "type" => 0,  'balance' => $paid_amount]);
                 }
                 $wallet->balance += $history->$paid_amount;
                 $wallet->save();
@@ -211,11 +211,11 @@ class P2pController extends BaseController
 
             if ((int)$invoice["data"]["status_code"] == 3) {
                 //добавляем но надо смотреть
-                $item->status = 3;
+                $item->status = -1;
                 
-                $wallet = Wallet::findOne(["user_id" => $history->user_id, "chart_id" => $chart->id, "type" => 0]);
+                $wallet = Wallet::findOne(["user_id" => $item->user_id, "chart_id" => $item->start_chart_id, "type" => 0]);
                 if(!$wallet) {
-                    $wallet = new Wallet(["user_id" => $history->user_id, "chart_id" => $chart->id, "balance" => 0, "type" => 0,  'balance' => $total_amount]);
+                    $wallet = new Wallet(["user_id" => $item->user_id, "chart_id" => $item->start_chart_id, "balance" => 0, "type" => 0,  'balance' => $total_amount]);
                 }
                 $wallet->balance += $history->$total_amount;
                 $wallet->save();
@@ -224,10 +224,10 @@ class P2pController extends BaseController
 
             if ((int)$invoice["data"]["status_code"] == 1) {
                 
-                $item->status = 1;
-                $wallet = Wallet::findOne(["user_id" => $history->user_id, "chart_id" => $chart->id, "type" => 0]);
+                $item->status = -1;
+                $wallet = Wallet::findOne(["user_id" => $item->user_id, "chart_id" => $item->start_chart_id, "type" => 0]);
                 if(!$wallet) {
-                    $wallet = new Wallet(["user_id" => $history->user_id, "chart_id" => $chart->id, "balance" => 0, "type" => 0]);
+                    $wallet = new Wallet(["user_id" => $item->user_id, "chart_id" => $item->start_chart_id, "balance" => 0, "type" => 0]);
                 }
                 $wallet->balance += $total_amount;
                 $wallet->save();
