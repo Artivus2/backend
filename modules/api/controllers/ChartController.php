@@ -466,6 +466,9 @@ class ChartController extends BaseController
         if ($chart == 'RUB') {
             $result->data->amount = 1;
         }
+        if ($chart == 'TCN') {
+            $result->data->amount = 1;
+        }
         return number_format($result->data->amount, 2, '.','') ?? null;
     }
 
