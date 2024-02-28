@@ -187,12 +187,12 @@ class WalletController extends BaseController
             Yii::$app->response->statusCode = 401;
             return ["success" => false, "message" => "Token не найден"];
         }
-        $history = History::find()->where(["user_id" => $this->user->id, "type" => 0, 'wallet_direct_id' => 11, 'status' => 0])->all();
+        $history = History::find()->where(["user_id" => $this->user->id, "type" => 0, 'wallet_direct_id' => 12, 'status' => 0])->all();
         if ($history) {
             Yii::$app->response->statusCode = 400;
             return ["success" => false, "message" => "Завершите предыдущие заявки на пополнение или обратитесь к технической поддержке"];
         } else {
-            $history = new History(["date" => time(), "user_id" => $this->user->id, "type" => 0, 'wallet_direct_id' => 11, 'status' => 0]);
+            $history = new History(["date" => time(), "user_id" => $this->user->id, "type" => 0, 'wallet_direct_id' => 12, 'status' => 0]);
         }
 
         
@@ -221,9 +221,11 @@ class WalletController extends BaseController
          $param = [
             'amount'=>$history->start_price, //required.
             'notify_url'=>'https://greenavi.com/api/payment/notice-ipn', //required,you will receive notification on this url,
+            'fail_url'=>'https://greenavi.com/api/payment/fail-ipn', //required,you will receive notification on this url,
+            'success_url'=>'https://greenavi.com/api/payment/success-ipn', //required,you will receive notification on this url,
             'name'=>'i' .rand(100000000,999999999),//optional,
             //'currency'=>$currency->symbol,//optional,
-            'expire_time'=>60,//in minutes,optional,
+            'expire_time'=>10,//in minutes,optional,
             'description'=>'test',//optional,
         ];
         
