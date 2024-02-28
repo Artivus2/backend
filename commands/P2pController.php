@@ -15,6 +15,7 @@ use app\models\P2pHistory;
 use app\models\B2bHistory;
 use app\models\Wallet;
 use app\models\History;
+use CoinRemitter\CoinRemitter;
 
 class P2pController extends BaseController
 {
@@ -154,11 +155,12 @@ class P2pController extends BaseController
         $input_offers = History::find()->where(['wallet_direct_id' => 11, 'status' => 0])->all();
         foreach ($input_offers as $item) {
             $param = [
-                'invoice_id'=>$history->ipn_id
+                'invoice_id'=>$item->ipn_id
             ];
             
             $invoice = $obj->get_invoice($param);
             //просрочен
+            var_dump($invoice["data"]["status_code"]);
             if ((int)$invoice["data"]["status_code"] == 4) {
                 $item->status = 2;
             }
