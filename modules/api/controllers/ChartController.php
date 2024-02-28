@@ -442,34 +442,31 @@ class ChartController extends BaseController
         return ["price" => $this->price($chart->symbol, $currency->symbol)];
     }
 
-    protected function price($chart, $currency){
+    protected function price($chart1, $chart2){
         //$data = ["price" => 0];
 
 
         $curl = curl_init();
-        //if ($chart->id != 2024) {
+    
+        if ($chart1 == "TCN") {
+            $chart1 = "USDT";
+        
+
+        }
         curl_setopt_array($curl, array(
-            //CURLOPT_URL => "https://api.binance.com/api/v3/ticker/price?symbol=" . $chart->symbol . $currency->symbol,
-            CURLOPT_URL => "https://api.coinbase.com/v2/prices/".$chart."-".$currency."/spot",
+    
+            CURLOPT_URL => "https://api.coinbase.com/v2/prices/".$chart1."-".$chart2."/spot",
             
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_FOLLOWLOCATION => true,
             CURLOPT_CUSTOMREQUEST => 'GET',
             CURLOPT_USERAGENT => 'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1)'
         ));
-        //}
 
         $result = json_decode(curl_exec($curl));
-        //$data = ["price" => $result->price??null];
-
         curl_close($curl);
-        if ($chart == 'RUB') {
-            $result->data->amount = 1;
-        }
-        if ($chart == 'TCN') {
-            $result->data->amount = 1;
-        }
-        return number_format($result->data->amount, 2, '.','') ?? null;
+        
+        return $result->data->amount;
     }
 
     /**
