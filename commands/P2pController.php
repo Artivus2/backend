@@ -202,7 +202,7 @@ class P2pController extends BaseController
                 if(!$wallet) {
                     $wallet = new Wallet(["user_id" => $item->user_id, "chart_id" => $item->start_chart_id, "balance" => 0, "type" => 0,  'balance' => $paid_amount]);
                 }
-                $wallet->balance += $history->$paid_amount;
+                $wallet->balance += $paid_amount;
                 $wallet->save();
                 $item->save();
                 
@@ -215,9 +215,10 @@ class P2pController extends BaseController
                 
                 $wallet = Wallet::findOne(["user_id" => $item->user_id, "chart_id" => $item->start_chart_id, "type" => 0]);
                 if(!$wallet) {
-                    $wallet = new Wallet(["user_id" => $item->user_id, "chart_id" => $item->start_chart_id, "balance" => 0, "type" => 0,  'balance' => $total_amount]);
+                    $wallet = new Wallet(["user_id" => $item->user_id, "chart_id" => $item->start_chart_id, "balance" => 0, "type" => 0,  'balance' => $paid_amount]);
                 }
-                $wallet->balance += $history->$total_amount;
+                $wallet->balance += $paid_amount;
+                $item->start_price = $paid_amount;
                 $wallet->save();
                 $item->save();
             }
@@ -227,9 +228,9 @@ class P2pController extends BaseController
                 $item->status = -1;
                 $wallet = Wallet::findOne(["user_id" => $item->user_id, "chart_id" => $item->start_chart_id, "type" => 0]);
                 if(!$wallet) {
-                    $wallet = new Wallet(["user_id" => $item->user_id, "chart_id" => $item->start_chart_id, "balance" => 0, "type" => 0]);
+                    $wallet = new Wallet(["user_id" => $item->user_id, "chart_id" => $item->start_chart_id, "balance" => $paid_amount, "type" => 0]);
                 }
-                $wallet->balance += $total_amount;
+                $wallet->balance += $paid_amount;
                 $wallet->save();
                 $item->save();
             }
