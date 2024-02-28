@@ -142,7 +142,30 @@ class P2pController extends BaseController
                 }
             }
         }
-*/
+*/  
+        $params = [
+            'coin'=>'TCN', //coin for which you want to use this object.
+            'api_key'=>'$2y$10$UK8VoHoh/kTDP2u0XW6TDOCYWx87cF0eRmZRyuG35FmsrDgSKkqRy', //api key from coinremitter wallet
+            'password'=>'12345678' //password for selected wallet
+        ];
+        $obj = new CoinRemitter($params);
+
+        
+        $input_offers = History::find()->where(['wallet_direct_id' => 11, 'status' => 0])->all();
+        foreach ($input_offers as $item) {
+            $param = [
+                'invoice_id'=>$history->ipn_id
+            ];
+            
+            $invoice = $obj->get_invoice($param);
+            //просрочен
+            if ((int)$invoice["data"]["status_code"] == 4) {
+                $item->status = 2;
+            }
+
+
+        }
+        
        
     }
 }
