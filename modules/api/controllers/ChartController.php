@@ -159,6 +159,10 @@ class ChartController extends BaseController
             if($chart->symbol == "RUB") {
                 continue;
             }
+            if($chart->symbol == "TCN") {
+                continue;
+            }
+            
             if($chart->symbol != "USDT") {
                   
                 $symbol = $chart->symbol . "USDT";
@@ -231,6 +235,18 @@ class ChartController extends BaseController
                 "chart_image" => Url::to(["/charts/" . $chart->symbol . ".png"], "https"),
             ];
         }
+
+        $data[] = [
+            "id" => 2707,
+            "name" => 'TCN',
+            "symbol" => 'TCN',
+            "price" => 1,
+            "lowPrice" => 1,
+            "highPrice" => 1,
+            "percent" => 1,
+            "icon" => Url::to(["/images/icons/XMR.png"], "https"),
+            "chart_image" => Url::to(["/charts/XMR.png"], "https"),
+        ];
 
         
 
