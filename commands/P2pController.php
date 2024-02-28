@@ -167,8 +167,23 @@ class P2pController extends BaseController
             // 4: Expired
             // 5: Cancelled
             //var_dump($invoice["data"]["status_code"]);
+            $coin = $invoice["data"]["coin"];
+            $base_currency = $invoice["data"]["base_currency"];
+            $paid_amount = $invoice["data"]["paid_amount"][$coin] ?? 0;
+            $total_amount = $invoice["data"]["total_amount"][$coin] ?? 0;
+
+
+            $to_account_sum = 0;
             if ((int)$invoice["data"]["status_code"] == 4) {
+
+
                 $item->status = 4;
+                $wallet = Wallet::findOne(["user_id" => $history->user_id, "chart_id" => $chart->id, "type" => 0]);
+                    if(!$wallet) {
+                        $wallet = new Wallet(["user_id" => $history->user_id, "chart_id" => $chart->id, "balance" => 0, "type" => 0,  'balance' => $paid_amount]);
+                    }
+                    $wallet->balance += $paid_amount;
+                    $wallet->save();
                 $item->save();
             }
 
@@ -179,14 +194,31 @@ class P2pController extends BaseController
 
             if ((int)$invoice["data"]["status_code"] == 2) {
                 //недоплачен ждем просрочки
+                
                 $item->status = 2;
                 //потом 1
+                
+                $wallet = Wallet::findOne(["user_id" => $history->user_id, "chart_id" => $chart->id, "type" => 0]);
+                if(!$wallet) {
+                    $wallet = new Wallet(["user_id" => $history->user_id, "chart_id" => $chart->id, "balance" => 0, "type" => 0,  'balance' => $paid_amount]);
+                }
+                $wallet->balance += $history->$paid_amount;
+                $wallet->save();
                 $item->save();
+                
+                
             }
 
             if ((int)$invoice["data"]["status_code"] == 3) {
                 //добавляем но надо смотреть
                 $item->status = 3;
+                
+                $wallet = Wallet::findOne(["user_id" => $history->user_id, "chart_id" => $chart->id, "type" => 0]);
+                if(!$wallet) {
+                    $wallet = new Wallet(["user_id" => $history->user_id, "chart_id" => $chart->id, "balance" => 0, "type" => 0,  'balance' => $total_amount]);
+                }
+                $wallet->balance += $history->$total_amount;
+                $wallet->save();
                 $item->save();
             }
 
@@ -197,7 +229,8 @@ class P2pController extends BaseController
                 if(!$wallet) {
                     $wallet = new Wallet(["user_id" => $history->user_id, "chart_id" => $chart->id, "balance" => 0, "type" => 0]);
                 }
-                $wallet->balance += $history->start_price;
+                $wallet->balance += $total_amount;
+                $wallet->save();
                 $item->save();
             }
 
