@@ -6,6 +6,7 @@ use Yii;
 use yii\helpers\Url;
 use yii\web\Controller;
 use app\models\Chart;
+use app\models\Currency;
 use app\models\Chain;
 use app\models\Wallet;
 use app\models\WalletType;
@@ -23,6 +24,7 @@ use Endroid\QrCode\Logo\Logo;
 use Endroid\QrCode\RoundBlockSizeMode\RoundBlockSizeModeMargin;
 use Endroid\QrCode\Writer\PngWriter;
 use Endroid\QrCode\Writer\ValidationException;
+use CoinRemitter\CoinRemitter;
 
 
 
@@ -190,37 +192,36 @@ class WalletController extends BaseController
         
         $history->start_price = (float)Yii::$app->request->post("price");
 
-        $chart = Chart::findOne($history->end_chart_id);
+        $chart = chart::findOne($history->end_chart_id);
+        $history->end_price = 0;
         if (!$chart) {
             Yii::$app->response->statusCode = 400;
             return ["success" => false, "message" => "Валюта не найдена"];
         }
 
-        //$history->end_price = $history->start_price / (float)$this->price($chart->symbol, "RUB") - $history->start_price / (float)$this->price($chart->symbol, "RUB") * self::COMISSION_IN / 100;
 
-        
         $params = [
-            'coin'=>'TCN', //coin for which you want to use this object.
+            'coin'=>$chart->symbol, //coin for which you want to use this object.
             'api_key'=>'$2y$10$UK8VoHoh/kTDP2u0XW6TDOCYWx87cF0eRmZRyuG35FmsrDgSKkqRy', //api key from coinremitter wallet
             'password'=>'12345678' //password for selected wallet
          ];
         $obj = new CoinRemitter($params);
 
         $amount = $history->end_chart_id;
-        $currency = $history->start_price;
+        $currency = $currency->symbol;
         
 
          $param = [
-            'amount'=>$amount, //required.
+            'amount'=>$history->start_price, //required.
             'notify_url'=>'https://greenavi.com/api/payment/notice-ipn', //required,you will receive notification on this url,
             'name'=>'i' .rand(100000000,999999999),//optional,
-            'currency'=>$currency,//optional,
+            //'currency'=>$currency->symbol,//optional,
             'expire_time'=>60,//in minutes,optional,
             'description'=>'test',//optional,
         ];
         
         $invoice  = $obj->create_invoice($param);
-        $history->ipn_id = $invoice->data->invoice_id;
+        //$history->ipn_id = $invoice->data->invoice_id;
         if(!$history->save()) {
             Yii::$app->response->statusCode = 400;
             return ["success" => false, "message" => "Ошибка создания ссылки"];
