@@ -45,6 +45,10 @@ class PaymentController extends BaseController
         ];
         
         $invoice = $obj->get_invoice($param);
+        $coin = $invoice["data"]["coin"];
+        $base_currency = $invoice["data"]["base_currency"];
+        $paid_amount = $invoice["data"]["paid_amount"][$coin];
+        $total_amount = $invoice["data"]["total_amount"][$coin];
         $data[] = [
             "coin" => $invoice["data"]["coin"],
             "base_currency" => $invoice["data"]["base_currency"],
