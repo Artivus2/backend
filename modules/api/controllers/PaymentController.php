@@ -301,7 +301,7 @@ class PaymentController extends BaseController
      *      name="b2b",
      *      in="body",
      *      description="для b2b",
-     *      @SWG\Schema(type="string")
+     *      @SWG\Schema(type="integer")
      *     ),
      *    @SWG\Parameter(
      *      name="fio_courier",
@@ -642,5 +642,80 @@ class PaymentController extends BaseController
         }
 
         return ["success" => true, "message" => "Платежный реквизит успешно удален"];
+    }
+
+
+     /**
+     * @SWG\Get(
+     *    path = "/payment/courier-list",
+     *    tags = {"Payment"},
+     *    summary = "Список курьеров",
+     *    security={{"access_token":{}}},
+     *    @SWG\Parameter(
+     *      name="id",
+     *      in="body",
+     *      description="ID курьера",
+     *      required=true,
+     *      @SWG\Schema(type="integer")
+     *     ),
+     *    @SWG\Parameter(
+     *      name="company_id",
+     *      in="body",
+     *      description="ID компании",
+     *      required=true,
+     *      @SWG\Schema(type="integer")
+     *     ),
+     *	  @SWG\Response(
+     *      response = 200,
+     *      description = "Спиоск курьеров",
+     *      @SWG\Schema(
+     *          type="array",
+     *          @SWG\Items(ref="#/definitions/B2bPayment")
+     *      ),
+     *    ),
+     *    @SWG\Response(
+     *      response = 400,
+     *      description = "Ошибка запроса",
+     *      @SWG\Schema(ref = "#/definitions/Result")
+     *    ),
+     *    @SWG\Response(
+     *      response = 403,
+     *      description = "Ошибка авторизации",
+     *      @SWG\Schema(ref = "#/definitions/Result")
+     *    ),
+     *)
+     * @throws HttpException
+     */
+    public function actionCourierList()
+    {
+        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+
+        if(!$this->user) {
+            Yii::$app->response->statusCode = 401;
+            return ["success" => false, "message" => "Token не найден"];
+        }
+
+        $data = [];
+        $id = Yii::$app->request->get("id");
+        if(!$id) {
+            $whereid = ["IS NOT","id", null];
+        } else {
+            $whereid = ["id" => $id]; 
+        }
+        $company_id = Yii::$app->request->get("company_id");
+        if(!$company_id) {
+            $wherecompany = ["IS NOT","company_id", null];
+        } else {
+            $wherecompany = ["company_id" => $company_id]; 
+        }
+
+        $payment_query = B2bPayment::find()
+        ->where($wherecompany)
+        ->andWhere([$whereid])
+        ->all();
+
+        
+
+        return $payment_query;
     }
 }
