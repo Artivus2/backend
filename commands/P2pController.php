@@ -152,7 +152,7 @@ class P2pController extends BaseController
         $obj = new CoinRemitter($params);
 
         
-        $input_offers = History::find()->where(['wallet_direct_id' => 11, 'status' => 0])->all();
+        $input_offers = History::find()->where(['wallet_direct_id' => 12, 'status' => 0])->all();
         foreach ($input_offers as $item) {
             $param = [
                 'invoice_id'=>$item->ipn_id
@@ -168,9 +168,39 @@ class P2pController extends BaseController
             // 5: Cancelled
             //var_dump($invoice["data"]["status_code"]);
             if ((int)$invoice["data"]["status_code"] == 4) {
-                $item->status = 2;
+                $item->status = 4;
                 $item->save();
             }
+
+            if ((int)$invoice["data"]["status_code"] == 5) {
+                $item->status = 5;
+                $item->save();
+            }
+
+            if ((int)$invoice["data"]["status_code"] == 2) {
+                //недоплачен ждем просрочки
+                $item->status = 2;
+                //потом 1
+                $item->save();
+            }
+
+            if ((int)$invoice["data"]["status_code"] == 3) {
+                //добавляем но надо смотреть
+                $item->status = 3;
+                $item->save();
+            }
+
+            if ((int)$invoice["data"]["status_code"] == 1) {
+                
+                $item->status = 1;
+                $wallet = Wallet::findOne(["user_id" => $history->user_id, "chart_id" => $chart->id, "type" => 0]);
+                if(!$wallet) {
+                    $wallet = new Wallet(["user_id" => $history->user_id, "chart_id" => $chart->id, "balance" => 0, "type" => 0]);
+                }
+                $wallet->balance += $history->start_price;
+                $item->save();
+            }
+
 
 
         }
