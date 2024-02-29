@@ -58,7 +58,7 @@ $this->params['breadcrumbs'][] = ['label' => ' >>>> Пользователи >>>
                 //     'confirm' => 'Are you absolutely sure ? You will lose all the information about this user with this action.']);
                 // },
                 'delete' => function($url, $wallet){
-                    return Html::a('<span class="delete-icon"></span>', ['delete', 'id' => $wallet->id], [
+                    return Html::a('<span class="delete-icon"></span>', ['deletebalance', 'id' => $wallet->id], [
                         // 'class' => '',
                         'data' => [
                             'confirm' => 'Уверены что хотите удалить ?',
