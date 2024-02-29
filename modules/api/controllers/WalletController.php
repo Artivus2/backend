@@ -695,16 +695,16 @@ class WalletController extends BaseController
 
         }
 
-        $balance = $wallet->balance;
-        if ((float)$balance > 1) {
-            $result = number_format($balance, 2,'.','');
-        }
-        else {
-            $result = number_format($balance, 10,'.','');
-        }
+        
 
         foreach ($wallet_query_fin as $wallet) {
-            //if((int)$wallet->chart_id == 2024) {
+            $balance = $wallet_query_fin->balance;
+            if ((float)$balance > 1) {
+                $result = number_format($balance, 2,'.','');
+            }
+            else {
+                $result = number_format($balance, 10,'.','');
+            }
             $data[] = [
                 "id" => $wallet->chart_id,
                 "name" => $wallet->chart->name,
