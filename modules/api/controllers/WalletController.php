@@ -695,6 +695,14 @@ class WalletController extends BaseController
 
         }
 
+        $balance = $wallet->balance;
+        if ((float)$balance > 1) {
+            $result = number_format($balance, 2,'.','');
+        }
+        else {
+            $result = number_format($balance, 10,'.','');
+        }
+
         foreach ($wallet_query_fin as $wallet) {
             //if((int)$wallet->chart_id == 2024) {
             $data[] = [
@@ -702,7 +710,7 @@ class WalletController extends BaseController
                 "name" => $wallet->chart->name,
                 "symbol" => $wallet->chart->symbol,
                 "price" => (float)$this->price($wallet->chart->symbol, "USD"),
-                "balance" => (float)$wallet->balance,
+                "balance" => $balance,
                 "blocked" => (float)$wallet->blocked,
                 "type" => $wallet->walletType->title,
                 "icon" => Url::to(["/images/icons/" . $wallet->chart->symbol . ".png"], "https"),
@@ -962,11 +970,10 @@ class WalletController extends BaseController
         curl_close($curl);
       
         if ((float)$result->data->amount >= 1) {
-            $result = number_format($max_author_price, 2,'.','');
+            $result = number_format($result->data->amount, 2,'.','');
         }
         else {
-            $result = number_format($$result->data->amount, 10,'.','');
-            $result = rtrim($result, '0');
+            $result = number_format($result->data->amount, 10,'.','');
         }
         
         return $result;
