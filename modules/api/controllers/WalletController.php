@@ -211,8 +211,8 @@ class WalletController extends BaseController
 
         $params = [
             'coin'=>$chart->symbol, //coin for which you want to use this object.
-            'api_key'=>'$2y$10$UK8VoHoh/kTDP2u0XW6TDOCYWx87cF0eRmZRyuG35FmsrDgSKkqRy', //api key from coinremitter wallet
-            'password'=>'12345678' //password for selected wallet
+            'api_key'=> Yii::app()->params['API_KEY_COINREMITTER'], //api key from coinremitter wallet
+            'password'=>Yii::app()->params['API_KEY_PASSWORD'] //password for selected wallet
          ];
         $obj = new CoinRemitter($params);
 
@@ -225,7 +225,7 @@ class WalletController extends BaseController
             'success_url'=>'https://greenavi.com/api/payment/success-ipn', //required,you will receive notification on this url,
             'name'=>'i' .rand(100000000,999999999),//optional,
             //'currency'=>"RUB",//optional,
-            'expire_time'=>10,//in minutes,optional,
+            'expire_time'=>30,//in minutes,optional,
             'description'=>'test',//optional,
         ];
         
@@ -255,8 +255,8 @@ class WalletController extends BaseController
     //     //  $address = $obj->get_new_address();
     //     $params = [
     //         'coin'=>'TCN', //coin for which you want to use this object.
-    //         'api_key'=>'$2y$10$UK8VoHoh/kTDP2u0XW6TDOCYWx87cF0eRmZRyuG35FmsrDgSKkqRy', //api key from coinremitter wallet
-    //         'password'=>'12345678' //password for selected wallet
+    // 'api_key'=> Yii::app()->params['API_KEY_COINREMITTER'], //api key from coinremitter wallet
+    // 'password'=>Yii::app()->params['API_KEY_PASSWORD'] //password for selected wallet
     //      ];
     //     $obj = new CoinRemitter($params);
     //     $balance = $obj->get_balance();

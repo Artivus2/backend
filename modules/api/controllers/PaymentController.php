@@ -35,8 +35,8 @@ class PaymentController extends BaseController
 
         $params = [
             'coin'=>'TCN', //coin for which you want to use this object.
-            'api_key'=>'$2y$10$UK8VoHoh/kTDP2u0XW6TDOCYWx87cF0eRmZRyuG35FmsrDgSKkqRy', //api key from coinremitter wallet
-            'password'=>'12345678' //password for selected wallet
+            'api_key'=> Yii::app()->params['API_KEY_COINREMITTER'], //api key from coinremitter wallet
+            'password'=>Yii::app()->params['API_KEY_PASSWORD'] //password for selected wallet
          ];
         $obj = new CoinRemitter($params);
 
