@@ -700,7 +700,7 @@ class PaymentController extends BaseController
      * @SWG\Get(
      *    path = "/payment/courier-list",
      *    tags = {"Payment"},
-     *    summary = "Список курьеров",
+     *    summary = "Список курьеров или карт",
      *    security={{"access_token":{}}},
      *    @SWG\Parameter(
      *      name="id",
@@ -713,6 +713,13 @@ class PaymentController extends BaseController
      *      name="company_id",
      *      in="body",
      *      description="ID компании",
+     *      required=true,
+     *      @SWG\Schema(type="integer")
+     *     ),
+     *    @SWG\Parameter(
+     *      name="type",
+     *      in="body",
+     *      description="Тип type 1 список карт type 0",
      *      required=true,
      *      @SWG\Schema(type="integer")
      *     ),
@@ -760,9 +767,13 @@ class PaymentController extends BaseController
             $wherecompany = ["company_id" => $company_id]; 
         }
 
+        $type = Yii::$app->request->get("type");
+
+
         $payment_query = B2bPayment::find()
         ->where($wherecompany)
         ->andWhere([$whereid])
+        ->andWhere(['type' => $type])
         ->all();
 
         
