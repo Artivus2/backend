@@ -961,7 +961,15 @@ class WalletController extends BaseController
         $result = json_decode(curl_exec($curl));
         curl_close($curl);
       
-        return $result->data->amount;
+        if ((float)$result->data->amount >= 1) {
+            $result = number_format($max_author_price, 2,'.','');
+        }
+        else {
+            $result = number_format($$result->data->amount, 10,'.','');
+            $result = rtrim($result, '0');
+        }
+        
+        return $result;
    
     }
 }
