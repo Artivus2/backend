@@ -2000,10 +2000,14 @@ class P2pController extends BaseController
         $history_id = Yii::$app->request->post("history_id");
 
         $p2p_ads = P2pAds::find()->where(['id' => $history_id])->one();
-        if ($b2b_ads->type == 2) {
-            $b2b_h = B2bHistory::find()->where(['b2b_ads_id' => $history_id, 'author_id' => $this->user->id])->one();
+        if (!$p2p_ads) {
+            Yii::$app->response->statusCode = 400;
+            return ["success" => false, "message" => "Сделка не найдена"];
+        }
+        if ($p2p_ads->type == 2) {
+            $p2p_h = B2bHistory::find()->where(['p2p_ads_id' => $history_id, 'author_id' => $this->user->id])->one();
         } else {
-            $b2b_h = B2bHistory::find()->where(['b2b_ads_id' => $history_id, 'creator_id' => $this->user->id])->one();
+            $p2p_h = B2bHistory::find()->where(['p2p_ads_id' => $history_id, 'creator_id' => $this->user->id])->one();
         }
 
         if (!$p2p_h) {
@@ -2011,10 +2015,7 @@ class P2pController extends BaseController
             return ["success" => false, "message" => "Сделка не найдена (в истории)"];
         }
 
-        if (!$p2p_ads) {
-            Yii::$app->response->statusCode = 400;
-            return ["success" => false, "message" => "Сделка не найдена"];
-        }
+        
 
         if ($p2p_h->status == 2) {
             $p2p_ads->status = 5;

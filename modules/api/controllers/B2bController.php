@@ -1894,6 +1894,10 @@ class B2bController extends BaseController
         $history_id = Yii::$app->request->post("history_id");
 
         $b2b_ads = B2bAds::find()->where(['id' => $history_id])->one();
+        if (!$b2b_ads) {
+            Yii::$app->response->statusCode = 400;
+            return ["success" => false, "message" => "Сделка не найдена"];
+        }
         if ($b2b_ads->type == 2) {
             $b2b_h = B2bHistory::find()->where(['b2b_ads_id' => $history_id, 'author_id' => $this->user->id])->one();
         } else {
@@ -1905,10 +1909,7 @@ class B2bController extends BaseController
             return ["success" => false, "message" => "Сделка не найдена (в истории)"];
         }
 
-        if (!$b2b_ads) {
-            Yii::$app->response->statusCode = 400;
-            return ["success" => false, "message" => "Сделка не найдена"];
-        }
+        
 
         if ($b2b_h->status == 2) {
             $b2b_ads->status = 5;
