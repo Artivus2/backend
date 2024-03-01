@@ -449,7 +449,7 @@ class PaymentController extends BaseController
             $summa = Yii::$app->request->post("summa");
             $value = Yii::$app->request->post("value");
             $payment_receiver = Yii::$app->request->post("payment_receiver");
-            $type = Yii::$app->request->post("type");
+            $type = Yii::$app->request->post("type", 1);
             $bank = Yii::$app->request->post("bank");
             
 

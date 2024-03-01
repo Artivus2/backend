@@ -25,7 +25,11 @@ $this->params['breadcrumbs'][] = $this->title;
             'id',
             'user_id',
             'start_price',
-            'start_chart_id',
+            [
+                'label' => 'Криптовалюта',
+                'attribute' => 'chart_id',
+                'value' => function($model){return $model->startChart->symbol;} 
+            ],
             [
                 'label' => 'Дата',
                 'attribute' => 'status',

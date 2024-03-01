@@ -31,7 +31,7 @@ $this->params['breadcrumbs'][] ='   >>>>  Заявка №'. $this->title;
                 }
             ],
             [
-                'label' => 'ID криптовалюты',
+                'label' => 'Криптовалюта',
                 'attribute' => 'chart_id',
                 'value' => function($model){return $model->startChart->symbol;} 
             ],
