@@ -14,9 +14,6 @@ $this->params['breadcrumbs'][] = ['label' => '  >>>> Реквизиты для �
 $this->params['breadcrumbs'][] ='   >>>>  Заявка №'. $this->title;
 \yii\web\YiiAsset::register($this);
 ?>
-    <p>
-        <?= Html::a('Подтвердить отправку средств', ['confirm'], ['class' => 'btn btn-success', 'style' => Yii::$app->user->isGuest ? 'display:none' : 'display:inline-block']) ?>
-    </p>
 
 <div class="sell-view">
 
@@ -44,6 +41,24 @@ $this->params['breadcrumbs'][] ='   >>>>  Заявка №'. $this->title;
                 return $model->paymentType->name;
                 }
             ],
+            [
+				'class' => 'yii\grid\ActionColumn',
+				'template' => '{confirm} {reject}',
+                'header' => 'Действия',
+                'contentOptions' => ['style' => 'display: flex;'],
+				'buttons' => [
+
+                    'confirm' => function($url, $model){
+                        return Html::a('<span class="view-icon"></span>', ['view', 'id' => $model->id], [
+                            'class' => '',
+                            'data' => [
+                                'confirm' => 'Подтвердить вывод средств у пользователя',
+                                'method' => 'post',
+                            ],
+                        ]);
+                    },
+				],
+			],
             
         ],
     ]) ?>
