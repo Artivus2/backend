@@ -24,49 +24,37 @@ $this->params['breadcrumbs'][] = $this->title;
 
             'id',
             'user_id',
-            'end_price',
-            'end_chart_id',
+            'start_price',
+            'start_chart_id',
             [
-                'attribute'=>'date',
-                'filter' => \janisto\timepicker\TimePicker::widget([
-                    'model'=>$dataProvider,
-                    'attribute'  => 'date',
-                    'mode' => 'date',
-                ]),
-            ],
+                'label' => 'Дата',
+                'attribute' => 'status',
+                'value' => function($data){return date("Y-m-d H:i:s", $model->start_date);}
+               ],
             'status',
             'payment_id',
-            'wallet_direct_id',
+            'ipn_id',
             [
 				'class' => 'yii\grid\ActionColumn',
 				'template' => '{confirm} {reject}',
                 'header' => 'Действия',
                 'contentOptions' => ['style' => 'display: flex;'],
 				'buttons' => [
-					// 'confirm' => function ($url,$model) {
-					// 	return Html::a(
-					// 	'<span class="view-icon"></span>', 
-					// 	['/admin/sell/confirm', 'id' => $model->id]);
-					// },
-                    // 'reject' => function ($url,$model) {
-                    //     return Html::a(
-                    //         '<span class="delete-icon"></span>', 
-                    //         ['/admin/sell/reject', 'id' => $model->id]);
-                    // },
+
                     'confirm' => function($url, $model){
-                        return Html::a('<span class="view-icon"></span>', ['confirm', 'id' => $model->id], [
+                        return Html::a('<span class="view-icon"></span>', ['view', 'id' => $model->id], [
                             // 'class' => '',
-                            'data' => [
-                                'confirm' => 'Подтвердить вывод средств у пользователя ?',
-                                'method' => 'post',
-                            ],
+                            // 'data' => [
+                            //     'confirm' => 'Подтвердить вывод средств у пользователя ?',
+                            //     'method' => 'post',
+                            // ],
                         ]);
-                    }б
+                    },
                     'reject' => function($url, $model){
                         return Html::a('<span class="delete-icon"></span>', ['reject', 'id' => $model->id], [
                             // 'class' => '',
                             'data' => [
-                                'confirm' => 'Подтвердить отмену вывода средств у пользователя ?',
+                                'confirm' => 'Подтвердить отмену вывода средств у пользователя, средства вернутся на баланс !!!',
                                 'method' => 'post',
                             ],
                         ]);

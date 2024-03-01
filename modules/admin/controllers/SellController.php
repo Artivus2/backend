@@ -8,6 +8,8 @@ use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 use app\models\History;
 use app\models\Wallet;
+use app\models\PaymentUser;
+use app\models\B2bPayment;
 use app\models\search\HistorySearch;
 
 /**
@@ -40,7 +42,7 @@ class SellController extends Controller
      */
     public function actionIndex()
     {
-        $history = History::find()->where(['status'=>0])->andWhere(['in','wallet_direct_id', '10,13']);
+        $history = History::find()->where(['status'=>0])->andWhere(['in','wallet_direct_id', [10,13]]);
         //$searchModel = new HistorySearch();
         $dataProvider = new ActiveDataProvider([
             
@@ -70,8 +72,23 @@ class SellController extends Controller
      */
     public function actionView($id)
     {
+        $model = $this->findModel($id);
+        //$payments = B2bPayment::find()->where(['p2p_ads_id' => $model->id]);
+        $wallet = Wallet::find()->where(['user_id' => $model->id]);
+        $data = new ActiveDataProvider([
+            'wallet' => $wallet,
+            'pagination' => [
+                'pageSize' => 10,
+          ],
+            ]);
+        // $payments = new ActiveDataProvider([
+        //     'query' => $p2ppayments,
+        //     'pagination' => [
+        //         'pageSize' => 10,
+        //     ],
+            // ]);
         return $this->render('view', [
-            'model' => $this->findModel($id),
+            'model' => $model,
         ]);
     }
 
@@ -86,15 +103,21 @@ class SellController extends Controller
     public function actionConfirm($id)
     {
         $model = $this->findModel($id);
-        $wallet = Wallet::find()->where(['user_id' => $model->id]);
         $model->status = 1;
+        if ($model->wallet_direct_id == 10) {
+            $wallet = Wallet::findOne(['user_id' => $model->id, 'chart_id' => $item->start_chart_id,'type' => 0]);
+            }
+        if ($model->wallet_direct_id == 13) {
+            $wallet = Wallet::findOne(['user_id' => $model->id, 'chart_id' => $item->start_chart_id,'type' => 1]);
+            }
+        $wallet->blocked = 0;
         $model->save();
+        $wallet->save();
         return $this->redirect(['index']);
     }
 
      /**
      * reject offer for out.
-     * If deletion is successful, the browser will be redirected to the 'index' page.
      * @param int $id ID
      * @return \yii\web\Response
      * @throws NotFoundHttpException if the model cannot be found
@@ -102,9 +125,18 @@ class SellController extends Controller
     public function actionReject($id)
     {
         $model = $this->findModel($id);
-        $wallet = Wallet::find()->where(['user_id' => $model->id]);
+        //$wallet = Wallet::find()->where(['user_id' => $model->id]);
         $model->status = 2;
+        if ($model->wallet_direct_id == 10) {
+            $wallet = Wallet::findOne(['user_id' => $model->id, 'chart_id' => $item->start_chart_id,'type' => 0]);
+            }
+        if ($model->wallet_direct_id == 13) {
+            $wallet = Wallet::findOne(['user_id' => $model->id, 'chart_id' => $item->start_chart_id,'type' => 1]);
+            }
+        $wallet->balance += $model->start_price;
+        $wallet->blocked = 0;
         $model->save();
+        $wallet->save();
         return $this->redirect(['index']);
     }
 
@@ -118,6 +150,24 @@ class SellController extends Controller
     protected function findModel($id)
     {
         if (($model = History::findOne(['id' => $id])) !== null) {
+            return $model;
+        }
+
+        throw new NotFoundHttpException('The requested page does not exist.');
+    }
+
+    protected function findModelUser($id)
+    {
+        if (($model = User::findOne(['id' => $id])) !== null) {
+            return $model;
+        }
+
+        throw new NotFoundHttpException('The requested page does not exist.');
+    }
+
+    protected function findModelWallet($id)
+    {
+        if (($model = Wallet::findOne(['id' => $id])) !== null) {
             return $model;
         }
 
