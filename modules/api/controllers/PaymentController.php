@@ -644,7 +644,7 @@ class PaymentController extends BaseController
      *     ),
      *	  @SWG\Response(
      *      response = 200,
-     *      description = "Успешно сохранено",
+     *      description = "Успешно удалено",
      *      @SWG\Schema(ref = "#/definitions/Result")
      *    ),
      *    @SWG\Response(
@@ -724,7 +724,7 @@ class PaymentController extends BaseController
      *     ),
      *	  @SWG\Response(
      *      response = 200,
-     *      description = "Спиоск курьеров",
+     *      description = "Список курьеров",
      *      @SWG\Schema(
      *          type="array",
      *          @SWG\Items(ref="#/definitions/B2bPayment")
@@ -799,7 +799,7 @@ class PaymentController extends BaseController
      *     ),
      *	  @SWG\Response(
      *      response = 200,
-     *      description = "Успешно сохранено",
+     *      description = "Успешно удалено",
      *      @SWG\Schema(ref = "#/definitions/B2bPayment")
      *    ),
      *    @SWG\Response(
@@ -815,7 +815,7 @@ class PaymentController extends BaseController
      *)
      * @throws HttpException
      */
-     */
+     
     public function actionDeleteB2bpayment()
     {
         Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
