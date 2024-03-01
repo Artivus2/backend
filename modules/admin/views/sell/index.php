@@ -29,7 +29,7 @@ $this->params['breadcrumbs'][] = $this->title;
             [
                 'label' => 'Дата',
                 'attribute' => 'status',
-                'value' => function($data){return date("Y-m-d H:i:s", $model->start_date);}
+                'value' => function($data){return date("Y-m-d H:i:s", $data->date);}
                ],
             'status',
             'payment_id',

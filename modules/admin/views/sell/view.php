@@ -16,9 +16,6 @@ $this->params['breadcrumbs'][] ='   >>>>  Заявка №'. $this->title;
 ?>
 <div class="sell-view">
 
-    <h1><?= Html::encode($this->title) ?></h1>
-
-
     <?= DetailView::widget([
         'model' => $model,
         'attributes' => [
@@ -27,7 +24,7 @@ $this->params['breadcrumbs'][] ='   >>>>  Заявка №'. $this->title;
             [   'label' => 'Тип счета',
                 'attribute'=>'type',
                 'value'=>function($model) {
-                return $data->type == 1 ? 'B2B' : 'Финансовый';
+                return $model->type == 1 ? 'B2B' : 'Финансовый';
                 }
             ],
             [
@@ -36,10 +33,46 @@ $this->params['breadcrumbs'][] ='   >>>>  Заявка №'. $this->title;
                 'value' => function($model){return $model->start_chart_id;} 
             ],
             'start_price',
-            'status'
+            'status',
+            [   'label' => 'Выбранный споcоб вывода',
+                'attribute'=>'payment_id',
+                'value'=>function($model) {
+                return $model->paymentType->name;
+                }
+            ],
+            
         ],
     ]) ?>
 
+<div>Способы оплаты Пользователя</div>
+<?php
+   echo GridView::widget([
+       'dataProvider' => $payments,
+       'tableOptions' => [
+            
+        'class'=>'table table-striped table-responsive'
+        ],
+       'columns' => [
+           
+           [
+            'label' => 'Банк',
+            
+            'value' => function($data){return $data->type->name ?? null;} 
+           ],
+           [
+            'label' => '№ карты',
+            
+            'value' => function($data){return $data->value ?? null;} 
+           ],
+           [
+            'label' => 'Получатель',
+            
+            'value' => function($data){return $data->payment_receiver ?? null;} 
+           ],
+           
+        ],
 
+    ])
+ ?>
 
 </div>

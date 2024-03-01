@@ -5,7 +5,7 @@ namespace app\models;
 use Yii;
 
 /**
- * @SWG\Definition(required={"id", "type", "start_price", "end_price", "start_chart_id", "end_chart_id", "date", "status"})
+ * @SWG\Definition(required={"id", "type", "start_price", "end_price", "start_chart_id", "end_chart_id", "date", "status",''payment_id})
  *
  * @SWG\Property(property="id", type="integer")
  * @SWG\Property(property="type", type="integer")
@@ -48,6 +48,13 @@ class History extends \yii\db\ActiveRecord
     {
         return $this->hasOne(Chart::class, ['id' => 'end_chart_id']);
     }
+
+    public function getPaymentType()
+    {
+        return $this->hasOne(PaymentType::class, ['id' => 'payment_id']);
+    }
+
+
 
     /**
      * {@inheritdoc}
