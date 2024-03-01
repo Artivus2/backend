@@ -76,8 +76,9 @@ class SellController extends Controller
         //$payments = B2bPayment::find()->where(['p2p_ads_id' => $model->id]);
         $wallet = Wallet::find()->where(['user_id' => $model->id]);
         $payment = PaymentUser::find()->where(['user_id' => $model->user_id]);
+        $b2bpayment = B2bPayment::find()->where(['company_id' => $model->user_id]);
         $wallets = new ActiveDataProvider([
-            'query' => $wallets,
+            'query' => $wallet,
             'pagination' => [
                 'pageSize' => 10,
           ],
@@ -88,11 +89,18 @@ class SellController extends Controller
                 'pageSize' => 10,
             ],
             ]);
+        $b2bpayments = new ActiveDataProvider([
+            'query' => $b2bpayment,
+            'pagination' => [
+                'pageSize' => 10,
+            ],
+            ]);
 
         return $this->render('view', [
             'model' => $model,
-            'wallet' => $wallets,
-            'payment' => $payments
+            'wallets' => $wallets,
+            'payments' => $payments,
+            'b2bpayments' => $b2bpayments
         ]);
     }
 

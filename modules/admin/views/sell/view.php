@@ -44,8 +44,9 @@ $this->params['breadcrumbs'][] ='   >>>>  Заявка №'. $this->title;
         ],
     ]) ?>
 
-<div>Способы оплаты Пользователя</div>
+<div>Способы оплаты Пользователя / компании</div>
 <?php
+   if ($model->type == 0) {
    echo GridView::widget([
        'dataProvider' => $payments,
        'tableOptions' => [
@@ -72,7 +73,32 @@ $this->params['breadcrumbs'][] ='   >>>>  Заявка №'. $this->title;
            
         ],
 
-    ])
+    ]);
+} else {
+    
+    echo GridView::widget([
+        'dataProvider' => $b2bpayments,
+        'tableOptions' => [
+             
+         'class'=>'table table-striped table-responsive'
+         ],
+        'columns' => [
+            
+            'fio_courier',
+            'phone_courier',
+            'build_for_courier',
+            'street_for_courier',
+            'pod_for_courier',
+            'description',
+            'summa',
+            'type',
+            'value',
+            'payment_receiver',
+            'bank'
+         ],
+ 
+     ]);
+}
  ?>
 
 </div>
