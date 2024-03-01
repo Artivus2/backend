@@ -310,7 +310,7 @@ class PaymentController extends BaseController
      *    @SWG\Parameter(
      *      name="type",
      *      in="body",
-     *      description="для b2b",
+     *      description="для b2b 0 - карты, 1 - курьер",
      *      @SWG\Schema(type="integer")
      *     ),
      *    @SWG\Parameter(
@@ -754,25 +754,28 @@ class PaymentController extends BaseController
         }
 
         $data = [];
-        $id = Yii::$app->request->get("id");
+
+        
+        $id = (int)Yii::$app->request->get("id");
+        
         if(!$id) {
             $whereid = ["IS NOT","id", null];
         } else {
             $whereid = ["id" => $id]; 
         }
-        $company_id = Yii::$app->request->get("company_id");
+        $company_id = (int)Yii::$app->request->get("company_id");
         if(!$company_id) {
             $wherecompany = ["IS NOT","company_id", null];
         } else {
             $wherecompany = ["company_id" => $company_id]; 
         }
 
-        $type = Yii::$app->request->get("type");
+        $type = (int)Yii::$app->request->get("type");
 
 
         $payment_query = B2bPayment::find()
         ->where($wherecompany)
-        ->andWhere([$whereid])
+        ->andWhere($whereid)
         ->andWhere(['type' => $type])
         ->all();
 
