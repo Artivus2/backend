@@ -14,6 +14,10 @@ $this->params['breadcrumbs'][] = ['label' => '  >>>> Реквизиты для �
 $this->params['breadcrumbs'][] ='   >>>>  Заявка №'. $this->title;
 \yii\web\YiiAsset::register($this);
 ?>
+    <p>
+        <?= Html::a('Подтвердить отправку средств', ['confirm'], ['class' => 'btn btn-success', 'style' => Yii::$app->user->isGuest ? 'display:none' : 'display:inline-block']) ?>
+    </p>
+
 <div class="sell-view">
 
     <?= DetailView::widget([
@@ -30,7 +34,7 @@ $this->params['breadcrumbs'][] ='   >>>>  Заявка №'. $this->title;
             [
                 'label' => 'ID криптовалюты',
                 'attribute' => 'chart_id',
-                'value' => function($model){return $model->start_chart_id;} 
+                'value' => function($model){return $model->startChart->symbol;} 
             ],
             'start_price',
             'status',
@@ -100,5 +104,7 @@ $this->params['breadcrumbs'][] ='   >>>>  Заявка №'. $this->title;
      ]);
 }
  ?>
+
+
 
 </div>
