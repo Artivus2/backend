@@ -21,6 +21,7 @@ use Yii;
  * @SWG\Property(property="description", type="string")
  * @SWG\Property(property="summa", type="number")
  * @SWG\Property(property="type", type="integer")
+ * @SWG\Property(property="bank", type="string")
  */
 class B2bPayment extends \yii\db\ActiveRecord
 {
@@ -75,6 +76,8 @@ class B2bPayment extends \yii\db\ActiveRecord
             'type' => 'type',
             'value' => 'value',
             'payment_receiver' => 'payment_receiver',
+            'bank' => 'bank',
+
         ];
 
     }

@@ -375,12 +375,6 @@ class PaymentController extends BaseController
      *      description="для b2b",
      *      @SWG\Schema(type="string")
      *     ),
-     *    @SWG\Parameter(
-     *      name="bank_id",
-     *      in="body",
-     *      description="для b2b",
-     *      @SWG\Schema(type="integer")
-     *     ),
      *	  @SWG\Response(
      *      response = 200,
      *      description = "Успешно сохранено",
@@ -445,6 +439,7 @@ class PaymentController extends BaseController
             }
 
         } else {
+            $payment_id = Yii::$app->request->post("payment_id");
             $fio = Yii::$app->request->post("fio_courier");
             $phone = Yii::$app->request->post("phone_courier");
             $street = Yii::$app->request->post("street_for_courier");
@@ -455,8 +450,9 @@ class PaymentController extends BaseController
             $value = Yii::$app->request->post("value");
             $payment_receiver = Yii::$app->request->post("payment_receiver");
             $type = Yii::$app->request->post("type");
+            $type = Yii::$app->request->post("bank");
 
-            $b2bpayment = new B2bPayment(["company_id" => $this->user->id, 'payment_id' => 2000]);
+            $b2bpayment = new B2bPayment(["company_id" => $this->user->id, 'payment_id' => $type == 0 ? $payment_id : 2000]);
             $b2bpayment->fio_courier = $fio;
             $b2bpayment->phone_courier = $phone;
             $b2bpayment->street_for_courier = $street;
@@ -467,6 +463,7 @@ class PaymentController extends BaseController
             $b2bpayment->value = $value;
             $b2bpayment->payment_receiver = $payment_receiver;
             $b2bpayment->type = $type;
+            $b2bpayment->bank = $bank;
             if(!$b2bpayment->save()) {
                 Yii::$app->response->statusCode = 400;
                 return ["success" => false, "message" => "Ошибка сохранения способа оплаты b2b"];
