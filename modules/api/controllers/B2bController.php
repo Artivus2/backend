@@ -2443,8 +2443,7 @@ class B2bController extends BaseController
         return $result;
      }
 
-
-     
+    
 
      protected function sendCode($company, $id, $email = null)
      {

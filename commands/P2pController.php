@@ -28,21 +28,6 @@ class P2pController extends BaseController
             return ExitCode::OK;
         }
 
-        // отмена заявок на вывод средств TO DO перенести в wallet
-        //status 0 в обработке, 1 - выполнено, 2 - отменено strtotime("+3 day", $p2p_h->start_date)
-        $history = History::find()->where(["<=", "date", strtotime("-3 day",time())])->andWhere(["status" => 0])->andwhere(['wallet_direct_id' => 10, 'type'=> 0])->all();
-        foreach ($history as $item) { 
-            $item->status = 2;
-            $wallet = Wallet::findOne(['user_id' => $item->user_id, 'chart_id' => $item->start_chart_id,'type' => 0]);
-            
-            $wallet->balance += $item->start_price;
-            $wallet->blocked = 0;
-            $wallet->save();
-            $item->save();
-
-        }
-
-
         // автоотмена статус 1
         $history_seven = P2pHistory::find()->JoinWith(["ads"])->where(["<=", "end_date", time()])->andWhere(["p2p_history.status" => 1])->all();
         $history_seven_b2b = B2bHistory::find()->JoinWith(["ads"])->where(["<=", "end_date", time()])->andWhere(["b2b_history.status" => 1])->all();
