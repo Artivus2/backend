@@ -40,7 +40,7 @@ class SellController extends Controller
      */
     public function actionIndex()
     {
-        $history = History::find()->where(['status'=>0,'wallet_direct_id' => 10]);
+        $history = History::find()->where(['status'=>0])->andWhere(['in','wallet_direct_id', '10,13']);
         //$searchModel = new HistorySearch();
         $dataProvider = new ActiveDataProvider([
             
