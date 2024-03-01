@@ -782,4 +782,61 @@ class PaymentController extends BaseController
 
         return $payment_query;
     }
+
+
+    /**
+     * @SWG\Get(
+     *    path = "/payment/delete-b2bpayment",
+     *    tags = {"Payment"},
+     *    summary = "Удалить список курьеров или карт",
+     *    security={{"access_token":{}}},
+     *    @SWG\Parameter(
+     *      name="id",
+     *      in="body",
+     *      description="ID курьера / карты",
+     *      required=true,
+     *      @SWG\Schema(type="integer")
+     *     ),
+          
+     *	  @SWG\Response(
+     *      response = 200,
+     *      description = "Спиоск курьеров / карт",
+     *      @SWG\Schema(
+     *          type="array",
+     *          @SWG\Items(ref="#/definitions/B2bPayment")
+     *      ),
+     *    ),
+     *    @SWG\Response(
+     *      response = 400,
+     *      description = "Ошибка запроса",
+     *      @SWG\Schema(ref = "#/definitions/Result")
+     *    ),
+     *    @SWG\Response(
+     *      response = 403,
+     *      description = "Ошибка авторизации",
+     *      @SWG\Schema(ref = "#/definitions/Result")
+     *    ),
+     *)
+     * @throws HttpException
+     */
+    public function actionDeleteB2bpayment()
+    {
+        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+
+        if(!$this->user) {
+            Yii::$app->response->statusCode = 401;
+            return ["success" => false, "message" => "Token не найден"];
+        }
+
+        
+        $id = (int)Yii::$app->request->get("id");
+        
+        $b2bpayment = B2bPayment::findOne(['id' => $id, 'user_id' => $this->user->id]);
+        if(!$b2bpayment->delete()) {
+            return ["success" => false, "message" => "Платеж не найден"];
+        } else {
+            return ["success" => true, "message" => "Реквизит удален"];
+        }
+        
+    }
 }
