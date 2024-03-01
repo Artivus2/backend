@@ -409,6 +409,13 @@ class WalletController extends BaseController
      *      required=true,
      *      @SWG\Schema(type="number")
      *     ),
+     *    @SWG\Parameter(
+     *      name="b2bpayments_ids",
+     *      in="body",
+     *      description="ИД карты продажи/вывода или курьер",
+     *      required=true,
+     *      @SWG\Schema(type="number")
+     *     ),
      *	  @SWG\Response(
      *      response = 200,
      *      description = "Заявка успешно создана",
@@ -463,9 +470,14 @@ class WalletController extends BaseController
 
         //$payments = PaymentUser::find()->where(['user_id'=>$this->user->id, 'payment_id' => 2000])->all();
         
+        $b2bpayments = (array)Yii::$app->request->post("b2b_payments_ids");
+
         $history->payment_id = 2000;
+        $history->ipn_id = implode(",", $b2bpayments);
         
         $history->status = 0;
+
+
 
 
         $wallet = Wallet::findOne(["user_id" => $this->user->id, "chart_id" => $chart->id,'type' => 1]); //b2b

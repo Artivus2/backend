@@ -630,7 +630,7 @@ class PaymentController extends BaseController
     }
 
     /**
-     * @SWG\Post(
+     * @SWG\Delete(
      *    path = "/payment/delete",
      *    tags = {"Payment"},
      *    summary = "Удалить реквизит",
@@ -785,7 +785,7 @@ class PaymentController extends BaseController
 
 
     /**
-     * @SWG\Post(
+     * @SWG\Delete(
      *    path = "/payment/delete-b2bpayment",
      *    tags = {"Payment"},
      *    summary = "Удалить реквизит",
@@ -828,7 +828,7 @@ class PaymentController extends BaseController
         
         $id = (int)Yii::$app->request->post("id");
         
-        $b2bpayment = B2bPayment::findOne(['id' => $id, 'user_id' => $this->user->id]);
+        $b2bpayment = B2bPayment::findOne(['id' => $id, 'company_id' => $this->user->id]);
         if(!$b2bpayment->delete()) {
             return ["success" => false, "message" => "Реквизит не найден"];
         } else {
