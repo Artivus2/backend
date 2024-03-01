@@ -785,26 +785,22 @@ class PaymentController extends BaseController
 
 
     /**
-     * @SWG\Get(
+     * @SWG\Post(
      *    path = "/payment/delete-b2bpayment",
      *    tags = {"Payment"},
-     *    summary = "Удалить список курьеров или карт",
+     *    summary = "Удалить реквизит",
      *    security={{"access_token":{}}},
      *    @SWG\Parameter(
      *      name="id",
      *      in="body",
-     *      description="ID курьера / карты",
+     *      description="ID реквизита",
      *      required=true,
      *      @SWG\Schema(type="integer")
      *     ),
-          
      *	  @SWG\Response(
      *      response = 200,
-     *      description = "Спиоск курьеров / карт",
-     *      @SWG\Schema(
-     *          type="array",
-     *          @SWG\Items(ref="#/definitions/B2bPayment")
-     *      ),
+     *      description = "Успешно сохранено",
+     *      @SWG\Schema(ref = "#/definitions/B2bPayment")
      *    ),
      *    @SWG\Response(
      *      response = 400,
@@ -819,6 +815,7 @@ class PaymentController extends BaseController
      *)
      * @throws HttpException
      */
+     */
     public function actionDeleteB2bpayment()
     {
         Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
@@ -829,11 +826,11 @@ class PaymentController extends BaseController
         }
 
         
-        $id = (int)Yii::$app->request->get("id");
+        $id = (int)Yii::$app->request->post("id");
         
         $b2bpayment = B2bPayment::findOne(['id' => $id, 'user_id' => $this->user->id]);
         if(!$b2bpayment->delete()) {
-            return ["success" => false, "message" => "Платеж не найден"];
+            return ["success" => false, "message" => "Реквизит не найден"];
         } else {
             return ["success" => true, "message" => "Реквизит удален"];
         }
