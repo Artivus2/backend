@@ -11,6 +11,7 @@ use app\models\Chain;
 use app\models\Wallet;
 use app\models\WalletType;
 use app\models\PaymentUser;
+use app\models\B2bPayment;
 use app\models\User;
 use app\models\History;
 use app\models\ChartChain;
@@ -264,7 +265,6 @@ class WalletController extends BaseController
     //     return $balance;
     // }
 
-    
 
     
 
@@ -291,7 +291,7 @@ class WalletController extends BaseController
      *    @SWG\Parameter(
      *      name="payment_id",
      *      in="body",
-     *      description="ID способа вывода (курьер ид 2000)",
+     *      description="ID способа вывода",
      *      required=true,
      *      @SWG\Schema(type="integer")
      *     ),
@@ -370,24 +370,121 @@ class WalletController extends BaseController
             return ["success" => false, "message" => "Недостаточно средств на балансе"];
         }
 
-
-        // $curl = curl_init();
-        // curl_setopt_array($curl, array(
-        //     //CURLOPT_URL => "https://api.binance.com/api/v3/ticker/price?symbol=" . $chart->symbol . "RUB",
-        //     CURLOPT_URL => "https://api.coinbase.com/v2/prices/".$chart->symbol."-RUB/spot",
-        //     CURLOPT_RETURNTRANSFER => true,
-        //     CURLOPT_FOLLOWLOCATION => true,
-        //     CURLOPT_CUSTOMREQUEST => 'GET',
-        //     CURLOPT_USERAGENT => 'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1)'
-        // ));
-
-        // $result = json_decode(curl_exec($curl));
-        // curl_close($curl);
-        
         if (!(float)$this->price($chart->symbol, "RUB")) {
             $history->end_price = 0;
         } else {
         $history->end_price = (float)$this->price($chart->symbol, "RUB") * $history->start_price / 1;
+        }
+
+        if(!$history->save()) {
+            Yii::$app->response->statusCode = 400;
+            return ["success" => false, "message" => "Ошибка создания запроса", $history];
+        }
+
+        if(!$wallet->save()) {
+            Yii::$app->response->statusCode = 400;
+            return ["success" => false, "message" => "Ошибка сохранения счета"];
+        }
+
+        return ["success" => true, "message" => "Запрос отправлен в обработку"];
+    }
+
+/**
+     * @SWG\Post(
+     *    path = "/wallet/sellb2b",
+     *    tags = {"Wallet"},
+     *    summary = "Продать/вывести криптовалюту b2b",
+     *    security={{"access_token":{}}},
+     *    @SWG\Parameter(
+     *      name="chart_id",
+     *      in="body",
+     *      description="ID криптовалюты",
+     *      required=true,
+     *      @SWG\Schema(type="integer")
+     *     ),
+     *    @SWG\Parameter(
+     *      name="price",
+     *      in="body",
+     *      description="Сумма продажи/вывода",
+     *      required=true,
+     *      @SWG\Schema(type="number")
+     *     ),
+     *	  @SWG\Response(
+     *      response = 200,
+     *      description = "Заявка успешно создана",
+     *      @SWG\Schema(ref = "#/definitions/Result")
+     *    ),
+     *    @SWG\Response(
+     *      response = 400,
+     *      description = "Ошибка запроса",
+     *      @SWG\Schema(ref = "#/definitions/Result")
+     *    ),
+     *    @SWG\Response(
+     *      response = 403,
+     *      description = "Ошибка авторизации",
+     *      @SWG\Schema(ref = "#/definitions/Result")
+     *    ),
+     *)
+     * @throws HttpException
+     */
+    public function actionSellb2b()
+    {
+        //status 0 в обработке, 1 - выполнено, 2 - отменено
+        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+
+        if(!$this->user) {
+            Yii::$app->response->statusCode = 401;
+            return ["success" => false, "message" => "Token не найден"];
+        }
+        
+        if (!in_array($this->user->verify_status, self::VERIFY_STATUS))
+        {
+            Yii::$app->response->statusCode = 401;
+            return ["success" => false, "message" => "Вам необходимо пройти полную верификацию для осуществления данной операции"];
+        }
+
+        $history = History::find()->where(['user_id' => $this->user->id, 'status' => 0, 'type' => 1])->all();
+        if ($history) {
+            Yii::$app->response->statusCode = 400;
+            return ["success" => false, "message" => "У вас уже есть не обработанные заявки на вывод"];
+        }
+        
+        $history = new History(["date" => time(), "user_id" => $this->user->id, "type" => 1, 'wallet_direct_id' => 13]);
+
+        $history->start_chart_id = (int)Yii::$app->request->post("chart_id");
+        $history->end_chart_id = 0;
+        $history->start_price = (float)Yii::$app->request->post("price");
+
+        $chart = Chart::findOne(['id' => $history->start_chart_id]);
+        if (!$chart) {
+            Yii::$app->response->statusCode = 400;
+            return ["success" => false, "message" => "Валюта не найдена"];
+        }
+
+        //$payments = PaymentUser::find()->where(['user_id'=>$this->user->id, 'payment_id' => 2000])->all();
+        
+        $history->payment_id = 2000;
+        
+        $history->status = 0;
+
+
+        $wallet = Wallet::findOne(["user_id" => $this->user->id, "chart_id" => $chart->id,'type' => 1]); //b2b
+        if(!$wallet) {
+            Yii::$app->response->statusCode = 400;
+            return ["success" => false, "message" => "Счет не найден"];
+        }
+        $wallet->balance -= $history->start_price + $history->start_price * self::COMISSION_OUT / 100;
+        $wallet->blocked += $history->start_price + $history->start_price * self::COMISSION_OUT / 100;
+        if ($wallet->balance < 0) {
+            Yii::$app->response->statusCode = 400;
+            return ["success" => false, "message" => "Недостаточно средств на балансе"];
+        }
+
+        if (!(float)$this->price($chart->symbol, "RUB")) {
+            $history->end_price = 0;
+        } else {
+        //$history->end_price = (float)$this->price($chart->symbol, "RUB") * $history->start_price / 1;
+        $history->end_price = $history->start_price;
         }
 
         if(!$history->save()) {

@@ -450,7 +450,8 @@ class PaymentController extends BaseController
             $value = Yii::$app->request->post("value");
             $payment_receiver = Yii::$app->request->post("payment_receiver");
             $type = Yii::$app->request->post("type");
-            $type = Yii::$app->request->post("bank");
+            $bank = Yii::$app->request->post("bank");
+            
 
             $b2bpayment = new B2bPayment(["company_id" => $this->user->id, 'payment_id' => $type == 0 ? $payment_id : 2000]);
             $b2bpayment->fio_courier = $fio;
@@ -464,6 +465,7 @@ class PaymentController extends BaseController
             $b2bpayment->payment_receiver = $payment_receiver;
             $b2bpayment->type = $type;
             $b2bpayment->bank = $bank;
+            
             if(!$b2bpayment->save()) {
                 Yii::$app->response->statusCode = 400;
                 return ["success" => false, "message" => "Ошибка сохранения способа оплаты b2b"];
