@@ -141,10 +141,10 @@ class SellController extends Controller
         //$wallet = Wallet::find()->where(['user_id' => $model->id]);
         $model->status = 2;
         if ($model->wallet_direct_id == 10) {
-            $wallet = Wallet::findOne(['user_id' => $model->user_id, 'chart_id' => $item->start_chart_id,'type' => 0]);
+            $wallet = Wallet::findOne(['user_id' => $model->user_id, 'chart_id' => $model->start_chart_id,'type' => 0]);
             }
         if ($model->wallet_direct_id == 13) {
-            $wallet = Wallet::findOne(['user_id' => $model->user_id, 'chart_id' => $item->start_chart_id,'type' => 1]);
+            $wallet = Wallet::findOne(['user_id' => $model->user_id, 'chart_id' => $model->start_chart_id,'type' => 1]);
             }
         $wallet->balance += $model->start_price;
         $wallet->blocked = 0;

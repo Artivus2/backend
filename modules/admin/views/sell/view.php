@@ -6,8 +6,6 @@ use yii\grid\GridView;
 use yii\grid\ActionColumn;
 use yii\grid\DataColumn;
 
-/* @var $this yii\web\View */
-/* @var $model app\models\p2pAds */
 
 $this->title = $model->id;
 $this->params['breadcrumbs'][] = ['label' => '  >>>> Реквизиты для вывода', 'url' => ['index']];
@@ -15,7 +13,7 @@ $this->params['breadcrumbs'][] ='   >>>>  Заявка №'. $this->title;
 \yii\web\YiiAsset::register($this);
 ?>
  <p>
-        <?= Html::a('Подтвердить вывод', ['confirm', $model->id], ['class' => 'btn btn-success']) ?>
+        <?= Html::a('Подтвердить вывод', ['confirm', 'id' => $model->id], ['class' => 'btn btn-success']) ?>
     </p>
 <div class="sell-view">
 
@@ -37,7 +35,7 @@ $this->params['breadcrumbs'][] ='   >>>>  Заявка №'. $this->title;
             ],
             'start_price',
             'status',
-            [   'label' => 'Выбранный споcоб вывода',
+            [   'label' => 'Выбранный способ вывода',
                 'attribute'=>'payment_id',
                 'value'=>function($model) {
                 return $model->paymentType->name;

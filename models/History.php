@@ -63,16 +63,16 @@ class History extends \yii\db\ActiveRecord
     {
         return [
             'id' => 'ID',
-            'user_id' => 'User ID',
+            'user_id' => 'ID',
             'type' => 'Type',
-            'start_price' => 'Start Price',
-            'end_price' => 'End Price',
-            'start_chart_id' => 'Start Chart ID',
-            'end_chart_id' => 'End Chart ID',
-            'date' => 'Date',
-            'status' => 'Status',
-            'wallet_direct_id' => 'direction',
-            'payment_id' => 'Payment_id',
+            'start_price' => 'Нач. сумма',
+            'end_price' => 'Кон. сумма',
+            'start_chart_id' => 'Крипта',
+            'end_chart_id' => 'Валюта',
+            'date' => 'Дата',
+            'status' => 'Статус',
+            'wallet_direct_id' => 'Тип вывода',
+            'payment_id' => 'Способ вывода',
             'ipn_id' => 'ipn_id',
         ];
     }
