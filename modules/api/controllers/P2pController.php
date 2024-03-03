@@ -2009,7 +2009,7 @@ class P2pController extends BaseController
         // } else {
         //     $p2p_h = B2bHistory::find()->where(['p2p_ads_id' => $history_id, 'creator_id' => $this->user->id])->one();
         // }
-        $p2p_h = B2bHistory::find()->where(['p2p_ads_id' => $history_id, 'author_id' => $this->user->id])->one();
+        $p2p_h = P2pHistory::find()->where(['p2p_ads_id' => $history_id, 'author_id' => $this->user->id])->one();
 
         if (!$p2p_h) {
             Yii::$app->response->statusCode = 400;
