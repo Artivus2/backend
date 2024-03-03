@@ -107,7 +107,7 @@ class P2pController extends BaseController
         }
 
         //закрытие ордера в случае amount < 500 р
- /*       $history_six = P2pAds::find()->Where(["status" => -1])->all();
+        $history_six = P2pAds::find()->Where(["status" => -1])->all();
         foreach ($history_six as $item) {
             if($item) {
                 if ($item->currency_id == 1) {
@@ -115,11 +115,11 @@ class P2pController extends BaseController
                     if($item->amount * $item->course > 0 && $item->amount * $item->course < 500) {
                         
                             if($item->type == 2) {
-                                $wallet_seller = Wallet::find()->where(["user_id" => $item->user_id, "chart_id" => $item->chart_id])->one();
+                                $wallet_seller = Wallet::find()->where(["user_id" => $item->user_id, "chart_id" => $item->chart_id,'type' => 0])->one();
                                 $wallet_seller->balance += $item->amount;
                                 $wallet_seller->save();
                             }
-                            $item->status = 6;
+                            $item->status = 9;
                             $item->amount = 0;
                             $item->save();
                             
@@ -128,7 +128,29 @@ class P2pController extends BaseController
                 }
             }
         }
-*/  
+
+        $historyb2b_six = B2bAds::find()->Where(["status" => -1])->all();
+        foreach ($history_six as $item) {
+            if($item) {
+                if ($item->currency_id == 1) {
+
+                    if($item->amount * $item->course > 0 && $item->amount * $item->course < 500) {
+                        
+                            if($item->type == 2) {
+                                $wallet_seller = Wallet::find()->where(["user_id" => $item->user_id, "chart_id" => $item->chart_id,'type' => 0])->one();
+                                $wallet_seller->balance += $item->amount;
+                                $wallet_seller->save();
+                            }
+                            $item->status = 9;
+                            $item->amount = 0;
+                            $item->save();
+                            
+                        
+                    }
+                }
+            }
+        }
+  
 
         
                 
