@@ -664,26 +664,46 @@ class WalletController extends BaseController
     }
 
 
-
-    /**
-     * @SWG\Post(
+      /**
+     * @SWG\Get(
      *    path = "/wallet/history",
      *    tags = {"Wallet"},
-     *    summary = "История сделок",
+     *    summary = "История переводов, ввода и выводов",
      *    security={{"access_token":{}}},
      *    @SWG\Parameter(
+     *      name="id",
+     *      in="path",
+     *      type="integer",
+     *      description="id сделки",
+     *      @SWG\Schema(type="integer")
+     *     ),
+     *    @SWG\Parameter(
+     *      name="type",
+     *      in="path",
+     *      type="integer",
+     *      description="Счет исходящий (0	Финансовый, 1	B2B,   2	Спотовый,    3	Маржинальный,    4	Торговый,    5	Инвестиционный)",
+     *      @SWG\Schema(type="integer")
+     *     ),
+     *    @SWG\Parameter(
+     *      name="wallet_direct_id",
+     *      in="path",
+     *      type="integer",
+     *      description="10 - вывод общий счет, 11 - счет ввода freekassa, 12 - ввод coinremitter, 13 - вывод b2b",
+     *      @SWG\Schema(type="integer")
+     *     ),
+     *    @SWG\Parameter(
      *      name="status",
-     *      in="body",
-     *      description="Статус сделки",
-     *      required=true,
+     *      in="path",
+     *      type="integer",
+     *      description="0 - создан / в обработке, 1 - выполнено, 2 - отменен, -1 (завершен с coinremitter)",
      *      @SWG\Schema(type="integer")
      *     ),
      *	  @SWG\Response(
      *      response = 200,
-     *      description = "История криптовалют",
+     *      description = "Список активов пользователя",
      *      @SWG\Schema(
      *          type="array",
-     *          @SWG\Items(ref="#/definitions/History")
+     *          @SWG\Items(ref="#/definitions/Wallet")
      *      ),
      *    ),
      *    @SWG\Response(
@@ -703,31 +723,72 @@ class WalletController extends BaseController
     {
         Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
 
-        $status = Yii::$app->request->post("status");
+        //$statusIDs = array();
+        //$status = Yii::$app->request->get("status");
+        //$statusIDs = explode(",", $status);
+        $status = (array)Yii::$app->request->get("status");
+        if(!$status) {
+            $wherestatus = ["IS NOT", "status", null];
+        } else {
+            $wherestatus = ["in", "status", $status];
+        }
+
+        $type = (array)Yii::$app->request->get("type");
+        if(!$type) {
+            $wheretype = ["IS NOT", "type", null];
+        } else {
+            $wheretype = ["in", "type", $type];
+        }
+
+        $wallet_direct_id = (array)Yii::$app->request->get("wallet_direct_id");
+        if(!$wallet_direct_id) {
+            $wherewdi = ["IS NOT", "wallet_direct_id", null];
+        } else {
+            $wherewdi = ["in", "wallet_direct_id", $wallet_direct_id];
+        }
+
+        $id = (int)Yii::$app->request->get("id");
+        if(!$id) {
+            $whereid = ["IS NOT", "id", null];
+        } else {
+            $whereid = ["in", "id", $id];
+        }
+
 
         if(!$this->user) {
             Yii::$app->response->statusCode = 401;
             return ["success" => false, "message" => "Token не найден"];
         }
-
+        
+        if (!in_array($this->user->verify_status, self::VERIFY_STATUS))
+        {
+            Yii::$app->response->statusCode = 401;
+            return ["success" => false, "message" => "Вам необходимо пройти полную верификацию для осуществления данной операции"];
+        }
+        
         $data = [];
-        $history_query = History::find()->joinWith(["startChart", "endChart"])->where(["user_id" => $this->user->id, "status" => $status])->all();
-        //$history_query = History::find()->joinWith(["startChart", "endChart"])->where(["user_id" => $this->user->id])->orderBy("date DESC")->all();
+        //$history_query = History::find()->joinWith(["startChart", "endChart"])->where(["user_id" => $this->user->id, "status" => $status])->all();
+        $history_query = History::find()
+        ->where(["user_id" => $this->user->id])
+        ->andWhere($whereid)
+        ->andWhere($wheretype)
+        ->andWhere($wherewdi)
+        ->andWhere($wherestatus)
+        ->orderBy("date DESC")->all();
 
         foreach ($history_query as $history) {
             $data[] = [
                 "id" => $history->id,
-                "type" => $history->type,
+                
+                "type" => $history->walletType->title,
                 "status" => $history->status,
                 "date" => date("Y-m-d H:i:s", $history->date),
-                "start" => [
-                    "symbol" => isset($history->startChart) ? $history->startChart->symbol : "RUB",
-                    "price" => $history->start_price
-                ],
-                "end" => [
-                    "symbol" => isset($history->endChart) ? $history->endChart->symbol : "RUB",
-                    "price" => $history->end_price
-                ],
+                "start_symbol" => isset($history->startChart) ? $history->startChart->symbol : "RUB",
+                "start_price" => $history->start_price,
+                "end_symbol" => isset($history->endChart) ? $history->endChart->symbol : "RUB",
+                "end_price" => $history->end_price,
+                "wallet_direct_id" => $history->directType->title,
+                "payment_id" => $history->paymentType->name ?? '-'
             ];
         }
 
@@ -745,7 +806,6 @@ class WalletController extends BaseController
      *      name="wallettype",
      *      in="path",
      *      type="integer",
-     
      *      description="Тип кошелька  0 - фин, 1 - b2b, 2 - спот, 3 - марж, 4 - торговый, 5 - инв, 6 - все (кроме b2b), 10 - вывод ",
      *      @SWG\Schema(type="integer")
      *     ),

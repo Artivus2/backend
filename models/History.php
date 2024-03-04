@@ -5,7 +5,7 @@ namespace app\models;
 use Yii;
 
 /**
- * @SWG\Definition(required={"id", "type", "start_price", "end_price", "start_chart_id", "end_chart_id", "date", "status",''payment_id})
+ * @SWG\Definition(required={"id", "type", "start_price", "end_price", "start_chart_id", "end_chart_id", "date", "status", "payment_id"})
  *
  * @SWG\Property(property="id", type="integer")
  * @SWG\Property(property="type", type="integer")
@@ -15,6 +15,7 @@ use Yii;
  * @SWG\Property(property="end_chart_id", type="integer")
  * @SWG\Property(property="date", type="integer")
  * @SWG\Property(property="status", type="integer")
+ * @SWG\Property(property="wallet_direct_id", type="integer")
  * @SWG\Property(property="ipn", type="string")
  */
 class History extends \yii\db\ActiveRecord
@@ -34,7 +35,7 @@ class History extends \yii\db\ActiveRecord
     {
         return [
             [['user_id', 'type', 'start_price', 'end_price', 'start_chart_id', 'end_chart_id', 'date'], 'required'],
-            [['user_id', 'type', 'start_chart_id', 'end_chart_id', 'date', 'status','payment_id'], 'integer'],
+            [['user_id', 'type', 'start_chart_id', 'end_chart_id', 'date', 'status','payment_id','wallet_direct_id'], 'integer'],
             [['start_price', 'end_price'], 'number'],
         ];
     }

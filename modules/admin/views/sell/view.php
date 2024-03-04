@@ -85,7 +85,7 @@ $this->params['breadcrumbs'][] ='   >>>>  Заявка №'. $this->title;
          'class'=>'table table-striped table-responsive'
          ],
         'columns' => [
-            
+            'id',
             'fio_courier',
             'phone_courier',
             'build_for_courier',

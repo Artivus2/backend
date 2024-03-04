@@ -10,10 +10,10 @@ use yii\grid\GridView;
 /** @var yii\web\View $this */
 /** @var yii\data\ActiveDataProvider $dataProvider */
 
-$this->title = 'Вывод средств';
+$this->title = 'История переводов';
 $this->params['breadcrumbs'][] = $this->title;
 ?>
-<div class="sell-index">
+<div class="transfer-index">
 
     <h1><?= Html::encode($this->title) ?></h1>
 
