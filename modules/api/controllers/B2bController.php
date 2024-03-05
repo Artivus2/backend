@@ -1979,7 +1979,7 @@ class B2bController extends BaseController
         }
 
         $history_id = Yii::$app->request->post("b2b_ads_id");
-        $b2b_ads = B2bAds::find()->where(['id' => $history_id, 'status' => [-1,6]])->one();
+        $b2b_ads = B2bAds::find()->where(['id' => $history_id, 'status' => [-1,6,9]])->one();
         $b2b_h = B2bHistory::find()->where(['b2b_ads_id' => $history_id, 'creator_id' => $this->user->id, 'status' => 2])->one();
 
         if (!$b2b_ads) {
