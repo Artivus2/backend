@@ -17,6 +17,9 @@ use app\models\B2bPayment;
 use app\models\P2pAds;
 use app\models\WalletAddress;
 use CoinRemitter\CoinRemitter;
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\SMTP;
+use PHPMailer\PHPMailer\Exception;
 
 /**
  * Default controller for the `api` module
@@ -56,14 +59,37 @@ class PaymentController extends BaseController
         //     "total_amount" => (float)$total_amount,
         //     "status_code" => $invoice["data"]["status_code"]
         // ];
-        Yii::$app->mail->compose()
-        ->setTo($user->email)
-        ->setFrom([Yii::$app->params['senderEmail'] => Yii::$app->params['senderName']])
-        ->setSubject("Код подтверждения")
-        ->setTextBody("Ваш код подтверждения: " . $code . ".")
-        ->send();
+        $mail = new PHPMailer(true);
+
+try {
+    //Server settings
+    $mail->SMTPDebug = SMTP::DEBUG_SERVER;                      //Enable verbose debug output
+    $mail->isSMTP();                                            //Send using SMTP
+    $mail->Host       = 'smtp.yandex.com';                     //Set the SMTP server to send through
+    $mail->SMTPAuth   = true;                                   //Enable SMTP authentication
+    $mail->Username   = 'support@greenavicash.ru';                     //SMTP username
+    $mail->Password   = 'M354at790!';                               //SMTP password
+    $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;            //Enable implicit TLS encryption
+    $mail->Port       = 465;                                    //TCP port to connect to; use 587 if you have set `SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS`
+
+    //Recipients
+    $mail->setFrom('support@greenavicash.ru', 'Mailer');
+    $mail->addAddress('artivus3@yandex.ru', 'Artivus');     //Add a recipient
+
+    //Attachments
+    //Content
+    $mail->isHTML(true);                                  //Set email format to HTML
+    $mail->Subject = 'Here is the subject';
+    $mail->Body    = 'This is the HTML message body <b>in bold!</b>';
+    $mail->AltBody = 'This is the body in plain text for non-HTML mail clients';
+
+    $mail->send();
+    echo 'Message has been sent';
+} catch (Exception $e) {
+    echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
+}
         
-        return $user->email;
+        return "ok";
     }
 
     public function actionFailIpn (){
