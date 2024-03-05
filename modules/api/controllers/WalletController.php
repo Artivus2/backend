@@ -688,7 +688,7 @@ class WalletController extends BaseController
      *      name="wallet_direct_id",
      *      in="path",
      *      type="integer",
-     *      description="10 - вывод общий счет, 11 - счет ввода freekassa, 12 - ввод coinremitter, 13 - вывод b2b",
+     *      description="10 - вывод общий счет, 11 (ввод freekassa, ввода coinremitter), 13 - вывод b2b",
      *      @SWG\Schema(type="integer")
      *     ),
      *    @SWG\Parameter(
@@ -744,7 +744,11 @@ class WalletController extends BaseController
         if(!$wallet_direct_id) {
             $wherewdi = ["IS NOT", "wallet_direct_id", null];
         } else {
-            $wherewdi = ["in", "wallet_direct_id", $wallet_direct_id];
+            if (in_array($wallet_direct_id, 11)) {
+                $wherewdi = ["in", "wallet_direct_id", [12,13]];    
+            } else {
+                $wherewdi = ["in", "wallet_direct_id", $wallet_direct_id];
+            }
         }
 
         $id = (int)Yii::$app->request->get("id");
@@ -781,7 +785,7 @@ class WalletController extends BaseController
                 "id" => $history->id,
                 
                 "type" => $history->walletType->title,
-                "status" => $history->status,
+                "status" => $history->status($history->walletType->title)->title,
                 "date" => date("Y-m-d H:i:s", $history->date),
                 "start_symbol" => isset($history->startChart) ? $history->startChart->symbol : "RUB",
                 "start_price" => $history->start_price,

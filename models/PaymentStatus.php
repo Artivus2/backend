@@ -10,6 +10,7 @@ use Yii;
  * @property int $id
  * @property int $status_id
  * @property string $title
+ * @property string $type
  */
 class PaymentStatusType extends \yii\db\ActiveRecord
 {
@@ -27,7 +28,7 @@ class PaymentStatusType extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['id','type'], 'required'],
+            [['id','type','status_id'], 'required'],
             [['title'], 'string'],
         ];
     }
@@ -40,8 +41,8 @@ class PaymentStatusType extends \yii\db\ActiveRecord
         return [
             'id' => 'ID',
             'title' => 'Наименование',
-            'type' => 'Тип статуса',
-            'active' => 'Активный',
+            'status_id' => 'Статус',
+            'type' => 'Номер счета',
         ];
     }
 

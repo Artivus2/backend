@@ -65,6 +65,11 @@ class History extends \yii\db\ActiveRecord
         return $this->hasOne(WalletType::class, ['id' => 'wallet_direct_id']);
     }
 
+    public function getStatus($type)
+    {
+        return $this->hasOne(PaymentStatus::class, ['type' => $type,'id' => 'status']);
+    }
+
 
 
 
