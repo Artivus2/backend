@@ -254,6 +254,13 @@ class B2bController extends BaseController
             $wallet->balance -= $b2b->amount; //резервирование средств с финансового кошелька для продажи криптовалюты
         }
 
+        if ($b2b->amount > $wallet->balance) {
+
+            Yii::$app->response->statusCode = 401;
+            return ["success" => false, "message" => "Сумма ордера превышает текущий баланс кошелька"];
+
+        }
+
         if(!$wallet->save()) {
             Yii::$app->response->statusCode = 400;
             return ["success" => false, "message" => "Ошибка сохранения счета"];
@@ -448,9 +455,9 @@ class B2bController extends BaseController
         }
         
         
-        $wallet = Wallet::findOne(["user_id" => $this->user->id, "chart_id" =>$chart->id]); //
+        $wallet = Wallet::findOne(["user_id" => $this->user->id, "chart_id" =>$chart->id, 'type' => 1]); //
         if(!$wallet) {
-            $wallet = new Wallet(["user_id" => $this->user->id, "chart_id" => $chart->id, "balance" => 0, "type" => 0]);
+            $wallet = new Wallet(["user_id" => $this->user->id, "chart_id" => $chart->id, "balance" => 0, "type" => 1]); //b2b
             //return ["success" => false, "message" => "Необходимо пополнить кошелек перед созданием ордера на продажу"];
         }
 
@@ -651,7 +658,7 @@ class B2bController extends BaseController
 
         }
 
-        $current_wallet = Wallet::find()->where(["user_id" => $result->company_id, "chart_id" => $chart_id])->one();
+        $current_wallet = Wallet::find()->where(["user_id" => $result->company_id, "chart_id" => $chart_id,'type' => 1])->one();
         if (!$current_wallet) {
             Yii::$app->response->statusCode = 401;
             return ["success" => false, "message" => "Не достаточно средств на балансе или кошелек не найден, удалите ордер или создайте другой"];
@@ -1275,7 +1282,7 @@ class B2bController extends BaseController
 
         if ($b2b_ads->type == 1) {
             $seller_offer = (float)Yii::$app->request->post("offer"); 
-            $wallet_seller = Wallet::find()->where(['user_id' => $this->user->id, 'chart_id' => $b2b_ads->chart_id])->one(); //наличие chart на кошельке чувака
+            $wallet_seller = Wallet::findOne(['user_id' => $this->user->id, 'chart_id' => $b2b_ads->chart_id, 'type' => 1]); //наличие chart на кошельке чувака
             if (!$wallet_seller) {
         
                 Yii::$app->response->statusCode = 400;
@@ -1701,7 +1708,7 @@ class B2bController extends BaseController
 
                 
                 if ($b2b_ads->type == 2) {
-                    $wallet_seller = Wallet::find()->where(["user_id" => $b2b_ads->company_id, "chart_id" => $b2b_ads->chart_id])->one();
+                    $wallet_seller = Wallet::findOne(["user_id" => $b2b_ads->company_id, "chart_id" => $b2b_ads->chart_id, "type" => 1]);
                     if (!$wallet_seller) {
                     Yii::$app->response->statusCode = 400;
                     return ["success" => false, "message" => "Невозможно пополнить баланс продавца"];
@@ -1812,7 +1819,7 @@ class B2bController extends BaseController
                 $b2b_h->description_id = $desc_id;
                 if ($b2b_ads->type == 1) {
                     $b2b_ads->amount += $b2b_h->price; //вернуть средства в ордер
-                    $wallet_seller = Wallet::find()->where(['user_id' => $b2b_h->author_id, 'chart_id' => $b2b_ads->chart_id])->one();
+                    $wallet_seller = Wallet::findOne(['user_id' => $b2b_h->author_id, 'chart_id' => $b2b_ads->chart_id, 'type' => 1]);
 
                     if (!$wallet_seller) {
                     Yii::$app->response->statusCode = 400;
@@ -2003,9 +2010,9 @@ class B2bController extends BaseController
                 }
             }
             $b2b_h->status = 4;
-            $wallet_seller = Wallet::findOne(["user_id" => $b2b_h->author_id, 'chart_id' => $b2b_ads->chart_id]);
+            $wallet_seller = Wallet::findOne(["user_id" => $b2b_h->author_id, 'chart_id' => $b2b_ads->chart_id, 'type' => 1]);
             if (!$wallet_seller) {
-                $wallet_seller = new Wallet(["user_id" => $b2b_h->author_id, "chart_id" => $b2b_ads->chart_id, "type" => 0]);
+                $wallet_seller = new Wallet(["user_id" => $b2b_h->author_id, "chart_id" => $b2b_ads->chart_id, "type" => 1]);
             }
             $wallet_seller->balance += $b2b_h->price;
             if(!$wallet_seller->save()) {
@@ -2034,9 +2041,9 @@ class B2bController extends BaseController
                 }
             }
             $b2b_h->status = 4;
-            $wallet_buyer = Wallet::findOne(["user_id" => $b2b_h->creator_id, 'chart_id' => $b2b_ads->chart_id]);
+            $wallet_buyer = Wallet::findOne(["user_id" => $b2b_h->creator_id, 'chart_id' => $b2b_ads->chart_id, 'type' => 1]);
             if (!$wallet_buyer) {
-                $wallet_buyer = new Wallet(["user_id" => $b2b_h->creator_id, "chart_id" => $b2b_ads->chart_id]);
+                $wallet_buyer = new Wallet(["user_id" => $b2b_h->creator_id, "chart_id" => $b2b_ads->chart_id, 'type' => 1]);
             }
             $wallet_buyer->balance += $b2b_h->price;
             if(!$wallet_buyer->save()) {

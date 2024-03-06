@@ -218,9 +218,9 @@ class P2pController extends BaseController
         return ["success" => false, "message" => "Превышено количество способов оплаты в рамках одного ордера"];
         }
         
-        $wallet = Wallet::findOne(["user_id" => $this->user->id, "chart_id" =>$chart->id]); //
+        $wallet = Wallet::findOne(["user_id" => $this->user->id, "chart_id" =>$chart->id,'type' => 0]); //
         if(!$wallet) {
-            $wallet = new Wallet(["user_id" => $this->user->id, "chart_id" => $chart->id, "balance" => 0]);
+            $wallet = new Wallet(["user_id" => $this->user->id, "chart_id" => $chart->id, "balance" => 0, 'type' => 0]);
             return ["success" => false, "message" => "Необходимо пополнить кошелек перед созданием ордера на продажу"];
         }
 
@@ -465,9 +465,9 @@ class P2pController extends BaseController
         return ["success" => false, "message" => "Превышено количество способов оплаты в рамках одного ордера"];
         }
         
-        $wallet = Wallet::findOne(["user_id" => $this->user->id, "chart_id" =>$chart->id]); //
+        $wallet = Wallet::findOne(["user_id" => $this->user->id, "chart_id" =>$chart->id, 'type' => 0]); //
         if(!$wallet) {
-            $wallet = new Wallet(["user_id" => $this->user->id, "chart_id" => $chart->id, "balance" => 0]);
+            $wallet = new Wallet(["user_id" => $this->user->id, "chart_id" => $chart->id, "balance" => 0, 'type' => 0]);
             //return ["success" => false, "message" => "Необходимо пополнить кошелек перед созданием ордера на продажу"];
         }
 
@@ -686,7 +686,7 @@ class P2pController extends BaseController
 
         }
         
-        $current_wallet = Wallet::find()->where(["user_id" => $result->user_id, "chart_id" => $chart_id])->one();
+        $current_wallet = Wallet::findOne(["user_id" => $result->user_id, "chart_id" => $chart_id, 'type' => 0]);
 
         if (!$current_wallet) {
             Yii::$app->response->statusCode = 401;
@@ -1394,7 +1394,7 @@ class P2pController extends BaseController
 
         if ($p2p_ads->type == 1) {
             $seller_offer = (float)Yii::$app->request->post("offer"); 
-            $wallet_seller = Wallet::find()->where(['user_id' => $this->user->id, 'chart_id' => $p2p_ads->chart_id])->one(); //наличие chart на кошельке чувака
+            $wallet_seller = Wallet::findOne(['user_id' => $this->user->id, 'chart_id' => $p2p_ads->chart_id,'type' => 0]); //наличие chart на кошельке чувака фин
             if (!$wallet_seller) {
         
                 Yii::$app->response->statusCode = 400;
@@ -1791,7 +1791,7 @@ class P2pController extends BaseController
                 //$p2p_h->price = 0;
                 
                 if ($p2p_ads->type == 2) {
-                    $wallet_seller = Wallet::find()->where(["user_id" => $p2p_ads->user_id, "chart_id" => $p2p_ads->chart_id])->one();
+                    $wallet_seller = Wallet::findOne(["user_id" => $p2p_ads->user_id, "chart_id" => $p2p_ads->chart_id, 'type' => 0]); // фин
                     if (!$wallet_seller) {
                     Yii::$app->response->statusCode = 400;
                     return ["success" => false, "message" => "Невозможно пополнить баланс продавца"];
@@ -1913,7 +1913,7 @@ class P2pController extends BaseController
                 $p2p_h->description_id = $desc_id;
                 if ($p2p_ads->type == 1) {
                  $p2p_ads->amount += $p2p_h->price; //вернуть средства в ордер
-                 $wallet_seller = Wallet::find()->where(['user_id' => $p2p_h->author_id, 'chart_id' => $p2p_ads->chart_id])->one();
+                 $wallet_seller = Wallet::findOne(['user_id' => $p2p_h->author_id, 'chart_id' => $p2p_ads->chart_id,'type' => 0]);
 
                  if (!$wallet_seller) {
                     Yii::$app->response->statusCode = 400;
@@ -2116,7 +2116,7 @@ class P2pController extends BaseController
                 }
             }
             $p2p_h->status = 4;
-            $wallet_seller = Wallet::findOne(["user_id" => $p2p_h->author_id, 'chart_id' => $p2p_ads->chart_id]);
+            $wallet_seller = Wallet::findOne(["user_id" => $p2p_h->author_id, 'chart_id' => $p2p_ads->chart_id,'type' => 0]);
             if (!$wallet_seller) {
                 $wallet_seller = new Wallet(["user_id" => $p2p_h->author_id, "chart_id" => $p2p_ads->chart_id, "type" => 0]);
             }
@@ -2147,9 +2147,9 @@ class P2pController extends BaseController
                 }
             }
             $p2p_h->status = 4;
-            $wallet_buyer = Wallet::findOne(["user_id" => $p2p_h->creator_id, 'chart_id' => $p2p_ads->chart_id]);
+            $wallet_buyer = Wallet::findOne(["user_id" => $p2p_h->creator_id, 'chart_id' => $p2p_ads->chart_id,'type' => 0]);
             if (!$wallet_buyer) {
-                $wallet_buyer = new Wallet(["user_id" => $p2p_h->creator_id, "chart_id" => $p2p_ads->chart_id]);
+                $wallet_buyer = new Wallet(["user_id" => $p2p_h->creator_id, "chart_id" => $p2p_ads->chart_id,'type' => 0]);
             }
             $wallet_buyer->balance += $p2p_h->price;
             if(!$wallet_buyer->save()) {
