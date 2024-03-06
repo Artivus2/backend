@@ -741,14 +741,18 @@ class WalletController extends BaseController
             $wheretype = ["in", "type", $type];
         }
 
-        $wallet_direct_id = (array)Yii::$app->request->get("wallet_direct_id", 0);
+        $wallet_direct_id = (int)Yii::$app->request->get("wallet_direct_id");
         if(!$wallet_direct_id) {
             $wherewdi = ["IS NOT", "wallet_direct_id", null];
         } else {
-            if ($wallet_direct_id == 11) {
-                $wherewdi = ["in", "wallet_direct_id", [12,13]];    
-            } else {
-                $wherewdi = ["in", "wallet_direct_id", $wallet_direct_id];
+            if ((int)$wallet_direct_id == 11) {
+                $wherewdi = ["in", "wallet_direct_id", [11,12]];    
+            }
+            if ((int)$wallet_direct_id == 10) {
+                $wherewdi = ["wallet_direct_id" => 10];    
+            }
+            if ((int)$wallet_direct_id == 13) {
+                $wherewdi = ["wallet_direct_id" => 13];    
             }
         }
 
@@ -782,7 +786,7 @@ class WalletController extends BaseController
         ->orderBy("date DESC")->all();
 
         foreach ($history_query as $history) {
-            $status = PaymentStatus::find(['type' => $history->type,'status' => $history->status])->one();
+            $status = PaymentStatus::findOne(['type' => $history->wallet_direct_id,'status_id' => $history->status]);
             $data[] = [
                 "id" => $history->id,
                 "type" => $history->walletType->title,
