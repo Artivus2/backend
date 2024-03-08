@@ -255,31 +255,28 @@ class RatingsController extends BaseController
             return ["success" => false, "message" => "Вы уже ставили оценку этому пользователю за последние 24 часа", "count" => $result, "id" => $rateduser];
         }
 
-        if($rateduser == $this->user->id) {
-            Yii::$app->response->statusCode = 401;
-            return ["success" => false, "message" => "Себе нельзя оставлять отзыв"];
+        if($rateduser !== $this->user->id) {
+
+            $ratingshistory = new RatingsHistory();
+            $ratingshistory->user_id = Yii::$app->request->post("user_id");
+            $ratingshistory->type = Yii::$app->request->post("type");
+            $ratingshistory->created_at = Yii::$app->formatter->asDate('now', 'yyyy-MM-dd H:i:s');
+            $desc = Yii::$app->request->post("description");
+            $desc = trim($desc);
+            $desc = stripslashes($desc);
+            $desc = htmlspecialchars($desc);
+            $ratingshistory->description = $desc;
+            $ratingshistory->user_id_rater = $this->user->id;
+            if(!$ratingshistory->save()) {
+                Yii::$app->response->statusCode = 400;
+                return ["success" => false, "message" => "Не удалось сохранить отзыв"];
+            };    
         }
 
-        $data = Yii::$app->request->post();
-        $ratingshistory = new RatingsHistory();
-        $ratingshistory->user_id = Yii::$app->request->post("user_id");
         
-        $ratingshistory->type = Yii::$app->request->post("type");
-        $ratingshistory->created_at = Yii::$app->formatter->asDate('now', 'yyyy-MM-dd H:i:s');
-	$desc = Yii::$app->request->post("description");
-	$desc = trim($desc);
-	$desc = stripslashes($desc);
-	$desc = htmlspecialchars($desc);
-        $ratingshistory->description = $desc;
-        $ratingshistory->user_id_rater = $this->user->id;
-        if(!$ratingshistory->save()) {
-            Yii::$app->response->statusCode = 400;
-            return ["success" => false, "message" => "Не удалось сохранить отзыв", 'data'=>$data];
-
-        };
 
         
-        return ["success" => true, "message" => "Отзыв добавлен", 'data'=> $data];
+        return ["success" => true, "message" => "Отзыв добавлен"];
     }
 
 
