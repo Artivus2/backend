@@ -7,6 +7,8 @@ use yii\helpers\Url;
 use yii\web\Controller;
 use app\models\User;
 use app\models\RatingsHistory;
+use app\models\P2pHistory;
+use app\models\B2bHistory;
 use yii\db\ActiveQuery;
 
 
@@ -198,6 +200,12 @@ class RatingsController extends BaseController
      *      required=true,
      *      @SWG\Schema(type="integer")
      *     ),
+     *      name="history_id",
+     *      in="body",
+     *      description="Ид ордера в истории",
+     *      required=true,
+     *      @SWG\Schema(type="integer")
+     *     ),
      *    @SWG\Parameter(
      *      name="type",
      *      in="body",
@@ -242,36 +250,47 @@ class RatingsController extends BaseController
             return ["success" => false, "message" => "Не выбран пользователь для оценки"];
         }
 
-        if(!Yii::$app->request->post("type")) {
+        $history_id = Yii::$app->request->post("history_id");
+        if(!$history_id) {
+            Yii::$app->response->statusCode = 401;
+            return ["success" => false, "message" => "не указан номер ордера"];
+        }
+
+        $type = Yii::$app->request->post("type");
+        if(!$type) {
             Yii::$app->response->statusCode = 401;
             return ["success" => false, "message" => "Не выбранв оценка"];
         }
 
 
-        $result = RatingsHistory::find()->where(["user_id" => $rateduser])->andWhere('created_at > DATE_SUB(NOW(), INTERVAL 1 DAY)')->count();
+        $result = RatingsHistory::find()
+        ->where(["user_id" => $rateduser])
+        ->where(["user_id_rater" => $this->user->id])
+        ->andwhere(["history_id" => $history_id])
+        ->andWhere('created_at > DATE_SUB(NOW(), INTERVAL 1 DAY)')
+        ->count();
 
         if($result > 0 ) {
             Yii::$app->response->statusCode = 401;
-            return ["success" => false, "message" => "Вы уже ставили оценку этому пользователю за последние 24 часа", "count" => $result, "id" => $rateduser];
+            return ["success" => false, "message" => "Вы уже ставили оценку этому пользователю и ордеру за последние 24 часа"];
         }
-
-        if($rateduser !== $this->user->id) {
-
-            $ratingshistory = new RatingsHistory();
-            $ratingshistory->user_id = Yii::$app->request->post("user_id");
-            $ratingshistory->type = Yii::$app->request->post("type");
-            $ratingshistory->created_at = Yii::$app->formatter->asDate('now', 'yyyy-MM-dd H:i:s');
-            $desc = Yii::$app->request->post("description");
-            $desc = trim($desc);
-            $desc = stripslashes($desc);
-            $desc = htmlspecialchars($desc);
-            $ratingshistory->description = $desc;
-            $ratingshistory->user_id_rater = $this->user->id;
-            if(!$ratingshistory->save()) {
-                Yii::$app->response->statusCode = 400;
-                return ["success" => false, "message" => "Не удалось сохранить отзыв"];
-            };    
-        }
+        
+        $ratingshistory = new RatingsHistory();
+        $ratingshistory->user_id = $rateduser;
+        $ratingshistory->user_id_rater = $this->user->id;
+        $ratingshistory->type = $type;
+        $ratingshistory->history_id = $history_id;
+        $ratingshistory->created_at = Yii::$app->formatter->asDate('now', 'yyyy-MM-dd H:i:s');
+        $desc = Yii::$app->request->post("description");
+        $desc = trim($desc);
+        $desc = stripslashes($desc);
+        $desc = htmlspecialchars($desc);
+        $ratingshistory->description = $desc;
+        
+        if(!$ratingshistory->save()) {
+            Yii::$app->response->statusCode = 400;
+            return ["success" => false, "message" => "Не удалось сохранить отзыв"];
+        };    
 
         
 

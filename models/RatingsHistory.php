@@ -10,6 +10,7 @@ use Yii;
  * @SWG\Property(property="type", type="integer")
  * @SWG\Property(property="description", type="string")
  * @SWG\Property(property="user_id_rater", type="integer")
+ * @SWG\Property(property="history_id", type="integer")
  */
 class RatingsHistory extends \yii\db\ActiveRecord
 {
@@ -28,11 +29,10 @@ class RatingsHistory extends \yii\db\ActiveRecord
     {
         return [
             [['user_id', 'type'], 'required'],
-            [['user_id'], 'integer'],
+            [['user_id','user_id_rater','history_id'], 'integer'],
             [['type'], 'integer'],
             [['description'], 'string'],
             [['description'], 'string', 'max' => 255],
-            [['user_id_rater'], 'integer'],
         ];
     }
 
@@ -48,6 +48,7 @@ class RatingsHistory extends \yii\db\ActiveRecord
             'created_at' => 'Date',
             'description' => 'Description',
             'user_id_rater' => 'ID who gave rating',
+            'history_id' => 'Id history',
         ];
     }
 
