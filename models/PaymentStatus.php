@@ -12,7 +12,7 @@ use Yii;
  * @property string $title
  * @property string $type
  */
-class PaymentStatusType extends \yii\db\ActiveRecord
+class PaymentStatus extends \yii\db\ActiveRecord
 {
     /**
      * {@inheritdoc}

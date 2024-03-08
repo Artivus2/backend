@@ -682,14 +682,14 @@ class WalletController extends BaseController
      *      name="type",
      *      in="path",
      *      type="integer",
-     *      description="Счет исходящий (0	Финансовый, 1	B2B,   2	Спотовый,    3	Маржинальный,    4	Торговый,    5	Инвестиционный)",
+     *      description="Счет исходящий (0	Финансовый, 1	B2B )",
      *      @SWG\Schema(type="integer")
      *     ),
      *    @SWG\Parameter(
      *      name="wallet_direct_id",
      *      in="path",
      *      type="integer",
-     *      description="10 - вывод общий счет, 11 (ввод freekassa, ввода coinremitter), 13 - вывод b2b",
+     *      description="10 - вывод общий счет, 11 (ввод freekassa, ввода coinremitter), 13 - вывод b2b , (0,1 - переводы)",
      *      @SWG\Schema(type="integer")
      *     ),
      *    @SWG\Parameter(
@@ -743,7 +743,7 @@ class WalletController extends BaseController
 
         $wallet_direct_id = (int)Yii::$app->request->get("wallet_direct_id");
         if(!$wallet_direct_id) {
-            $wherewdi = ["IS NOT", "wallet_direct_id", null];
+            $wherewdi = ["in", "wallet_direct_id", [0,1]];
         } else {
             if ((int)$wallet_direct_id == 11) {
                 $wherewdi = ["in", "wallet_direct_id", [11,12]];    
@@ -1124,7 +1124,7 @@ class WalletController extends BaseController
             return ["success" => false, "message" => "Вам необходимо пройти полную верификацию для осуществления данной операции"];
         }
 
-        $result = WalletType::find(['active' => 1])->all();
+        $result = WalletType::find()->where(['active' => 1])->all();
 
         
 

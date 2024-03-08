@@ -32,88 +32,88 @@ class WalletController extends BaseController
         
 
         $input_offers = History::find()->where(['wallet_direct_id' => 12])->andWhere(['>=','status',0])->all();
-                foreach ($input_offers as $item) {
-                    $param = [
-                        'invoice_id'=>$item->ipn_id
-                    ];
-                    
-                    $invoice = $obj->get_invoice($param);
-                    //просрочен
+        foreach ($input_offers as $item) {
+            $param = [
+                'invoice_id'=>$item->ipn_id
+            ];
+            
+            $invoice = $obj->get_invoice($param);
+            //просрочен
 
-                    //var_dump($invoice["data"]["status_code"]);
-                    $coin = $invoice["data"]["coin"];
-                    $base_currency = $invoice["data"]["base_currency"];
-                    $paid_amount = $invoice["data"]["paid_amount"][$coin] ?? 0;
-                    $total_amount = $invoice["data"]["total_amount"][$coin] ?? 0;
+            //var_dump($invoice["data"]["status_code"]);
+            $coin = $invoice["data"]["coin"];
+            $base_currency = $invoice["data"]["base_currency"];
+            $paid_amount = $invoice["data"]["paid_amount"][$coin] ?? 0;
+            $total_amount = $invoice["data"]["total_amount"][$coin] ?? 0;
 
-                   
-                    if ((int)$invoice["data"]["status_code"] == 4) {
+            
+            if ((int)$invoice["data"]["status_code"] == 4) {
 
 
-                        $item->status = -4;
-                        $wallet = Wallet::findOne(["user_id" => $item->user_id, "chart_id" => $item->start_chart_id, "type" => 0]);
-                            if(!$wallet) {
-                                $wallet = new Wallet(["user_id" => $item->user_id, "chart_id" => $item->start_chart_id, "balance" => 0, "type" => 0,  'balance' => $paid_amount]);
-                            }
-                            //$wallet->balance += $paid_amount;
-                            //$wallet->save();
-                        $item->save();
+                $item->status = -4;
+                $wallet = Wallet::findOne(["user_id" => $item->user_id, "chart_id" => $item->start_chart_id, "type" => 0]);
+                    if(!$wallet) {
+                        $wallet = new Wallet(["user_id" => $item->user_id, "chart_id" => $item->start_chart_id, "balance" => 0, "type" => 0,  'balance' => $paid_amount]);
                     }
+                    //$wallet->balance += $paid_amount;
+                    //$wallet->save();
+                $item->save();
+            }
 
-                    if ((int)$invoice["data"]["status_code"] == 5) {
-                        $item->status = -1;
-                        $item->save();
-                    }
-                    
-                    if ((int)$invoice["data"]["status_code"] == 1) {
-                        
-                        $item->status = -1;
-                        $wallet = Wallet::findOne(["user_id" => $item->user_id, "chart_id" => $item->start_chart_id, "type" => 0]);
-                        if(!$wallet) {
-                            $wallet = new Wallet(["user_id" => $item->user_id, "chart_id" => $item->start_chart_id, "balance" => $paid_amount, "type" => 0]);
-                        }
-                        $wallet->balance += $paid_amount;
-                        $wallet->save();
-                        $item->save();
-                    }
-                    
-                    if ((int)$invoice["data"]["status_code"] == 2) {
-                        //недоплачен ждем просрочки
-                        
-                        $item->status = -1;
-                        //потом 1
-                        
-                        $wallet = Wallet::findOne(["user_id" => $item->user_id, "chart_id" => $item->start_chart_id, "type" => 0]);
-                        if(!$wallet) {
-                            $wallet = new Wallet(["user_id" => $item->user_id, "chart_id" => $item->start_chart_id, "balance" => 0, "type" => 0,  'balance' => $paid_amount]);
-                        }
-                        $wallet->balance += $paid_amount;
-                        $wallet->save();
-                        $item->save();
-                        
-                        
-                    }
-
-                    if ((int)$invoice["data"]["status_code"] == 3) {
-                        //добавляем но надо смотреть
-                        $item->status = -1;
-                        
-                        $wallet = Wallet::findOne(["user_id" => $item->user_id, "chart_id" => $item->start_chart_id, "type" => 0]);
-                        if(!$wallet) {
-                            $wallet = new Wallet(["user_id" => $item->user_id, "chart_id" => $item->start_chart_id, "balance" => 0, "type" => 0,  'balance' => $paid_amount]);
-                        }
-                        $wallet->balance += $paid_amount;
-                        $item->start_price = $paid_amount;
-                        $wallet->save();
-                        $item->save();
-                    }
+            if ((int)$invoice["data"]["status_code"] == 5) {
+                $item->status = -1;
+                $item->save();
+            }
+            
+            if ((int)$invoice["data"]["status_code"] == 1) {
+                
+                $item->status = -1;
+                $wallet = Wallet::findOne(["user_id" => $item->user_id, "chart_id" => $item->start_chart_id, "type" => 0]);
+                if(!$wallet) {
+                    $wallet = new Wallet(["user_id" => $item->user_id, "chart_id" => $item->start_chart_id, "balance" => $paid_amount, "type" => 0]);
                 }
-                 // отмена заявок на вывод средств TO DO перенести в wallet
-        //status 0 в обработке, 1 - выполнено, 2 - отменено strtotime("+3 day", $p2p_h->start_date)
-        $history = History::find()->where(["<=", "date", strtotime("-1 day",time())])->andWhere(["status" => 0])->andwhere(['wallet_direct_id' => [10,13], 'type'=> 0])->all();
+                $wallet->balance += $paid_amount;
+                $wallet->save();
+                $item->save();
+            }
+            
+            if ((int)$invoice["data"]["status_code"] == 2) {
+                //недоплачен ждем просрочки
+                
+                $item->status = -1;
+                //потом 1
+                
+                $wallet = Wallet::findOne(["user_id" => $item->user_id, "chart_id" => $item->start_chart_id, "type" => 0]);
+                if(!$wallet) {
+                    $wallet = new Wallet(["user_id" => $item->user_id, "chart_id" => $item->start_chart_id, "balance" => 0, "type" => 0,  'balance' => $paid_amount]);
+                }
+                $wallet->balance += $paid_amount;
+                $wallet->save();
+                $item->save();
+                
+                
+            }
+
+            if ((int)$invoice["data"]["status_code"] == 3) {
+                //добавляем но надо смотреть
+                $item->status = -1;
+                
+                $wallet = Wallet::findOne(["user_id" => $item->user_id, "chart_id" => $item->start_chart_id, "type" => 0]);
+                if(!$wallet) {
+                    $wallet = new Wallet(["user_id" => $item->user_id, "chart_id" => $item->start_chart_id, "balance" => 0, "type" => 0,  'balance' => $paid_amount]);
+                }
+                $wallet->balance += $paid_amount;
+                $item->start_price = $paid_amount;
+                $wallet->save();
+                $item->save();
+            }
+        }
+
+        //status 0 в обработке, 1 - выполнено, 2 - отменено strtotime("+3 day", $p2p_h->start_date) общий
+        $history = History::find()->where(["<=", "date", strtotime("-1 day",time())])->andWhere(["status" => 0])->andwhere(['wallet_direct_id' => [10,13], 'type'=> [0,1]])->all();
         foreach ($history as $item) { 
             $item->status = 2;
-            $wallet = Wallet::findOne(['user_id' => $item->user_id, 'chart_id' => $item->start_chart_id,'type' => 0]);
+            $wallet = Wallet::findOne(['user_id' => $item->user_id, 'chart_id' => $item->start_chart_id,'type' => $item->type == 0 ? 0 : 1]);
             
             $wallet->balance += $item->start_price;
             $wallet->blocked = 0;
@@ -121,6 +121,7 @@ class WalletController extends BaseController
             $item->save();
 
         }       
+        
         
        
     }

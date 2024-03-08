@@ -36,7 +36,12 @@ $this->params['breadcrumbs'][] = $this->title;
                 'value' => function($data){return date("Y-m-d H:i:s", $data->date);}
                ],
             'status',
-            'payment_id',
+            [   'label' => 'Cпособ вывода',
+                'attribute'=>'payment_id',
+                'value'=>function($model) {
+                return $model->paymentType->name;
+                }
+            ],
             'ipn_id',
             [
 				'class' => 'yii\grid\ActionColumn',

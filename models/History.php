@@ -34,7 +34,7 @@ class History extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['user_id', 'type', 'start_price', 'end_price', 'start_chart_id', 'end_chart_id', 'date'], 'required'],
+            [['user_id', 'type', 'start_price', 'end_price', 'start_chart_id', 'end_chart_id', 'date','wallet_direct_id'], 'required'],
             [['user_id', 'type', 'start_chart_id', 'end_chart_id', 'date', 'status','payment_id','wallet_direct_id'], 'integer'],
             [['start_price', 'end_price'], 'number'],
         ];
@@ -65,10 +65,10 @@ class History extends \yii\db\ActiveRecord
         return $this->hasOne(WalletType::class, ['id' => 'wallet_direct_id']);
     }
 
-    public function getStatus($type)
-    {
-        return $this->hasOne(PaymentStatus::class, ['type' => $type,'id' => 'status']);
-    }
+    // public function getStatus()
+    // {
+    //     return $this->hasOne(PaymentStatus::class, ['status_id' => 'status']);
+    // }
 
 
 

@@ -17,6 +17,9 @@ use app\models\B2bPayment;
 use app\models\P2pAds;
 use app\models\WalletAddress;
 use CoinRemitter\CoinRemitter;
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\SMTP;
+use PHPMailer\PHPMailer\Exception;
 
 /**
  * Default controller for the `api` module
@@ -25,39 +28,69 @@ class PaymentController extends BaseController
 {
     
     public function actionCheckPayment() {
-        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+        // Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
 
-        $history = History::find()->where(["user_id" => $this->user->id, "type" => 0, 'wallet_direct_id' => 12, 'status' => 3])->one();
-        if (!$history) {
-            Yii::$app->response->statusCode = 401;
-            return ["success" => false, "message" => "Платеж не найден, обратитесь к администратору"];
-        }
+        // $history = History::find()->where(["user_id" => $this->user->id, "type" => 0, 'wallet_direct_id' => 12, 'status' => 3])->one();
+        // if (!$history) {
+        //     Yii::$app->response->statusCode = 401;
+        //     return ["success" => false, "message" => "Платеж не найден, обратитесь к администратору"];
+        // }
 
-        $params = [
-            'coin'=>'TCN', //coin for which you want to use this object.
-            'api_key'=> Yii::$app->params['API_KEY_COINREMITTER'], //api key from coinremitter wallet
-            'password'=> Yii::$app->params['API_KEY_PASSWORD'] //password for selected wallet
-         ];
-        $obj = new CoinRemitter($params);
+        // $params = [
+        //     'coin'=>'TCN', //coin for which you want to use this object.
+        //     'api_key'=> Yii::$app->params['API_KEY_COINREMITTER'], //api key from coinremitter wallet
+        //     'password'=> Yii::$app->params['API_KEY_PASSWORD'] //password for selected wallet
+        //  ];
+        // $obj = new CoinRemitter($params);
 
-        $param = [
-            'invoice_id'=>$history->ipn_id
-        ];
+        // $param = [
+        //     'invoice_id'=>$history->ipn_id
+        // ];
         
-        $invoice = $obj->get_invoice($param);
-        $coin = $invoice["data"]["coin"];
-        $base_currency = $invoice["data"]["base_currency"];
-        $paid_amount = $invoice["data"]["paid_amount"][$coin] ?? 0;
-        $total_amount = $invoice["data"]["total_amount"][$coin] ?? 0;
-        $data[] = [
-            "coin" => $coin,
-            "base_currency" => $base_currency,
-            "paid_amount" => (float)$paid_amount,
-            "total_amount" => (float)$total_amount,
-            "status_code" => $invoice["data"]["status_code"]
-        ];
+        // $invoice = $obj->get_invoice($param);
+        // $coin = $invoice["data"]["coin"];
+        // $base_currency = $invoice["data"]["base_currency"];
+        // $paid_amount = $invoice["data"]["paid_amount"][$coin] ?? 0;
+        // $total_amount = $invoice["data"]["total_amount"][$coin] ?? 0;
+        // $data[] = [
+        //     "coin" => $coin,
+        //     "base_currency" => $base_currency,
+        //     "paid_amount" => (float)$paid_amount,
+        //     "total_amount" => (float)$total_amount,
+        //     "status_code" => $invoice["data"]["status_code"]
+        // ];
+        $mail = new PHPMailer(true);
+
+try {
+    //Server settings
+    $mail->SMTPDebug = SMTP::DEBUG_SERVER;                      //Enable verbose debug output
+    $mail->isSMTP();    
+    $mail->SMTPSecure = 'tls';                                        //Send using SMTP
+    $mail->Host       = 'smtp.greenavi.com';                     //Set the SMTP server to send through
+    $mail->SMTPAuth   = true;                                   //Enable SMTP authentication
+    $mail->Username   = 'support@greenavi.com';                     //SMTP username
+    $mail->Password   = 'M354at790!';                               //SMTP password
+    $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;            //Enable implicit TLS encryption
+    $mail->Port       = 465;                                    //TCP port to connect to; use 587 if you have set `SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS`
+
+    //Recipients
+    $mail->setFrom('support@greenavicash.ru', 'Mailer');
+    $mail->addAddress('artivus3@yandex.ru', 'Artivus');     //Add a recipient
+
+    //Attachments
+    //Content
+    $mail->isHTML(true);                                  //Set email format to HTML
+    $mail->Subject = 'Here is the subject';
+    $mail->Body    = 'This is the HTML message body <b>in bold!</b>';
+    $mail->AltBody = 'This is the body in plain text for non-HTML mail clients';
+
+    $mail->send();
+    echo 'Message has been sent';
+} catch (Exception $e) {
+    echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
+}
         
-        return $data;
+        return "ok";
     }
 
     public function actionFailIpn (){
