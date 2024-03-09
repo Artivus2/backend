@@ -200,6 +200,7 @@ class RatingsController extends BaseController
      *      required=true,
      *      @SWG\Schema(type="integer")
      *     ),
+     *    @SWG\Parameter(
      *      name="history_id",
      *      in="body",
      *      description="Ид ордера в истории",
