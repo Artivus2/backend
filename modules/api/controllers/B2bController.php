@@ -1812,7 +1812,7 @@ class B2bController extends BaseController
         }
         
 
-        if ($b2b_ads->status == -1) 
+        if ($b2b_ads->status == -1 || $b2b_ads->status == 9) 
         {
                 //$b2b_ads->status = 6;
                 $b2b_h->status = 6;
@@ -1833,7 +1833,9 @@ class B2bController extends BaseController
                 }
                 if ($b2b_ads->type == 2) {
                     $b2b_ads->amount += $b2b_h->price; //вернуть средства в ордер
+                    $b2b_ads->status = -1;
                 }
+
                 if(!$b2b_h->save()) {
                     Yii::$app->response->statusCode = 400;
                     return ["success" => false, "message" => "Ошибка сохранения сделки"];
