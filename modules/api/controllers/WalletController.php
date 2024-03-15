@@ -187,12 +187,12 @@ class WalletController extends BaseController
          Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
          
 
-$result = $payment->create($data);
-        $PAYOUT_KEY='xnPgjY7q9m0WUUMStssqhTBuyVabgKBH0O2uqPsx1FDE15Q00DwhjUylm3IKUzupjG4ivsZJiR2dUEktionhTF0ZPLfZJ7htsHhtHN7NrmVSTY0YVMkm0t4xiIegt8Tb';
+
+        //$PAYOUT_KEY='xnPgjY7q9m0WUUMStssqhTBuyVabgKBH0O2uqPsx1FDE15Q00DwhjUylm3IKUzupjG4ivsZJiR2dUEktionhTF0ZPLfZJ7htsHhtHN7NrmVSTY0YVMkm0t4xiIegt8Tb';
         $PAYMENT_KEY = 'oXSoIA8NCt16dsj3qgWzQHtkaf7lqnmHH7ugsGf6o2ABIxLeAA9uopTYrKJKSoWkYXWT3U2ZK34PlhLnP4zQTn6QwNIr2YPSVr9f6m9Ds7SLNciqCm90Sxlf5EBQmYbO';
         $MERCHANT_UUID = '241a6b2f-9705-4014-a378-8638fd37a5ad';
-        $payment_cryptomus = \Cryptomus\Api\Client::payment($PAYMENT_KEY, $MERCHANT_UUID);
-        $payout_cryptomus = \Cryptomus\Api\Client::payout($PAYOUT_KEY, $MERCHANT_UUID);
+        $payment = \Cryptomus\Api\Client::payment($PAYMENT_KEY, $MERCHANT_UUID);
+        //$payout_cryptomus = \Cryptomus\Api\Client::payout($PAYOUT_KEY, $MERCHANT_UUID);
         
         if(!$this->user) {
             Yii::$app->response->statusCode = 401;
@@ -204,8 +204,8 @@ $result = $payment->create($data);
             'currency' => 'USD',
             'network' => 'ETH',
             'order_id' => '555123',
-            'url_return' => 'httpsё://greenavi.com/api/payment/notice-ipn',
-            'url_callback' => 'https://example.com/api/payment/fail-ipn',
+            'url_return' => 'https://greenavi.com/api/payment/notice-ipn',
+            'url_callback' => 'https://greenavi.com/api/payment/fail-ipn',
             'is_payment_multiple' => false,
             'lifetime' => '7200',
             'to_currency' => 'ETH'
