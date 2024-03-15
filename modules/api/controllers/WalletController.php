@@ -181,7 +181,86 @@ class WalletController extends BaseController
      *)
      * @throws HttpException
      */
-    public function actionInput()
+    
+     public function actionInput()
+    {
+        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+        $PAYOUT_KEY='xnPgjY7q9m0WUUMStssqhTBuyVabgKBH0O2uqPsx1FDE15Q00DwhjUylm3IKUzupjG4ivsZJiR2dUEktionhTF0ZPLfZJ7htsHhtHN7NrmVSTY0YVMkm0t4xiIegt8Tb';
+        $PAYMENT_KEY = 'oXSoIA8NCt16dsj3qgWzQHtkaf7lqnmHH7ugsGf6o2ABIxLeAA9uopTYrKJKSoWkYXWT3U2ZK34PlhLnP4zQTn6QwNIr2YPSVr9f6m9Ds7SLNciqCm90Sxlf5EBQmYbO';
+        $MERCHANT_UUID = 'b2b19ba5-7879-4135-8d48-dfb165d8f904';
+        $payment_cryptomus = \Cryptomus\Api\Client::payment($PAYMENT_KEY, $MERCHANT_UUID);
+        $payout_cryptomus = \Cryptomus\Api\Client::payout($PAYOUT_KEY, $MERCHANT_UUID);
+        
+        if(!$this->user) {
+            Yii::$app->response->statusCode = 401;
+            return ["success" => false, "message" => "Token не найден"];
+        }
+
+        $chart_chain_id = Yii::$app->request->post("chain_id");
+
+        $chart_chain = ChartChain::find()->Where(['id'=>$chart_chain_id, "cryptomus" => 1])->one();
+        $chain_name = Chain::find()->Where(['id'=>$chart_chain->chain_id])->one();
+        $chart_name = Chart::find()->Where(['id'=>$chart_chain->chart_id])->one();
+	    $qr = '';
+        if (!$chart_chain) {
+            Yii::$app->response->statusCode = 400;
+            return ["success" => false, "message" => "Валюта не найдена"];
+        }
+	    $result=[];
+        $result["url"] = "Кошелек существует";
+        $datauri="Ссылка не будет получена";
+
+       
+        $wallet = WalletAddress::findOne(["chain_id" => $chart_chain->id, "user_id" => $this->user->id]);
+        
+        $data = [
+            'network' => $chain_name->name,
+            'currency' => $chart_name->symbol,
+            'order_id' => (string)rand(100000000,999999999),
+            'url_callback' => 'https://greenavi.com/api/wallet/notice-ipn'
+            ];
+        $result = $payment_cryptomus->createWallet($data);
+        if (!$result) {
+            Yii::$app->response->statusCode = 400;
+            return ["success" => false, "message" => "Ошибка API Cryptomus"];
+        }
+        
+        if (!$wallet) {
+        $wallet = new WalletAddress(["chain_id" => $chart_chain->id, "user_id" => $this->user->id]);
+        $wallet->value = $result["address"];
+        $wallet->save();
+        }
+
+        $writer = new PngWriter();
+
+        // Create QR code
+        $qrCode = QrCode::create($result["url"])
+        ->setEncoding(new Encoding('UTF-8'))
+        ->setErrorCorrectionLevel(new ErrorCorrectionLevelLow())
+        ->setSize(300)
+        ->setMargin(10)
+        ->setRoundBlockSizeMode(new RoundBlockSizeModeMargin())
+        ->setForegroundColor(new Color(0, 0, 0))
+        ->setBackgroundColor(new Color(255, 255, 255));
+
+        // Create generic logo
+        $logo = Logo::create(__DIR__.'/home-logo.png')
+        ->setResizeToWidth(10)
+        ->setPunchoutBackground(true);
+        
+        // Create generic label
+        $label = Label::create('GREENAVI')
+        ->setTextColor(new Color(255, 255, 255));
+
+        $resultqr = $writer->write($qrCode, $logo,  $label);
+        //$result->saveToFile(__DIR__.'/qrcode.png'); 
+        $datauri = $resultqr->getDataUri();
+
+        return ["address" => $wallet->value, "symbol" => $chart_name->symbol, "Network" => $chain_name->name, "qrcode"=>$datauri];
+    }
+
+
+     public function actionInput_old()
     {
         Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
 
