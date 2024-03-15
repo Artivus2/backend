@@ -184,7 +184,10 @@ class WalletController extends BaseController
     
      public function actionInput()
     {
-        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+         Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+         
+
+$result = $payment->create($data);
         $PAYOUT_KEY='xnPgjY7q9m0WUUMStssqhTBuyVabgKBH0O2uqPsx1FDE15Q00DwhjUylm3IKUzupjG4ivsZJiR2dUEktionhTF0ZPLfZJ7htsHhtHN7NrmVSTY0YVMkm0t4xiIegt8Tb';
         $PAYMENT_KEY = 'oXSoIA8NCt16dsj3qgWzQHtkaf7lqnmHH7ugsGf6o2ABIxLeAA9uopTYrKJKSoWkYXWT3U2ZK34PlhLnP4zQTn6QwNIr2YPSVr9f6m9Ds7SLNciqCm90Sxlf5EBQmYbO';
         $MERCHANT_UUID = '241a6b2f-9705-4014-a378-8638fd37a5ad';
@@ -196,67 +199,84 @@ class WalletController extends BaseController
             return ["success" => false, "message" => "Token не найден"];
         }
 
-        $chart_chain_id = Yii::$app->request->post("chain_id");
+        $data = [
+            'amount' => '1',
+            'currency' => 'USD',
+            'network' => 'ETH',
+            'order_id' => '555123',
+            'url_return' => 'httpsё://greenavi.com/api/payment/notice-ipn',
+            'url_callback' => 'https://example.com/api/payment/fail-ipn',
+            'is_payment_multiple' => false,
+            'lifetime' => '7200',
+            'to_currency' => 'ETH'
+        ];
+        
+        $result = $payment->create($data);
 
-        $chart_chain = ChartChain::find()->Where(['id'=>$chart_chain_id, "cryptomus" => 1])->one();
-        $chain_name = Chain::find()->Where(['id'=>$chart_chain->chain_id])->one();
-        $chart_name = Chart::find()->Where(['id'=>$chart_chain->chart_id])->one();
-	    $qr = '';
-        if (!$chart_chain) {
-            Yii::$app->response->statusCode = 400;
-            return ["success" => false, "message" => "Валюта не найдена"];
-        }
-	    $result=[];
-        $result["url"] = "Кошелек существует";
-        $datauri="Ссылка не будет получена";
+        return $result;
+
+
+    //     $chart_chain_id = Yii::$app->request->post("chain_id");
+
+    //     $chart_chain = ChartChain::find()->Where(['id'=>$chart_chain_id, "cryptomus" => 1])->one();
+    //     $chain_name = Chain::find()->Where(['id'=>$chart_chain->chain_id])->one();
+    //     $chart_name = Chart::find()->Where(['id'=>$chart_chain->chart_id])->one();
+	//     $qr = '';
+    //     if (!$chart_chain) {
+    //         Yii::$app->response->statusCode = 400;
+    //         return ["success" => false, "message" => "Валюта не найдена"];
+    //     }
+	//     $result=[];
+    //     $result["url"] = "Кошелек существует";
+    //     $datauri="Ссылка не будет получена";
 
        
-        $wallet = WalletAddress::findOne(["chain_id" => $chart_chain->id, "user_id" => $this->user->id]);
+    //     $wallet = WalletAddress::findOne(["chain_id" => $chart_chain->id, "user_id" => $this->user->id]);
         
-        $data = [
-            'network' => $chain_name->name,
-            'currency' => $chart_name->symbol,
-            'order_id' => (string)rand(100000000,999999999),
-            'url_callback' => 'https://greenavi.com/api/wallet/notice-ipn'
-            ];
-        $result = $payment_cryptomus->createWallet($data);
-        if (!$result) {
-            Yii::$app->response->statusCode = 400;
-            return ["success" => false, "message" => "Ошибка API Cryptomus"];
-        }
+    //     $data = [
+    //         'network' => $chain_name->name,
+    //         'currency' => $chart_name->symbol,
+    //         'order_id' => (string)rand(100000000,999999999),
+    //         'url_callback' => 'https://greenavi.com/api/wallet/notice-ipn'
+    //         ];
+    //     $result = $payment_cryptomus->createWallet($data);
+    //     if (!$result) {
+    //         Yii::$app->response->statusCode = 400;
+    //         return ["success" => false, "message" => "Ошибка API Cryptomus"];
+    //     }
         
-        if (!$wallet) {
-        $wallet = new WalletAddress(["chain_id" => $chart_chain->id, "user_id" => $this->user->id]);
-        $wallet->value = $result["address"];
-        $wallet->save();
-        }
+    //     if (!$wallet) {
+    //     $wallet = new WalletAddress(["chain_id" => $chart_chain->id, "user_id" => $this->user->id]);
+    //     $wallet->value = $result["address"];
+    //     $wallet->save();
+    //     }
 
-        $writer = new PngWriter();
+    //     $writer = new PngWriter();
 
-        // Create QR code
-        $qrCode = QrCode::create($result["url"])
-        ->setEncoding(new Encoding('UTF-8'))
-        ->setErrorCorrectionLevel(new ErrorCorrectionLevelLow())
-        ->setSize(300)
-        ->setMargin(10)
-        ->setRoundBlockSizeMode(new RoundBlockSizeModeMargin())
-        ->setForegroundColor(new Color(0, 0, 0))
-        ->setBackgroundColor(new Color(255, 255, 255));
+    //     // Create QR code
+    //     $qrCode = QrCode::create($result["url"])
+    //     ->setEncoding(new Encoding('UTF-8'))
+    //     ->setErrorCorrectionLevel(new ErrorCorrectionLevelLow())
+    //     ->setSize(300)
+    //     ->setMargin(10)
+    //     ->setRoundBlockSizeMode(new RoundBlockSizeModeMargin())
+    //     ->setForegroundColor(new Color(0, 0, 0))
+    //     ->setBackgroundColor(new Color(255, 255, 255));
 
-        // Create generic logo
-        $logo = Logo::create(__DIR__.'/home-logo.png')
-        ->setResizeToWidth(10)
-        ->setPunchoutBackground(true);
+    //     // Create generic logo
+    //     $logo = Logo::create(__DIR__.'/home-logo.png')
+    //     ->setResizeToWidth(10)
+    //     ->setPunchoutBackground(true);
         
-        // Create generic label
-        $label = Label::create('GREENAVI')
-        ->setTextColor(new Color(255, 255, 255));
+    //     // Create generic label
+    //     $label = Label::create('GREENAVI')
+    //     ->setTextColor(new Color(255, 255, 255));
 
-        $resultqr = $writer->write($qrCode, $logo,  $label);
-        //$result->saveToFile(__DIR__.'/qrcode.png'); 
-        $datauri = $resultqr->getDataUri();
+    //     $resultqr = $writer->write($qrCode, $logo,  $label);
+    //     //$result->saveToFile(__DIR__.'/qrcode.png'); 
+    //     $datauri = $resultqr->getDataUri();
 
-        return ["address" => $wallet->value, "symbol" => $chart_name->symbol, "Network" => $chain_name->name, "qrcode"=>$datauri];
+    //     return ["address" => $wallet->value, "symbol" => $chart_name->symbol, "Network" => $chain_name->name, "qrcode"=>$datauri];
     }
 
 
