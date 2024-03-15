@@ -186,7 +186,30 @@ class WalletController extends BaseController
     {
          Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
          
+        if(!$this->user) {
+            Yii::$app->response->statusCode = 401;
+            return ["success" => false, "message" => "Token не найден"];
+        }
+        $history = History::find()->where(["user_id" => $this->user->id, "type" => 0, 'wallet_direct_id' => 12, 'status' => 0])->all();
+        if ($history) {
+            Yii::$app->response->statusCode = 400;
+            return ["success" => false, "message" => "Завершите предыдущие заявки на пополнение или обратитесь к технической поддержке"];
+        } else {
+            $history = new History(["date" => time(), "user_id" => $this->user->id, "type" => 0, 'wallet_direct_id' => 12, 'status' => 0]);
+        }
 
+        
+        $history->end_chart_id = Yii::$app->request->post("chart_id");
+        $history->start_chart_id = $history->end_chart_id;
+        
+        $history->start_price = (float)Yii::$app->request->post("price");
+
+        $chart = chart::findOne($history->end_chart_id);
+        $history->end_price = 0;
+        if (!$chart) {
+            Yii::$app->response->statusCode = 400;
+            return ["success" => false, "message" => "Валюта не найдена"];
+        }
 
         //$PAYOUT_KEY='xnPgjY7q9m0WUUMStssqhTBuyVabgKBH0O2uqPsx1FDE15Q00DwhjUylm3IKUzupjG4ivsZJiR2dUEktionhTF0ZPLfZJ7htsHhtHN7NrmVSTY0YVMkm0t4xiIegt8Tb';
         $PAYMENT_KEY = 'oXSoIA8NCt16dsj3qgWzQHtkaf7lqnmHH7ugsGf6o2ABIxLeAA9uopTYrKJKSoWkYXWT3U2ZK34PlhLnP4zQTn6QwNIr2YPSVr9f6m9Ds7SLNciqCm90Sxlf5EBQmYbO';
@@ -200,15 +223,15 @@ class WalletController extends BaseController
         }
 
         $data = [
-            'amount' => '1',
+            'amount' => (float)Yii::$app->request->post("price"),
             'currency' => 'USD',
-            'network' => 'ETH',
+            'network' => 'TRX',
             'order_id' => '555123',
             'url_return' => 'https://greenavi.com/api/payment/notice-ipn',
             'url_callback' => 'https://greenavi.com/api/payment/fail-ipn',
             'is_payment_multiple' => false,
             'lifetime' => '7200',
-            'to_currency' => 'ETH'
+            'to_currency' => $chart->symbol
         ];
         
         $result = $payment->create($data);
