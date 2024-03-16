@@ -1031,20 +1031,37 @@ class B2bController extends BaseController
         
                 
         $data = [];
-        $b2bAds_query = B2bAds::find()->joinwith(['chart','currency','company'])
-        ->where($whereid)
-        ->andwhere($wheretype)
-        ->andwhere($wherechart)
-        ->andwhere($wherecurrency)
-        ->andwhere($wherestatus)
-        ->andWhere($whereusers)
-        ->andWhere($whereokved)
-        ->andWhere($wheresummmin)
-        ->andWhere($wheresummmax)
-        ->andWhere($wherediscount)
-        ->andWhere($wherebank)
-        ->all();
-
+        if (!$this->user) {
+            $b2bAds_query = B2bAds::find()->joinwith(['chart','currency','company'])
+            ->where($whereid)
+            ->andwhere($wheretype)
+            ->andwhere($wherechart)
+            ->andwhere($wherecurrency)
+            ->andwhere($wherestatus)
+            ->andWhere($whereokved)
+            ->andWhere($wheresummmin)
+            ->andWhere($wheresummmax)
+            ->andWhere($wherediscount)
+            ->andWhere($wherebank)
+            ->all();
+    
+        } else {
+            $b2bAds_query = B2bAds::find()->joinwith(['chart','currency','company'])
+            ->where($whereid)
+            ->andwhere($wheretype)
+            ->andwhere($wherechart)
+            ->andwhere($wherecurrency)
+            ->andwhere($wherestatus)
+            ->andWhere($whereusers)
+            ->andWhere($whereokved)
+            ->andWhere($wheresummmin)
+            ->andWhere($wheresummmax)
+            ->andWhere($wherediscount)
+            ->andWhere($wherebank)
+            ->all();
+    
+        }
+        
         foreach ($b2bAds_query as $item)
         {
             $b2bAds_query_count = B2bAds::find()->where(["company_id" => $item->user->id])->count();
