@@ -1081,17 +1081,31 @@ class P2pController extends BaseController
 
                 
         $data = [];
-        $p2pAds_query = P2pAds::find()->joinwith(['chart','currency'])
-        ->where($whereid)
-        ->andwhere($wheretype)
-        ->andwhere($wherechart)
-        ->andwhere($wherecurrency)
-        ->andwhere($wherestatus)
-        ->andWhere($whereusers)
-        ->andWhere($whereduration)
-        ->andWhere($wheresummmin)
-        ->andWhere($wheresummmax)
-        ->all();
+        if (!$this->user) {
+            $p2pAds_query = P2pAds::find()->joinwith(['chart','currency'])
+            ->where($whereid)
+            ->andwhere($wheretype)
+            ->andwhere($wherechart)
+            ->andwhere($wherecurrency)
+            ->andwhere($wherestatus)
+            ->andWhere($whereduration)
+            ->andWhere($wheresummmin)
+            ->andWhere($wheresummmax)
+            ->all();
+        } else {
+            $p2pAds_query = P2pAds::find()->joinwith(['chart','currency'])
+            ->where($whereid)
+            ->andwhere($wheretype)
+            ->andwhere($wherechart)
+            ->andwhere($wherecurrency)
+            ->andwhere($wherestatus)
+            ->andWhere($whereusers)
+            ->andWhere($whereduration)
+            ->andWhere($wheresummmin)
+            ->andWhere($wheresummmax)
+            ->all();
+        }
+        
 
         foreach ($p2pAds_query as $item)
         {
