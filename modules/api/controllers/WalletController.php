@@ -151,6 +151,13 @@ class WalletController extends BaseController
      *      @SWG\Schema(type="integer")
      *     ),
      *    @SWG\Parameter(
+     *      name="chain_id",
+     *      in="body",
+     *      description="ID сети",
+     *      required=true,
+     *      @SWG\Schema(type="integer")
+     *     ),
+     *    @SWG\Parameter(
      *      name="amount",
      *      in="body",
      *      description="Сумма ввода/пополнения",
@@ -200,11 +207,13 @@ class WalletController extends BaseController
 
         
         $history->end_chart_id = Yii::$app->request->post("chart_id");
+        $chain_id = Yii::$app->request->post("chain_id");
         $history->start_chart_id = $history->end_chart_id;
         
         $history->start_price = (float)Yii::$app->request->post("price");
 
-        $chart = chart::findOne($history->end_chart_id);
+        $chart = Chart::findOne($history->end_chart_id);
+        $chain = ChartChain::findOne($chain_id);
         $history->end_price = 0;
         if (!$chart) {
             Yii::$app->response->statusCode = 400;
@@ -224,9 +233,9 @@ class WalletController extends BaseController
 
         $data = [
             'amount' => (float)Yii::$app->request->post("price"),
-            'currency' => 'USD',
-            'network' => 'TRX',
-            'order_id' => '555123',
+            'currency' => $chart->symbol,
+            'network' => $chain->symbol,
+            'order_id' => rand(100000000,999999999),
             'url_return' => 'https://greenavi.com/api/payment/notice-ipn',
             'url_callback' => 'https://greenavi.com/api/payment/fail-ipn',
             'is_payment_multiple' => false,
