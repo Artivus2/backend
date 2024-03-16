@@ -904,15 +904,14 @@ class B2bController extends BaseController
         Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
 
         if(!$this->user) {
-            Yii::$app->response->statusCode = 401;
-            return ["success" => false, "message" => "Token не найден"];
+           $this->user = null;
         }
 
-        if (!in_array($this->user->verify_status, self::VERIFY_STATUS))
-        {
-            Yii::$app->response->statusCode = 401;
-            return ["success" => false, "message" => "Вам необходимо пройти полную верификацию для осуществления данной операции"];
-        }
+        // if (!in_array($this->user->verify_status, self::VERIFY_STATUS))
+        // {
+        //     Yii::$app->response->statusCode = 401;
+        //     return ["success" => false, "message" => "Вам необходимо пройти полную верификацию для осуществления данной операции"];
+        // }
 
         //$typeall = array(0,1);
         $b2b_ads_id = Yii::$app->request->get("uuid");
@@ -932,7 +931,13 @@ class B2bController extends BaseController
         $companys = Yii::$app->request->get("company_id");
         $companyIDs = explode(",", $companys);
         if(!$companys) {
-            $whereusers = ["<>", "b2b_ads.company_id", $this->user->id];
+            if (!$this->user) {
+                $whereusers = ["<>", "b2b_ads.company_id", null];
+            }
+            else {
+                $whereusers = ["<>", "b2b_ads.company_id", $this->user->id];
+            }
+            
         } else {
             $whereusers = ["in", "b2b_ads.company_id", $companyIDs];
         }
@@ -1820,6 +1825,8 @@ class B2bController extends BaseController
                 if ($b2b_ads->type == 1) {
                     $b2b_ads->amount += $b2b_h->price; //вернуть средства в ордер
                     $wallet_seller = Wallet::findOne(['user_id' => $b2b_h->author_id, 'chart_id' => $b2b_ads->chart_id, 'type' => 1]);
+                    
+                    $b2b_ads->status = -1;
 
                     if (!$wallet_seller) {
                     Yii::$app->response->statusCode = 400;

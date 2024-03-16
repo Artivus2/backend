@@ -963,16 +963,15 @@ class P2pController extends BaseController
 
         Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
 
-        if(!$this->user) {
-            Yii::$app->response->statusCode = 401;
-            return ["success" => false, "message" => "Token не найден"];
-        }
+        // if(!$this->user) {
+        //     $this->user = null;
+        // }
 
-        if (!in_array($this->user->verify_status, self::VERIFY_STATUS))
-        {
-            Yii::$app->response->statusCode = 401;
-            return ["success" => false, "message" => "Вам необходимо пройти полную верификацию для осуществления данной операции"];
-        }
+        // if (!in_array($this->user->verify_status, self::VERIFY_STATUS))
+        // {
+        //     Yii::$app->response->statusCode = 401;
+        //     return ["success" => false, "message" => "Вам необходимо пройти полную верификацию для осуществления данной операции"];
+        // }
 
         //$typeall = array(0,1);
         $p2p_ads_id = Yii::$app->request->get("uuid");
@@ -988,17 +987,18 @@ class P2pController extends BaseController
              $all_orders = 1;
         }
         
-        // else {
-        //     $whereid = ["p2p_ads.uuid" => $p2p_ads_id]; 
-        // }
 
-        
 
         $userIDs = array();
         $users = Yii::$app->request->get("user_id");
         $userIDs = explode(",", $users);
         if(!$users) {
-            $whereusers = ["<>", "p2p_ads.user_id", $this->user->id];
+            if (!$this->user) {
+                $whereusers = ["<>", "p2p_ads.user_id", null];
+            } else {
+                $whereusers = ["<>", "p2p_ads.user_id", $this->user->id];
+            }
+            
         } else {
             $whereusers = ["in", "p2p_ads.user_id", $userIDs];
         }
@@ -1906,44 +1906,47 @@ class P2pController extends BaseController
         //     Yii::$app->response->statusCode = 400;
         //     return ["success" => false, "message" => "Сделка не найдена"];
         // }
-        if ($p2p_ads->status == -1) 
-        {
+        //if ($p2p_ads->status == -1 ) 
+        //{
                 //$p2p_ads->status = 6;
-                $p2p_h->status = 6;
-                $p2p_h->description_id = $desc_id;
-                if ($p2p_ads->type == 1) {
-                 $p2p_ads->amount += $p2p_h->price; //вернуть средства в ордер
-                 $wallet_seller = Wallet::findOne(['user_id' => $p2p_h->author_id, 'chart_id' => $p2p_ads->chart_id,'type' => 0]);
+        $p2p_h->status = 6;
+        $p2p_h->description_id = $desc_id;
+        if ($p2p_ads->type == 1 || $p2p_ads->status == 9) {
+            $p2p_ads->amount += $p2p_h->price; //вернуть средства в ордер
+            $wallet_seller = Wallet::findOne(['user_id' => $p2p_h->author_id, 'chart_id' => $p2p_ads->chart_id,'type' => 0]);
 
-                 if (!$wallet_seller) {
-                    Yii::$app->response->statusCode = 400;
-                    return ["success" => false, "message" => "Не удалось вернуть средства на кошелек"];
-                 }
-                 $wallet_seller->balance += $p2p_h->price;
-                 if (!$wallet_seller->save()) {
-                    Yii::$app->response->statusCode = 400;
-                    return ["success" => false, "message" => "Не удалось сохранить параметры кошелька"];
-                 }
+            $p2p_ads->status = -1;
+
+            if (!$wallet_seller) {
+            Yii::$app->response->statusCode = 400;
+            return ["success" => false, "message" => "Не удалось вернуть средства на кошелек"];
+            }
+            $wallet_seller->balance += $p2p_h->price;
+            if (!$wallet_seller->save()) {
+            Yii::$app->response->statusCode = 400;
+            return ["success" => false, "message" => "Не удалось сохранить параметры кошелька"];
+            }
 
 
-                }
+        }
 
                 //$p2p_h->price = 0;
                 
-                if ($p2p_ads->type == 2) {
-                    $p2p_ads->amount += $p2p_h->price; //вернуть средства в ордер
-                }
-                if(!$p2p_h->save()) {
-                    Yii::$app->response->statusCode = 400;
-                    return ["success" => false, "message" => "Ошибка сохранения сделки"];
-                }
-                if(!$p2p_ads->save()) {
-                    Yii::$app->response->statusCode = 400;
-                    return ["success" => false, "message" => "Ошибка сохранения сделки"];
-                }
-
-                return ["success" => true, "message" => "Сделка отменена"];
+        if ($p2p_ads->type == 2) {
+            $p2p_ads->amount += $p2p_h->price; //вернуть средства в ордер
+            $p2p_ads->status = -1;
         }
+        if(!$p2p_h->save()) {
+            Yii::$app->response->statusCode = 400;
+            return ["success" => false, "message" => "Ошибка сохранения сделки"];
+        }
+        if(!$p2p_ads->save()) {
+            Yii::$app->response->statusCode = 400;
+            return ["success" => false, "message" => "Ошибка сохранения сделки"];
+        }
+
+        return ["success" => true, "message" => "Сделка отменена"];
+        //}
     }
 
 
