@@ -28,7 +28,7 @@ class PaymentController extends BaseController
 {
     
     public function actionCheckPayment() {
-        // Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
 
         // $history = History::find()->where(["user_id" => $this->user->id, "type" => 0, 'wallet_direct_id' => 12, 'status' => 3])->one();
         // if (!$history) {
@@ -59,38 +59,42 @@ class PaymentController extends BaseController
         //     "total_amount" => (float)$total_amount,
         //     "status_code" => $invoice["data"]["status_code"]
         // ];
-        $mail = new PHPMailer(true);
+        $chart_id = Yii::$app->request->post("id");
+        $api_key='eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1dWlkIjoiTVRrNE5UWT0iLCJ0eXBlIjoicHJvamVjdCIsInYiOiI2M2QzNDYyZjRhY2I0NjUzZGEyYTIwNGQ2YTlmZGJjYmZiZjIyY2NiZjIwYWVlOWI0MWIxODc2Njc4ZTA1Mjk5IiwiZXhwIjo4ODExMDU4MTQ0OH0.X0R_PfjNs2QeecNutTS2EKGwtf0r_LWnf8CKqQA7IUc';
+        $shop_id='CghDrxpwxUVFXbq3';
+        //$url = "https://api.cryptocloud.plus/v2/invoice/create";
 
-try {
-    //Server settings
-    $mail->SMTPDebug = SMTP::DEBUG_SERVER;                      //Enable verbose debug output
-    $mail->isSMTP();    
-    $mail->SMTPSecure = 'tls';                                        //Send using SMTP
-    $mail->Host       = 'smtp.greenavi.com';                     //Set the SMTP server to send through
-    $mail->SMTPAuth   = true;                                   //Enable SMTP authentication
-    $mail->Username   = 'support@greenavi.com';                     //SMTP username
-    $mail->Password   = 'M354at790!';                               //SMTP password
-    $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;            //Enable implicit TLS encryption
-    $mail->Port       = 465;                                    //TCP port to connect to; use 587 if you have set `SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS`
+        $ch = curl_init();
 
-    //Recipients
-    $mail->setFrom('support@greenavicash.ru', 'Mailer');
-    $mail->addAddress('artivus3@yandex.ru', 'Artivus');     //Add a recipient
+        curl_setopt($ch, CURLOPT_URL, "https://api.cryptocloud.plus/v2/invoice/merchant/info");
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode(array(
+            "uuids" => array($id)
+        )));
 
-    //Attachments
-    //Content
-    $mail->isHTML(true);                                  //Set email format to HTML
-    $mail->Subject = 'Here is the subject';
-    $mail->Body    = 'This is the HTML message body <b>in bold!</b>';
-    $mail->AltBody = 'This is the body in plain text for non-HTML mail clients';
+        $headers = array(
+            "Authorization: Token ".$api_key,
+            "Content-Type: application/json"
+        );
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 
-    $mail->send();
-    echo 'Message has been sent';
-} catch (Exception $e) {
-    echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
-}
+        $response = curl_exec($ch);
+        if (curl_errno($ch)) {
+            echo 'Error:' . curl_error($ch);
+        } else {
+            $statusCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            if ($statusCode == 200) {
+                echo "Success: " . $response;
+            } else {
+                echo "Fail: " . $statusCode . " " . $response;
+            }
+        }
+
+        curl_close($ch);
         
-        return "ok";
+        return $response;
+
     }
 
     public function actionFailIpn (){
