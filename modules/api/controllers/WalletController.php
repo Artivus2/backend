@@ -242,6 +242,11 @@ class WalletController extends BaseController
         }
 
         curl_close($ch);
+        $history->ipn_id = $response["uuid"];
+        if(!$history->save()) {
+            Yii::$app->response->statusCode = 400;
+            return ["success" => false, "message" => "Ошибка создания ссылки"];
+        }
         return $response;
      }
 
