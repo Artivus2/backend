@@ -144,16 +144,9 @@ class WalletController extends BaseController
      *    summary = "Пополнить/внести криптовалюту",
      *    security={{"access_token":{}}},
      *    @SWG\Parameter(
-     *      name="chart_id",
+     *      name="currency_id",
      *      in="body",
      *      description="ID криптовалюты",
-     *      required=true,
-     *      @SWG\Schema(type="integer")
-     *     ),
-     *    @SWG\Parameter(
-     *      name="chain_id",
-     *      in="body",
-     *      description="ID сети",
      *      required=true,
      *      @SWG\Schema(type="integer")
      *     ),
@@ -192,6 +185,33 @@ class WalletController extends BaseController
      public function actionInput()
      {
         Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+        if(!$this->user) {
+            Yii::$app->response->statusCode = 401;
+            return ["success" => false, "message" => "Token не найден"];
+        }
+        $history = History::find()->where(["user_id" => $this->user->id, "type" => 0, 'wallet_direct_id' => 12, 'status' => 0])->all();
+        if ($history) {
+            Yii::$app->response->statusCode = 400;
+            return ["success" => false, "message" => "Завершите предыдущие заявки на пополнение или обратитесь к технической поддержке"];
+        } else {
+            $history = new History(["date" => time(), "user_id" => $this->user->id, "type" => 0, 'wallet_direct_id' => 12, 'status' => 0]);
+        }
+
+        
+        $history->end_chart_id = Yii::$app->request->post("currency_id");
+        $chain_id = Yii::$app->request->post("chain_id");
+        $history->start_chart_id = $history->end_chart_id;
+        
+        $history->start_price = (float)Yii::$app->request->post("price");
+
+        $chart = Currency::findOne($history->end_chart_id);
+        $chain = ChartChain::findOne($chain_id);
+        $history->end_price = 0;
+        if (!$chart) {
+            Yii::$app->response->statusCode = 400;
+            return ["success" => false, "message" => "Валюта не найдена"];
+        }
+
         $api_key='eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1dWlkIjoiTVRrNE5UWT0iLCJ0eXBlIjoicHJvamVjdCIsInYiOiI2M2QzNDYyZjRhY2I0NjUzZGEyYTIwNGQ2YTlmZGJjYmZiZjIyY2NiZjIwYWVlOWI0MWIxODc2Njc4ZTA1Mjk5IiwiZXhwIjo4ODExMDU4MTQ0OH0.X0R_PfjNs2QeecNutTS2EKGwtf0r_LWnf8CKqQA7IUc';
         $shop_id='CghDrxpwxUVFXbq3';
         $url = "https://api.cryptocloud.plus/v2/invoice/create";
@@ -201,9 +221,9 @@ class WalletController extends BaseController
         );
 
         $data = array(
-            "amount" => 100,
+            "amount" => $history->start_price,
             "shop_id" => $shop_id,
-            "currency" => "USD"
+            "currency" => $chart->symbol
         );
 
         $ch = curl_init($url);
