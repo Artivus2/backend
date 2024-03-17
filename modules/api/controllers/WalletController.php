@@ -151,6 +151,13 @@ class WalletController extends BaseController
      *      @SWG\Schema(type="integer")
      *     ),
      *    @SWG\Parameter(
+     *      name="chart_id",
+     *      in="body",
+     *      description="ID криптовалюты",
+     *      required=true,
+     *      @SWG\Schema(type="integer")
+     *     ),
+     *    @SWG\Parameter(
      *      name="amount",
      *      in="body",
      *      description="Сумма ввода/пополнения",
@@ -198,14 +205,15 @@ class WalletController extends BaseController
         }
 
         
-        $history->end_chart_id = Yii::$app->request->post("currency_id");
-        $chain_id = Yii::$app->request->post("chain_id");
+        $chart_id = Yii::$app->request->post("chart_id");
+        $history->end_chart_id = $chart_id;
+        $currency_id = Yii::$app->request->post("currency_id");
         $history->start_chart_id = $history->end_chart_id;
         
         $history->start_price = (float)Yii::$app->request->post("price");
 
-        $chart = Currency::findOne($history->end_chart_id);
-        $chain = ChartChain::findOne($chain_id);
+        $chart = Currency::findOne($chart_id);
+        $currency = Currency::findOne($currency_id);
         $history->end_price = 0;
         if (!$chart) {
             Yii::$app->response->statusCode = 400;
@@ -223,7 +231,8 @@ class WalletController extends BaseController
         $data = array(
             "amount" => $history->start_price,
             "shop_id" => $shop_id,
-            "currency" => $chart->symbol
+            "currency" => $currency->symbol,
+            "cryptocurrency" => $chart->symbol
         );
 
         $ch = curl_init($url);
