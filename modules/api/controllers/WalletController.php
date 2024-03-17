@@ -188,8 +188,44 @@ class WalletController extends BaseController
      *)
      * @throws HttpException
      */
-    
+
      public function actionInput()
+     {
+        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+        $api_key='eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1dWlkIjoiTVRrNE5UWT0iLCJ0eXBlIjoicHJvamVjdCIsInYiOiI2M2QzNDYyZjRhY2I0NjUzZGEyYTIwNGQ2YTlmZGJjYmZiZjIyY2NiZjIwYWVlOWI0MWIxODc2Njc4ZTA1Mjk5IiwiZXhwIjo4ODExMDU4MTQ0OH0.X0R_PfjNs2QeecNutTS2EKGwtf0r_LWnf8CKqQA7IUc';
+        $shop_id='CghDrxpwxUVFXbq3';
+        $url = "https://api.cryptocloud.plus/v2/invoice/create";
+        $headers = array(
+            "Authorization: Token ".$api_key,
+            "Content-Type: application/json"
+        );
+
+        $data = array(
+            "amount" => 100,
+            "shop_id" => $shop_id,
+            "currency" => "USD"
+        );
+
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+        $response = curl_exec($ch);
+        $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+        if($http_code == 200){
+            echo "Success: " . $response;
+        } else {
+            echo "Fail: " . $http_code . " " . $response;
+        }
+
+        curl_close($ch);
+        return $response;
+     }
+
+     public function actionInput_old3()
     {
          Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
          
