@@ -212,7 +212,7 @@ class WalletController extends BaseController
         
         $history->start_price = (float)Yii::$app->request->post("price");
 
-        $chart = Currency::findOne($chart_id);
+        $chart = Chart::findOne($chart_id);
         $currency = Currency::findOne($currency_id);
         $history->end_price = 0;
         if (!$chart) {
@@ -229,10 +229,12 @@ class WalletController extends BaseController
         );
 
         $data = array(
-            "amount" => $history->start_price,
+            "amount" => 1.5,
             "shop_id" => $shop_id,
-            "currency" => $currency->symbol,
-            "cryptocurrency" => $chart->symbol
+            "currency" => 'USD',
+            "add_fields" =>array(
+                       "cryptocurrency" => 'USDT_TRC20'
+             )
         );
 
         $ch = curl_init($url);
