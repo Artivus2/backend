@@ -146,7 +146,7 @@ class WalletController extends BaseController
      *    @SWG\Parameter(
      *      name="currency_id",
      *      in="body",
-     *      description="ID криптовалюты",
+     *      description="ID валюты",
      *      required=true,
      *      @SWG\Schema(type="integer")
      *     ),
@@ -154,6 +154,13 @@ class WalletController extends BaseController
      *      name="chart_id",
      *      in="body",
      *      description="ID криптовалюты",
+     *      required=true,
+     *      @SWG\Schema(type="integer")
+     *     ),
+     *    @SWG\Parameter(
+     *      name="chain_id",
+     *      in="body",
+     *      description="ID сети",
      *      required=true,
      *      @SWG\Schema(type="integer")
      *     ),
@@ -196,24 +203,26 @@ class WalletController extends BaseController
             Yii::$app->response->statusCode = 401;
             return ["success" => false, "message" => "Token не найден"];
         }
-        $history = History::find()->where(["user_id" => $this->user->id, "type" => 0, 'wallet_direct_id' => 12, 'status' => 0])->all();
-        if ($history) {
-            Yii::$app->response->statusCode = 400;
-            return ["success" => false, "message" => "Завершите предыдущие заявки на пополнение или обратитесь к технической поддержке"];
-        } else {
-            $history = new History(["date" => time(), "user_id" => $this->user->id, "type" => 0, 'wallet_direct_id' => 12, 'status' => 0]);
-        }
+        // $history = History::find()->where(["user_id" => $this->user->id, "type" => 0, 'wallet_direct_id' => 12, 'status' => 0])->all();
+        // if ($history) {
+        //     Yii::$app->response->statusCode = 400;
+        //     return ["success" => false, "message" => "Завершите предыдущие заявки на пополнение или обратитесь к технической поддержке"];
+        // } else {
+        //     $history = new History(["date" => time(), "user_id" => $this->user->id, "type" => 0, 'wallet_direct_id' => 12, 'status' => 0]);
+        // }
 
         
         $chart_id = Yii::$app->request->post("chart_id",259);
         $history->end_chart_id = $chart_id;
         $currency_id = Yii::$app->request->post("currency_id", 1);
+        $chain_id = Yii::$app->request->post("chain_id");
         $history->start_chart_id = $history->end_chart_id;
         
         $history->start_price = (float)Yii::$app->request->post("price");
 
         $chart = Chart::findOne($chart_id);
         $currency = Currency::findOne($currency_id);
+        $chain = ChartChain::findOne($chain_id);
         $history->end_price = 0;
         // if (!$chart) {
         //     Yii::$app->response->statusCode = 400;
@@ -232,9 +241,9 @@ class WalletController extends BaseController
             "amount" => $history->start_price,
             "shop_id" => $shop_id,
             "currency" => $currency->symbol,
-            // "add_fields" =>array(
-            //            "cryptocurrency" => 'USDT_TRC20'
-            //  )
+            "add_fields" =>array(
+                       "cryptocurrency" => $chain->symbol
+             )
         );
 
         $ch = curl_init($url);
@@ -245,21 +254,27 @@ class WalletController extends BaseController
 
         $response = curl_exec($ch);
         $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $result = [];
+        if($http_code == 200){
+            $data = json_encode($response, true);
+            foreach ($data as $item) {
+                $result[]=$item;
+            }
+            $history->ipn_id = $result[1][0]["uuid"];
 
-        // if($http_code == 200){
-        //     return $response;
-        // } else {
-        //     echo "Fail: " . $http_code . " " . $response;
-        // }
+            //return $result;
+        } else {
+            echo "Fail: " . $http_code . " " . $response;
+        }
 
         curl_close($ch);
 
-        //$history->ipn_id = $response["uuid"];
+        
         if(!$history->save()) {
             Yii::$app->response->statusCode = 400;
             return ["success" => false, "message" => "Ошибка создания ссылки"];
         }
-        return $response;
+        return $result;
      }
 
      public function actionInput_old3()
