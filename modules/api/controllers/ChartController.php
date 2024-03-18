@@ -714,14 +714,17 @@ class ChartController extends BaseController
             return ["success" => false, "message" => "Token не найден"];
         }
 
-        //$chart = Chart::findOne(Yii::$app->request->post("chart_id"));
-        //if (!$chart) {
-            //Yii::$app->response->statusCode = 400;
-            //return ["success" => false, "message" => "Валюта не найдена"];
-        //}
+        $chart = Chart::findOne(Yii::$app->request->get("chart_id"));
+        if (!$chart) {
+            Yii::$app->response->statusCode = 400;
+            return ["success" => false, "message" => "Валюта не найдена"];
+        }
 
         $data = [];
-        $chain_query = ChartChain::find()->where(["cryptomus" => 1])->all();
+        $chain_query = ChartChain::find()
+        ->where(["cryptomus" => 1])
+        ->andwhere(["chart_id" => $chart])
+        ->all();
 
         foreach ($chain_query as $chain) {
             $data[] = [
