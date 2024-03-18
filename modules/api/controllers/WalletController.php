@@ -205,9 +205,9 @@ class WalletController extends BaseController
         }
 
         
-        $chart_id = Yii::$app->request->post("chart_id");
+        $chart_id = Yii::$app->request->post("chart_id",259);
         $history->end_chart_id = $chart_id;
-        $currency_id = Yii::$app->request->post("currency_id");
+        $currency_id = Yii::$app->request->post("currency_id", 1);
         $history->start_chart_id = $history->end_chart_id;
         
         $history->start_price = (float)Yii::$app->request->post("price");
@@ -215,10 +215,10 @@ class WalletController extends BaseController
         $chart = Chart::findOne($chart_id);
         $currency = Currency::findOne($currency_id);
         $history->end_price = 0;
-        if (!$chart) {
-            Yii::$app->response->statusCode = 400;
-            return ["success" => false, "message" => "Валюта не найдена"];
-        }
+        // if (!$chart) {
+        //     Yii::$app->response->statusCode = 400;
+        //     return ["success" => false, "message" => "Валюта не найдена"];
+        // }
 
         $api_key='eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1dWlkIjoiTVRrNE5UWT0iLCJ0eXBlIjoicHJvamVjdCIsInYiOiI2M2QzNDYyZjRhY2I0NjUzZGEyYTIwNGQ2YTlmZGJjYmZiZjIyY2NiZjIwYWVlOWI0MWIxODc2Njc4ZTA1Mjk5IiwiZXhwIjo4ODExMDU4MTQ0OH0.X0R_PfjNs2QeecNutTS2EKGwtf0r_LWnf8CKqQA7IUc';
         $shop_id='CghDrxpwxUVFXbq3';
@@ -231,10 +231,10 @@ class WalletController extends BaseController
         $data = array(
             "amount" => $history->start_price,
             "shop_id" => $shop_id,
-            "currency" => $currency,
-            "add_fields" =>array(
-                       "cryptocurrency" => 'USDT_TRC20'
-             )
+            "currency" => $currency->symbol,
+            // "add_fields" =>array(
+            //            "cryptocurrency" => 'USDT_TRC20'
+            //  )
         );
 
         $ch = curl_init($url);
@@ -253,7 +253,7 @@ class WalletController extends BaseController
         // }
 
         curl_close($ch);
-        
+
         //$history->ipn_id = $response["uuid"];
         if(!$history->save()) {
             Yii::$app->response->statusCode = 400;
