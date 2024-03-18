@@ -59,7 +59,7 @@ class PaymentController extends BaseController
         //     "total_amount" => (float)$total_amount,
         //     "status_code" => $invoice["data"]["status_code"]
         // ];
-        $chart_id = Yii::$app->request->post("id");
+        $id = Yii::$app->request->post("id");
         $api_key='eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1dWlkIjoiTVRrNE5UWT0iLCJ0eXBlIjoicHJvamVjdCIsInYiOiI2M2QzNDYyZjRhY2I0NjUzZGEyYTIwNGQ2YTlmZGJjYmZiZjIyY2NiZjIwYWVlOWI0MWIxODc2Njc4ZTA1Mjk5IiwiZXhwIjo4ODExMDU4MTQ0OH0.X0R_PfjNs2QeecNutTS2EKGwtf0r_LWnf8CKqQA7IUc';
         $shop_id='CghDrxpwxUVFXbq3';
         //$url = "https://api.cryptocloud.plus/v2/invoice/create";
@@ -85,15 +85,18 @@ class PaymentController extends BaseController
         } else {
             $statusCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             if ($statusCode == 200) {
-                echo "Success: " . $response;
+                curl_close($ch);
+                //return $response;
             } else {
                 echo "Fail: " . $statusCode . " " . $response;
             }
         }
+        parse_str($response, $data);
 
-        curl_close($ch);
+        return $data;
         
-        return $response;
+
+        
 
     }
 
