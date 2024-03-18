@@ -28,7 +28,7 @@ class PaymentController extends BaseController
 {
     
     public function actionCheckPayment() {
-        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+        //Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
 
         // $history = History::find()->where(["user_id" => $this->user->id, "type" => 0, 'wallet_direct_id' => 12, 'status' => 3])->one();
         // if (!$history) {
@@ -59,7 +59,7 @@ class PaymentController extends BaseController
         //     "total_amount" => (float)$total_amount,
         //     "status_code" => $invoice["data"]["status_code"]
         // ];
-        $id = Yii::$app->request->post("id");
+        $id = Yii::$app->request->get("id");
         $api_key='eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1dWlkIjoiTVRrNE5UWT0iLCJ0eXBlIjoicHJvamVjdCIsInYiOiI2M2QzNDYyZjRhY2I0NjUzZGEyYTIwNGQ2YTlmZGJjYmZiZjIyY2NiZjIwYWVlOWI0MWIxODc2Njc4ZTA1Mjk5IiwiZXhwIjo4ODExMDU4MTQ0OH0.X0R_PfjNs2QeecNutTS2EKGwtf0r_LWnf8CKqQA7IUc';
         $shop_id='CghDrxpwxUVFXbq3';
         //$url = "https://api.cryptocloud.plus/v2/invoice/create";

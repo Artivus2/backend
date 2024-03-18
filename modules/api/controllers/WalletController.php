@@ -229,9 +229,9 @@ class WalletController extends BaseController
         );
 
         $data = array(
-            "amount" => 1.5,
+            "amount" => $history->start_price,
             "shop_id" => $shop_id,
-            "currency" => 'USD',
+            "currency" => $currency,
             "add_fields" =>array(
                        "cryptocurrency" => 'USDT_TRC20'
              )
@@ -246,14 +246,15 @@ class WalletController extends BaseController
         $response = curl_exec($ch);
         $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
-        if($http_code == 200){
-            echo "Success: " . $response;
-        } else {
-            echo "Fail: " . $http_code . " " . $response;
-        }
+        // if($http_code == 200){
+        //     return $response;
+        // } else {
+        //     echo "Fail: " . $http_code . " " . $response;
+        // }
 
         curl_close($ch);
-        $history->ipn_id = $response["uuid"];
+        
+        //$history->ipn_id = $response["uuid"];
         if(!$history->save()) {
             Yii::$app->response->statusCode = 400;
             return ["success" => false, "message" => "Ошибка создания ссылки"];
