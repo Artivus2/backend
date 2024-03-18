@@ -212,7 +212,7 @@ class WalletController extends BaseController
         // }
 
         
-        $chart_id = Yii::$app->request->post("chart_id",259);
+        $chart_id = Yii::$app->request->post("chart_id");
         $history->end_chart_id = $chart_id;
         $currency_id = Yii::$app->request->post("currency_id", 1);
         $chain_id = Yii::$app->request->post("chain_id");
@@ -256,11 +256,13 @@ class WalletController extends BaseController
         $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $result = [];
         if($http_code == 200){
-            $data = json_encode($response, true);
+            $data = json_decode($response, true);
+
             foreach ($data as $item) {
                 $result[]=$item;
             }
-            $history->ipn_id = $result[1][0]["uuid"];
+            $history->ipn_id = $result[1]["uuid"];
+            $history->end_price = $result[1]["amount"];
 
             //return $result;
         } else {
