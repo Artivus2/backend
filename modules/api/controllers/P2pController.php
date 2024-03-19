@@ -1279,7 +1279,7 @@ class P2pController extends BaseController
                 "count_payments_order_type" => count($p2pAds_payments),
                 "status" => $item->status,
                 "can_delete" => $can_delete,
-                "image" => Url::to([$item->user->getImage()->getUrl("75x75")], "https"),
+                "avatar" => $item->user->avatar,
                 "user_orders_count" => (int)$p2pAds_query_count,
                 "user_orders_count_complete_percent" =>(int)$complete,
                 'description' => $item->description
