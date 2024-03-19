@@ -170,60 +170,11 @@ class UserController extends BaseController
             Yii::$app->response->statusCode = 400;
             return ["success" => false, "message" => "Ошибка сохранения аватара"];
         }
+        
+        return ["success" => true, "message" => "Аватар изменен"];
 
     }
         
-    /**
-     * @SWG\Get(
-     *    path = "/user/get-avatar",
-     *    tags = {"User"},
-     *    summary = "Получить ид аватара",
-     *    security={{"access_token":{}}},
-     *    @SWG\Parameter(
-     *      name="id",
-     *      in="path",
-     *      description="id аватара",
-     *      @SWG\Schema(type="integer")
-     *     ),
-     *	  @SWG\Response(
-     *      response = 200,
-     *      description = "Список статусов",
-     *      @SWG\Schema(
-     *          type="array",
-     *          @SWG\Items(ref="#/definitions/Result")
-     *      ),
-     *    ),
-     *    @SWG\Response(
-     *      response = 400,
-     *      description = "Ошибка запроса",
-     *      @SWG\Schema(ref = "#/definitions/Result")
-     *    ),
-     *    @SWG\Response(
-     *      response = 403,
-     *      description = "Ошибка авторизации",
-     *      @SWG\Schema(ref = "#/definitions/Result")
-     *    ),
-     *)
-     * @throws HttpException
-     */
-
-   
-     public function actionGetStatusList()
-     {
-        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
-
-        if (!$this->user) {
-            Yii::$app->response->statusCode = 401;
-            return ["success" => false, "message" => "Token не найден"];
-        }
-        $avatar = (int)Yii::$app->request->get("avatar");
-        $user = User::find()->where(["id" => $this->user->id])->one();
-       
-
-        
-
-        return $user->avatar;
-     }
     
     /**
      * @SWG\GET(
@@ -2016,6 +1967,7 @@ class UserController extends BaseController
             "login" => $user->login,
             "email" => $user->email,
             "phone" => $user->phone,
+            "avatar" => $user->avatar,
             "first_name" => $user->first_name,
             "last_name" => $user->last_name,
             "patronymic" => $user->patronymic,
