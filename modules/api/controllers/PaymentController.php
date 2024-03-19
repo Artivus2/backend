@@ -80,21 +80,28 @@ class PaymentController extends BaseController
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 
         $response = curl_exec($ch);
+        
         if (curl_errno($ch)) {
             echo 'Error:' . curl_error($ch);
         } else {
             $statusCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             if ($statusCode == 200) {
                 curl_close($ch);
+
+
                 //return $response;
             } else {
                 echo "Fail: " . $statusCode . " " . $response;
             }
         }
-        parse_str($response, $data);
+        $data = json_decode($response, true);
+        $result = [];
+        foreach ($data as $item){
+            $result[] = $item;
+        }
 
-        return $data;
-        
+        return $result[1][0];
+        // {"status":"success","result":{"uuid":"INV-9VBKMAQR","created":"2024-03-18 12:46:17.729941","address":"","expiry_date":"2024-03-19 12:46:17.718070","side_commission":"client","side_commission_service":"merchant","type_payments":"crypto","amount":0.11,"amount_usd":0.11,"amount_in_fiat":10.0,"fee":1.4,"fee_usd":1.4,"service_fee":0.00209,"service_fee_usd":0.0,"fiat_currency":"RUB","status":"created","is_email_required":false,"link":"https://pay.cryptocloud.plus/9VBKMAQR","invoice_id":null,"currency":{"id":4,"code":"USDT","fullcode":"USDT_TRC20","network":{"code":"TRC20","id":4,"icon":"https://cdn.cryptocloud.plus/currency/crypto/TRX.svg","fullname":"Tron"},"name":"Tether","is_email_required":false,"stablecoin":true,"icon_base":"https://cdn.cryptocloud.plus/currency/icons/main/usdt.svg","icon_network":"https://cdn.cryptocloud.plus/icons-currency/USDT-TRC20.svg","icon_qr":"https://cdn.cryptocloud.plus/currency/icons/stroke/usdt.svg","order":1},"project":{"id":352403,"name":"GREENAVI","fail":"https://greenavi.com/api/payment/fail-ipn","success":"https://greenavi.com/api/payment/success-ipn","logo":""},"test_mode":true}}
 
         
 
@@ -709,22 +716,34 @@ class PaymentController extends BaseController
             return ["success" => false, "message" => "Token не найден"];
         }
 
-        $payment = PaymentUser::findOne(['id' => Yii::$app->request->post("id"), 'user_id' => $this->user->id, "active" => 1]);
+        $id = Yii::$app->request->post("id");
+        $payment = PaymentUser::findOne(['id' => $id, 'user_id' => $this->user->id, "active" => 1]);
         if(!$payment) {
             return ["success" => false, "message" => "Платеж не найден"];
         }
 
-        
-        $statuses = [1,2,3,4,5,7,8,9];
-        $p2p_payments = P2pPayment::find()->where(["user_id" => $this->user->id, "payment_id" => $payment->payment_id])->all();
-        foreach ($p2p_payments as $p2p_payment) {
-            $p2p_ads_s = P2pAds::find()->where(["id" => $p2p_payment->p2p_ads_id])->andWhere(["in","status", $statuses])->one();
-            if ($p2p_ads_s) {
+        $statuses = [1,2,5];
+        $p2p_history = P2pHistory::find()->where(['author_id' => $this->user->id, 'status' => $statuses,'payment_id' => $id, 'active' => 1])->all();
+        if ($p2p_history) {
                 Yii::$app->response->statusCode = 401;
-                return ["success" => false, "message" => "Реквизит не может быть удален, есть активные или не завершенные ордера", "Текущий статус" => $p2p_ads_s->status];
-            }
-
+                return ["success" => false, "message" => "Реквизит не может быть удален, есть активные или не завершенные ордера"];    
         }
+        $p2p_history = P2pHistory::find()->where(['creator_id' => $this->user->id, 'status' => $statuses,'payment_id' => $id, 'active' => 1])->all();
+        if ($p2p_history) {
+                Yii::$app->response->statusCode = 401;
+                return ["success" => false, "message" => "Реквизит не может быть удален, есть активные или не завершенные ордера"];    
+        }
+        $b2b_history = B2bHistory::find()->where(['author_id' => $this->user->id, 'status' => $statuses,'payment_id' => $id, 'active' => 1])->all();
+        if ($b2b_history) {
+                Yii::$app->response->statusCode = 401;
+                return ["success" => false, "message" => "Реквизит не может быть удален, есть активные или не завершенные ордера"];    
+        }
+        $b2b_history = B2bHistory::find()->where(['creator_id' => $this->user->id, 'status' => $statuses,'payment_id' => $id, 'active' => 1])->all();
+        if ($b2b_history) {
+                Yii::$app->response->statusCode = 401;
+                return ["success" => false, "message" => "Реквизит не может быть удален, есть активные или не завершенные ордера"];    
+        }
+        
         $payment->active = 0;
        
         if(!$payment->save()) {
