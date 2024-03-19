@@ -13,6 +13,8 @@ use app\models\PaymentType;
 use app\models\PaymentDesc;
 use app\models\PaymentUser;
 use app\models\P2pPayment;
+use app\models\P2pHistory;
+use app\models\B2bHistory;
 use app\models\B2bPayment;
 use app\models\P2pAds;
 use app\models\WalletAddress;
@@ -723,22 +725,22 @@ class PaymentController extends BaseController
         }
 
         $statuses = [1,2,5];
-        $p2p_history = P2pHistory::find()->where(['author_id' => $this->user->id, 'status' => $statuses,'payment_id' => $id, 'active' => 1])->all();
+        $p2p_history = P2pHistory::find()->where(['author_id' => $this->user->id, 'status' => $statuses,'payment_id' => $id])->all();
         if ($p2p_history) {
                 Yii::$app->response->statusCode = 401;
                 return ["success" => false, "message" => "Реквизит не может быть удален, есть активные или не завершенные ордера"];    
         }
-        $p2p_history = P2pHistory::find()->where(['creator_id' => $this->user->id, 'status' => $statuses,'payment_id' => $id, 'active' => 1])->all();
+        $p2p_history = P2pHistory::find()->where(['creator_id' => $this->user->id, 'status' => $statuses,'payment_id' => $id])->all();
         if ($p2p_history) {
                 Yii::$app->response->statusCode = 401;
                 return ["success" => false, "message" => "Реквизит не может быть удален, есть активные или не завершенные ордера"];    
         }
-        $b2b_history = B2bHistory::find()->where(['author_id' => $this->user->id, 'status' => $statuses,'payment_id' => $id, 'active' => 1])->all();
+        $b2b_history = B2bHistory::find()->where(['author_id' => $this->user->id, 'status' => $statuses,'payment_id' => $id])->all();
         if ($b2b_history) {
                 Yii::$app->response->statusCode = 401;
                 return ["success" => false, "message" => "Реквизит не может быть удален, есть активные или не завершенные ордера"];    
         }
-        $b2b_history = B2bHistory::find()->where(['creator_id' => $this->user->id, 'status' => $statuses,'payment_id' => $id, 'active' => 1])->all();
+        $b2b_history = B2bHistory::find()->where(['creator_id' => $this->user->id, 'status' => $statuses,'payment_id' => $id])->all();
         if ($b2b_history) {
                 Yii::$app->response->statusCode = 401;
                 return ["success" => false, "message" => "Реквизит не может быть удален, есть активные или не завершенные ордера"];    
