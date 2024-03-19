@@ -19,6 +19,7 @@ use Yii;
  * @SWG\Property(property="first_name", type="string", description="Имя", example="Иван")
  * @SWG\Property(property="last_name", type="string", description="Фамилия", example="Иванов")
  * @SWG\Property(property="patronymic", type="string", description="Отчество", example="Иванович")
+ * @SWG\Property(property="avatar", type="integer", description="Аватар")
  * @SWG\Property(property="last_ip", type="string", description="IP Адрес", example="102.1.34.543")
  */
 class User extends \yii\db\ActiveRecord implements \yii\web\IdentityInterface
@@ -56,7 +57,7 @@ class User extends \yii\db\ActiveRecord implements \yii\web\IdentityInterface
             ['email', 'unique'],
             //['phone', 'validatePhone'],
             // ['phone', 'match', 'pattern' => '/^\+7\([0-9]{3}\)\s[0-9]{3}\-[0-9]{2}\-[0-9]{2}$/', 'message' => 'Пример: +7(999) 999-99-99'],
-            [['currency_id', 'verify_status', 'chart_id'], 'integer'],
+            [['currency_id', 'verify_status', 'chart_id','avatar'], 'integer'],
             [['image'], 'file', 'extensions' => 'png, jpg, jpeg'],
             [['email', 'password', 'token', 'telegram', 'first_name', 'last_name', 'patronymic','last_ip'], 'string', 'max' => 255],
         ];

@@ -110,6 +110,7 @@ class UserController extends BaseController
         }
 
         $image = UploadedFile::getInstanceByName('image');
+
         if ($image->extension != "jpg" && $image->extension != "png" && $image->extension != "jpeg") {
             Yii::$app->response->statusCode = 400;
             return ["success" => false, "message" => "Вы можете прикрепить jpg, png, jpeg"];
@@ -128,6 +129,52 @@ class UserController extends BaseController
 
         return ["image" => Url::to([$this->user->getImage()->getUrl("75x75")], 'https')];
     }
+    /**
+     * @SWG\Post(
+     *    path = "/user/change-avatar",
+     *    tags = {"User"},
+     *    summary = "Смена аватара",
+     *    @SWG\Parameter(
+     *      name="id",
+     *      in="body",
+     *      description="id аватара",
+     *      required=true,
+     *      @SWG\Schema(type="string")
+     *     ),
+     *	  @SWG\Response(
+     *      response = 200,
+     *      description = "Отправка кода",
+     *      @SWG\Schema(ref = "#/definitions/Result")
+     *    ),
+     *    @SWG\Response(
+     *      response = 400,
+     *      description = "Ошибка запроса",
+     *      @SWG\Schema(ref = "#/definitions/Result")
+     *    ),
+     *)
+     * @throws HttpException
+     */
+    public function actionChangeAvatar()
+    {
+        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+
+        if (!$this->user) {
+            Yii::$app->response->statusCode = 401;
+            return ["success" => false, "message" => "Token не найден"];
+        }
+        $avatar = (int)Yii::$app->request->post("avatar");
+        $user = User::find()->where(["id" => $this->user->id])->one();
+        $user->avatar = $avatar;
+        if(!$user->save()) {
+                
+            Yii::$app->response->statusCode = 400;
+            return ["success" => false, "message" => "Ошибка сохранения аватара"];
+        }
+
+    }
+        
+    
+    
     /**
      * @SWG\GET(
      *    path = "/user/words",
