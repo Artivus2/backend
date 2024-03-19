@@ -94,7 +94,7 @@ class RatingsController extends BaseController
                 "description" => $h->description,
                 "user_id_rater" => $h->user_id_rater,
                 "login" => $h->user->login,
-                "image_rater" => Url::to([$h->user->getImage()->getUrl("75x75")], "https"),
+                "image_rater" => $h->user->avatar,
                 "last_name" => $h->user->last_name,
                 "first_name" => $h->user->first_name,
                 "patronymic" => $h->user->patronymic
