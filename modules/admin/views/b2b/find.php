@@ -21,6 +21,10 @@ $this->params['breadcrumbs'][] = '   >>>>  '.$this->title;
 
     <?= DetailView::widget([
         'model' => $model,
+        'tableOptions' => [
+            
+            'class'=>'table table-striped table-responsive'
+            ],
         'attributes' => [
             'name',
             'ogrn',
