@@ -552,7 +552,7 @@ class WalletController extends BaseController
             return ["success" => false, "message" => "Вам необходимо пройти полную верификацию для осуществления данной операции"];
         }
 
-        $history = History::find()->where(['user_id' => $this->user->id, 'status' => 0, 'type' => 0])->all();
+        $history = History::find()->where(['user_id' => $this->user->id, 'status' => 0, 'type' => 0, 'wallet_direct_id' => 10])->all();
         if ($history) {
             Yii::$app->response->statusCode = 400;
             return ["success" => false, "message" => "У вас уже есть не обработанные заявки на вывод"];
@@ -673,7 +673,7 @@ class WalletController extends BaseController
             return ["success" => false, "message" => "Вам необходимо пройти полную верификацию для осуществления данной операции"];
         }
 
-        $history = History::find()->where(['user_id' => $this->user->id, 'status' => 0, 'type' => 1])->all();
+        $history = History::find()->where(['user_id' => $this->user->id, 'status' => 0, 'type' => 1, 'wallet_direct_id' => 13])->all();
         if ($history) {
             Yii::$app->response->statusCode = 400;
             return ["success" => false, "message" => "У вас уже есть не обработанные заявки на вывод"];
