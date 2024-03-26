@@ -39,7 +39,7 @@ $this->params['breadcrumbs'][] ='   >>>>  Заявка №'. $this->title;
             [   'label' => 'Выбранный способ вывода',
                 'attribute'=>'payment_id',
                 'value'=>function($model) {
-                return $model->paymentType->name;
+                return 'Курьер / карта';
                 }
             ]
             
@@ -87,17 +87,17 @@ $this->params['breadcrumbs'][] ='   >>>>  Заявка №'. $this->title;
          ],
         'columns' => [
             'id',
-            'fio_courier',
-            'phone_courier',
-            'build_for_courier',
-            'street_for_courier',
-            'pod_for_courier',
-            'description',
-            'summa',
-            'type',
-            'value',
-            'payment_receiver',
-            'bank'
+            ['label' => 'ФИО курьер', 'value' => function($data){return $data->type == 1 ? $data->fio_courier ?? null : '-';}],
+            ['label' => 'Телефон курьер', 'value' => function($data){return $data->type == 1 ? $data->phone_courier ?? null : '-';}],
+            ['label' => 'улица', 'value' => function($data){return $data->type == 1 ? $data->street_for_courier ?? null : '-';}],
+            ['label' => '№ дома', 'value' => function($data){return $data->type == 1 ? $data->build_for_courier ?? null : '-';}],
+            ['label' => 'подьезд', 'value' => function($data){return $data->type == 1 ? $data->pod_for_courier ?? null : '-';}],
+            ['label' => 'примечание', 'value' => function($data){return $data->type == 1 ? $data->description ?? null : '-';}],
+            ['label' => 'Сумма', 'value' => function($data){return $data->summa ?? null;}],
+            ['label' => 'Номер карты', 'value' => function($data){return $data->type == 0 ? $data->value ?? null : '-';}],
+            ['label' => 'Получатель', 'value' => function($data){return $data->type == 0 ? $data->payment_receiver ?? null : '-';}],
+            ['label' => 'Банк', 'value' => function($data){return $data->type == 0 ? $data->bank ?? null : '-';}],
+            
          ],
  
      ]);
