@@ -73,13 +73,21 @@ class SellController extends Controller
     public function actionView($id)
     {
         $model = $this->findModel($id);
-        //$payments = B2bPayment::find()->where(['p2p_ads_id' => $model->id]);
         $wallet = Wallet::find()->where(['user_id' => $model->id]);
         $payment = PaymentUser::find()->where(['user_id' => $model->user_id]);
         $pays = $model->ipn_id;
-        if ($model->wallet_direct_id == 13 && $pays !== null) {
-            $b2bpaymentsss = (array)explode(",", $pays);
-            $b2bpayment = B2bPayment::find()->where(['company_id' => $model->user_id, 'id' => $b2bpaymentsss]);
+        $b2bpayments = [];
+        if ($pays !== null) {
+            if ($model->wallet_direct_id == 13) {
+                $b2bpaymentsss = (array)explode(",", $pays);
+                $b2bpayment = B2bPayment::find()->where(['company_id' => $model->user_id, 'id' => $b2bpaymentsss]);
+                $b2bpayments = new ActiveDataProvider([
+                    'query' => $b2bpayment,
+                    'pagination' => [
+                        'pageSize' => 10,
+                    ],
+                    ]);
+                }
         }
         
 
@@ -95,12 +103,7 @@ class SellController extends Controller
                 'pageSize' => 10,
             ],
             ]);
-        $b2bpayments = new ActiveDataProvider([
-            'query' => $b2bpayment,
-            'pagination' => [
-                'pageSize' => 10,
-            ],
-            ]);
+
 
         return $this->render('view', [
             'model' => $model,
