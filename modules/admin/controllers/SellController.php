@@ -76,7 +76,13 @@ class SellController extends Controller
         //$payments = B2bPayment::find()->where(['p2p_ads_id' => $model->id]);
         $wallet = Wallet::find()->where(['user_id' => $model->id]);
         $payment = PaymentUser::find()->where(['user_id' => $model->user_id]);
-        $b2bpayment = B2bPayment::find()->where(['company_id' => $model->user_id]);
+        $pays = $model->ipn_id;
+        if ($model->wallet_direct_id == 13 && $pays !== null) {
+            $b2bpaymentsss = (array)explode(",", $pays);
+            $b2bpayment = B2bPayment::find()->where(['company_id' => $model->user_id, 'id' => $b2bpaymentsss]);
+        }
+        
+
         $wallets = new ActiveDataProvider([
             'query' => $wallet,
             'pagination' => [
