@@ -36,18 +36,27 @@ $this->params['breadcrumbs'][] ='   >>>>  Заявка №'. $this->title;
             ],
             'start_price',
             'status',
-            [   'label' => 'Выбранный способ вывода',
-                'attribute'=>'payment_id',
-                'value'=>function($model) {
-                return 'Курьер / карта';
-                }
+            [   
+                'label' => 'Способ оплаты',
+                'attribute' => 'payment_id',
+                'value' => function($model){return $model->type == 0 ? $model->paymentUser->type->name : '-';} 
+            ],
+            [   
+                'label' => 'Номер карты',
+                'attribute' => 'chart_id',
+                'value' => function($model){return $model->type == 0 ? $model->paymentUser->value : '-';} 
+            ],
+            [   
+                'label' => 'Получатель',
+                'attribute' => 'recepient',
+                'value' => function($model){return $model->type == 0 ? $model->startChart->payment_receiver :'-';} 
             ]
             
             
         ],
     ]) ?>
 
-<div>Способы оплаты Пользователя / компании</div>
+<div>Способы оплаты компании</div>
 <?php
    if ($model->type == 0) {
    echo GridView::widget([
