@@ -100,6 +100,7 @@ if ($model->wallet_direct_id = 13 && $model->ipn_id !== null) {
             ['label' => 'Номер карты', 'value' => function($data){return $data->type == 0 ? $data->value ?? null : '-';}],
             ['label' => 'Получатель', 'value' => function($data){return $data->type == 0 ? $data->payment_receiver ?? null : '-';}],
             ['label' => 'Банк', 'value' => function($data){return $data->type == 0 ? $data->bank ?? null : '-';}],
+            ['label' => 'Сумма', 'value' => function($data){return $data->summa ?? null;}],
             
          ],
  
