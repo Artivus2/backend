@@ -454,30 +454,26 @@ class PaymentController extends BaseController
         if ((int)$b2b !== 1) {
             
             $payment_id = Yii::$app->request->post("payment_id");
-            
+            //$payment = PaymentUser::find()->where(["user_id" => $this->user->id, "payment_id" => $payment_id])->one();
+            //if (!$payment) {
 
-            $payment = PaymentUser::find()->where(["user_id" => $this->user->id, "payment_id" => $payment_id])->one();
-            if (!$payment) {
-                
-                $payment = new PaymentUser(["user_id" => $this->user->id]);
-                $payment->payment_id = $payment_id;
-                $payment->value = Yii::$app->request->post("value");
-            
-                $payment->payment_receiver = Yii::$app->request->post("payment_receiver");
-                $payment->active = 1;
+            $payment = new PaymentUser(["user_id" => $this->user->id,'payment_id' => $payment_id,'active' => 1]);
+            $payment->value = Yii::$app->request->post("value");
+            $payment->payment_receiver = Yii::$app->request->post("payment_receiver");
+            //$payment->active = 1;
 
-            } else {
-                $payment->value = Yii::$app->request->post("value") ?? $payment->value;
-                $payment->payment_receiver = Yii::$app->request->post("payment_receiver") ?? $payment->payment_receiver;
-                $payment->active = 1;
-            }
+            //} else {
+                //$payment->value = Yii::$app->request->post("value") ?? $payment->value;
+                //$payment->payment_receiver = Yii::$app->request->post("payment_receiver") ?? $payment->payment_receiver;
+                //$payment->active = 1;
+            //}
 
 
             $payments_count = PaymentUser::find()->where(["user_id" => $this->user->id, "active" => 1])->count();
             
 
 
-            if ($payments_count > 14) {
+            if ($payments_count > 10 || count($payment_id) > 10) {
                 Yii::$app->response->statusCode = 400;
                 return ["success" => false, "message" => "Превышено максимальное количество способов оплаты", $payments_count];
             }
