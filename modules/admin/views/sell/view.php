@@ -49,7 +49,7 @@ $this->params['breadcrumbs'][] ='   >>>>  Заявка №'. $this->title;
             [   
                 'label' => 'Получатель',
                 'attribute' => 'recepient',
-                'value' => function($model){return $model->type == 0 ? $model->startChart->payment_receiver :'-';} 
+                'value' => function($model){return $model->type == 0 ? $model->paymentUser->payment_receiver :'-';} 
             ]
             
             
