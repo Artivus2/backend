@@ -576,7 +576,7 @@ class WalletController extends BaseController
             Yii::$app->response->statusCode = 400;
             return ["success" => false, "message" => "Указан не существующий метод вывода/продажи"];
         }
-        $history->payment_id = $payment_id;
+        $history->payment_id = $id;
         
         $history->status = 0;
 
@@ -799,7 +799,10 @@ class WalletController extends BaseController
         $summa = Yii::$app->request->post("summa");
         $b2bpayments = B2bPayment::find(['company_id' => $this->user->id,'id' => $id])->one();
         $b2bpayments->summa = $summa;
-        $b2bpayments->save();
+        if(!$b2bpayments->save()) {
+            Yii::$app->response->statusCode = 400;
+            return ["success" => false, "message" => "Ошибка сохранения суммы"];
+        }
 
         return ["success" => true, "message" => "сумма обновлена"];
     }
