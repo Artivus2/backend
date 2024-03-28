@@ -570,8 +570,8 @@ class WalletController extends BaseController
             return ["success" => false, "message" => "Валюта не найдена"];
         }
 
-        $payment_id = (int)Yii::$app->request->post("payment_id");
-        $payments = PaymentUser::find()->where(['user_id'=>$this->user->id, 'payment_id' => $payment_id])->all();
+        $payment_id = (int)Yii::$app->request->post("id");
+        $payments = PaymentUser::find()->where(['user_id'=>$this->user->id, 'id' => $payment_id])->all();
         if (!$payments) {
             Yii::$app->response->statusCode = 400;
             return ["success" => false, "message" => "Указан не существующий метод вывода/продажи"];
@@ -639,6 +639,13 @@ class WalletController extends BaseController
      *      required=true,
      *      @SWG\Schema(type="number")
      *     ),
+     *    @SWG\Parameter(
+     *      name="type_id",
+     *      in="body",
+     *      description="курьер / карта (0-1)",
+     *      required=true,
+     *      @SWG\Schema(type="number")
+     *     ),
      *	  @SWG\Response(
      *      response = 200,
      *      description = "Заявка успешно создана",
@@ -695,7 +702,7 @@ class WalletController extends BaseController
         
         $b2bpayments = (array)Yii::$app->request->post("b2b_payments_ids");
 
-        $history->payment_id = 2000;
+        $history->payment_id = (int)Yii::$app->request->post("type_id", 0);
         $history->ipn_id = implode(",", $b2bpayments);
         
         $history->status = 0;
@@ -735,7 +742,67 @@ class WalletController extends BaseController
         return ["success" => true, "message" => "Запрос отправлен в обработку"];
     }
 
+/**
+     * @SWG\Post(
+     *    path = "/wallet/update-summa",
+     *    tags = {"Wallet"},
+     *    summary = "b2b обновление суммы карт",
+     *    security={{"access_token":{}}},
+     *    @SWG\Parameter(
+     *      name="id",
+     *      in="body",
+     *      description="ID карты",
+     *      required=true,
+     *      @SWG\Schema(type="integer")
+     *     ),
+     *    @SWG\Parameter(
+     *      name="summa",
+     *      in="body",
+     *      description="Сумма на карте",
+     *      required=true,
+     *      @SWG\Schema(type="number")
+     *     ),
+     *	  @SWG\Response(
+     *      response = 200,
+     *      description = "Заявка успешно создана",
+     *      @SWG\Schema(ref = "#/definitions/Result")
+     *    ),
+     *    @SWG\Response(
+     *      response = 400,
+     *      description = "Ошибка запроса",
+     *      @SWG\Schema(ref = "#/definitions/Result")
+     *    ),
+     *    @SWG\Response(
+     *      response = 403,
+     *      description = "Ошибка авторизации",
+     *      @SWG\Schema(ref = "#/definitions/Result")
+     *    ),
+     *)
+     * @throws HttpException
+     */
+    public function actionUpdateSumma()
+    {
+        //status 0 в обработке, 1 - выполнено, 2 - отменено
+        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
 
+        if(!$this->user) {
+            Yii::$app->response->statusCode = 401;
+            return ["success" => false, "message" => "Token не найден"];
+        }
+        
+        if (!in_array($this->user->verify_status, self::VERIFY_STATUS))
+        {
+            Yii::$app->response->statusCode = 401;
+            return ["success" => false, "message" => "Вам необходимо пройти полную верификацию для осуществления данной операции"];
+        }
+        $id = Yii::$app->request->post("id");
+        $summa = Yii::$app->request->post("summa");
+        $b2bpayments = B2bPayment::find(['company_id' => $this->user->id,'id' => $id])->one();
+        $b2bpayments->summa = $summa;
+        $b2bpayments->save();
+
+        return ["success" => true, "message" => "сумма обновлена"];
+    }
     
 
     /**
