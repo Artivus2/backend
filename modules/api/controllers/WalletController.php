@@ -512,7 +512,7 @@ class WalletController extends BaseController
      *      @SWG\Schema(type="number")
      *     ),
      *    @SWG\Parameter(
-     *      name="payment_id",
+     *      name="id",
      *      in="body",
      *      description="ID способа вывода",
      *      required=true,
@@ -570,8 +570,8 @@ class WalletController extends BaseController
             return ["success" => false, "message" => "Валюта не найдена"];
         }
 
-        $payment_id = (int)Yii::$app->request->post("id");
-        $payments = PaymentUser::find()->where(['user_id'=>$this->user->id, 'id' => $payment_id])->all();
+        $id = (int)Yii::$app->request->post("id");
+        $payments = PaymentUser::find()->where(['user_id'=>$this->user->id, 'id' => $id])->all();
         if (!$payments) {
             Yii::$app->response->statusCode = 400;
             return ["success" => false, "message" => "Указан не существующий метод вывода/продажи"];
