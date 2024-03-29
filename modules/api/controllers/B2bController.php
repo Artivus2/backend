@@ -657,7 +657,7 @@ class B2bController extends BaseController
             $amount = $result->amount;
 
         }
-
+        // to do если ордер продажа и amount уменьшают, исключить из резерва
         $current_wallet = Wallet::find()->where(["user_id" => $result->company_id, "chart_id" => $chart_id,'type' => 1])->one();
         if (!$current_wallet) {
             Yii::$app->response->statusCode = 401;
@@ -707,6 +707,98 @@ class B2bController extends BaseController
         
     }
 
+    
+    /**
+     * @SWG\Post(
+     *    path = "/b2b/cancel-order",
+     *    tags = {"b2b"},
+     *    summary = "Отмена ордера (или остатков)",
+     *    security={{"access_token":{}}},
+     *    @SWG\Parameter(
+     *      name="b2b_ads_id",
+     *      in="body",
+     *      description="id ордера b2b_ads",
+     *      required=true,
+     *      @SWG\Schema(type="integer")
+     *     ),
+     *	  @SWG\Response(
+     *      response = 200,
+     *      description = "отмена сделки",
+     *      @SWG\Schema(ref = "#/definitions/B2bHistory")
+     *    ),
+     *    @SWG\Response(
+     *      response = 400,
+     *      description = "Ошибка запроса",
+     *      @SWG\Schema(ref = "#/definitions/Result")
+     *    ),
+     *    @SWG\Response(
+     *      response = 403,
+     *      description = "Ошибка авторизации",
+     *      @SWG\Schema(ref = "#/definitions/Result")
+     *    ),
+     *)
+     * @throws HttpException
+     */
+
+
+     public function actionCancelOrder()
+     {
+        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+
+        if (!$this->user) {
+            Yii::$app->response->statusCode = 401;
+            return ["success" => false, "message" => "Token не найден"];
+        }
+
+        if (!in_array($this->user->verify_status, self::VERIFY_STATUS))
+        {
+            Yii::$app->response->statusCode = 401;
+            return ["success" => false, "message" => "Вам необходимо пройти полную верификацию для осуществления данной операции"];
+        }
+        
+
+        
+        $history_id = Yii::$app->request->post("b2b_ads_id");
+        //$desc_id = Yii::$app->request->post("description_id", 6);
+        $b2b_ads = B2bAds::find()->where(['id' => $history_id, 'company_id'=> $this->user->id])->one();
+
+        if ($b2b_ads->status == 5) {
+            return ["success" => false, "message" => "Ордер не может быть отменен, статус В аппеляции, обратитесь к администратору"];
+        }
+        if (!$b2b_ads) {
+            Yii::$app->response->statusCode = 400;
+            return ["success" => false, "message" => "Ордер не найден"];
+        }
+        if ($b2b_ads->status == -1) 
+        {
+
+                
+                if ($b2b_ads->type == 2) {
+                    $wallet_seller = Wallet::findOne(["user_id" => $b2b_ads->company_id, "chart_id" => $b2b_ads->chart_id, "type" => 1]);
+                    if (!$wallet_seller) {
+                    Yii::$app->response->statusCode = 400;
+                    return ["success" => false, "message" => "Невозможно пополнить баланс продавца"];
+                    }
+                    $wallet_seller->balance += $b2b_ads->amount; //вернуть средства (или остатки) продавцу на кошелек
+                    $b2b_ads->amount = 0;
+                    if(!$wallet_seller->save()) {
+                        Yii::$app->response->statusCode = 400;
+                        return ["success" => false, "message" => "Ошибка сохранения средств на кошельке"];
+                    }
+
+                }
+
+                if(!$b2b_ads->save()) {
+                    Yii::$app->response->statusCode = 400;
+                    return ["success" => false, "message" => "Ошибка сохранения ордера"];
+                }
+
+                return ["success" => true, "message" => "Ордер отменен"];
+        }
+
+
+     
+     }
     
     /**
      * @SWG\Delete(
@@ -1663,99 +1755,6 @@ class B2bController extends BaseController
     
     }
 
-
-
-    /**
-     * @SWG\Post(
-     *    path = "/b2b/cancel-order",
-     *    tags = {"b2b"},
-     *    summary = "Отмена ордера (или остатков)",
-     *    security={{"access_token":{}}},
-     *    @SWG\Parameter(
-     *      name="b2b_ads_id",
-     *      in="body",
-     *      description="id ордера b2b_ads",
-     *      required=true,
-     *      @SWG\Schema(type="integer")
-     *     ),
-     *	  @SWG\Response(
-     *      response = 200,
-     *      description = "отмена сделки",
-     *      @SWG\Schema(ref = "#/definitions/B2bHistory")
-     *    ),
-     *    @SWG\Response(
-     *      response = 400,
-     *      description = "Ошибка запроса",
-     *      @SWG\Schema(ref = "#/definitions/Result")
-     *    ),
-     *    @SWG\Response(
-     *      response = 403,
-     *      description = "Ошибка авторизации",
-     *      @SWG\Schema(ref = "#/definitions/Result")
-     *    ),
-     *)
-     * @throws HttpException
-     */
-
-
-     public function actionCancelOrder()
-     {
-        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
-
-        if (!$this->user) {
-            Yii::$app->response->statusCode = 401;
-            return ["success" => false, "message" => "Token не найден"];
-        }
-
-        if (!in_array($this->user->verify_status, self::VERIFY_STATUS))
-        {
-            Yii::$app->response->statusCode = 401;
-            return ["success" => false, "message" => "Вам необходимо пройти полную верификацию для осуществления данной операции"];
-        }
-        
-
-        
-        $history_id = Yii::$app->request->post("b2b_ads_id");
-        //$desc_id = Yii::$app->request->post("description_id", 6);
-        $b2b_ads = B2bAds::find()->where(['id' => $history_id, 'company_id'=> $this->user->id])->one();
-
-        if ($b2b_ads->status == 5) {
-            return ["success" => false, "message" => "Ордер не может быть отменен, статус В аппеляции, обратитесь к администратору"];
-        }
-        if (!$b2b_ads) {
-            Yii::$app->response->statusCode = 400;
-            return ["success" => false, "message" => "Ордер не найден"];
-        }
-        if ($b2b_ads->status == -1) 
-        {
-
-                
-                if ($b2b_ads->type == 2) {
-                    $wallet_seller = Wallet::findOne(["user_id" => $b2b_ads->company_id, "chart_id" => $b2b_ads->chart_id, "type" => 1]);
-                    if (!$wallet_seller) {
-                    Yii::$app->response->statusCode = 400;
-                    return ["success" => false, "message" => "Невозможно пополнить баланс продавца"];
-                    }
-                    $wallet_seller->balance += $b2b_ads->amount; //вернуть средства (или остатки) продавцу на кошелек
-                    $b2b_ads->amount = 0;
-                    if(!$wallet_seller->save()) {
-                        Yii::$app->response->statusCode = 400;
-                        return ["success" => false, "message" => "Ошибка сохранения средств на кошельке"];
-                    }
-
-                }
-
-                if(!$b2b_ads->save()) {
-                    Yii::$app->response->statusCode = 400;
-                    return ["success" => false, "message" => "Ошибка сохранения ордера"];
-                }
-
-                return ["success" => true, "message" => "Ордер отменен"];
-        }
-
-
-     
-     }
 
     /**
      * @SWG\Post(
