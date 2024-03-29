@@ -1795,14 +1795,7 @@ class P2pController extends BaseController
         }
         if ($p2p_ads->status == -1) 
         {
-                $p2p_ads->status = 6;
-                //$p2p_h->status = 1;
-                //$p2p_h->description_id = $desc_id;
-                // if ($p2p_ads->type == 1) {
-                //     $p2p_ads->amount += $p2p_h->price; //вернуть средства продавцу
-                // }
-
-                //$p2p_h->price = 0;
+               
                 
                 if ($p2p_ads->type == 2) {
                     $wallet_seller = Wallet::findOne(["user_id" => $p2p_ads->user_id, "chart_id" => $p2p_ads->chart_id, 'type' => 0]); // фин
@@ -1811,13 +1804,16 @@ class P2pController extends BaseController
                     return ["success" => false, "message" => "Невозможно пополнить баланс продавца"];
                     }
                     $wallet_seller->balance += $p2p_ads->amount; //вернуть средства (или остатки) продавцу на кошелек
-                    $p2p_ads->amount = 0;
+                    
                     if(!$wallet_seller->save()) {
                         Yii::$app->response->statusCode = 400;
                         return ["success" => false, "message" => "Ошибка сохранения средств на кошельке"];
                     }
 
                 }
+                $p2p_ads->amount = 0;
+                $p2p_ads->status = 6;
+
 //                if(!$p2p_h->save()) {
 //                    Yii::$app->response->statusCode = 400;
 //                    return ["success" => false, "message" => "Ошибка сохранения ордера"];

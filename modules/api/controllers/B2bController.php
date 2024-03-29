@@ -759,7 +759,7 @@ class B2bController extends BaseController
 
         
         $history_id = Yii::$app->request->post("b2b_ads_id");
-        //$desc_id = Yii::$app->request->post("description_id", 6);
+        
         $b2b_ads = B2bAds::find()->where(['id' => $history_id, 'company_id'=> $this->user->id])->one();
 
         if ($b2b_ads->status == 5) {
@@ -780,13 +780,15 @@ class B2bController extends BaseController
                     return ["success" => false, "message" => "Невозможно пополнить баланс продавца"];
                     }
                     $wallet_seller->balance += $b2b_ads->amount; //вернуть средства (или остатки) продавцу на кошелек
-                    $b2b_ads->amount = 0;
+                    
                     if(!$wallet_seller->save()) {
                         Yii::$app->response->statusCode = 400;
                         return ["success" => false, "message" => "Ошибка сохранения средств на кошельке"];
                     }
 
                 }
+                $b2b_ads->amount = 0;
+                $b2b_ads->status = 6;
 
                 if(!$b2b_ads->save()) {
                     Yii::$app->response->statusCode = 400;
