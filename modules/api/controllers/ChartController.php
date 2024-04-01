@@ -179,6 +179,18 @@ class ChartController extends BaseController
         // if ($requestfromb2b) {
         $data[] = [
             "id" => 2024,
+            "name" => 'RUB',
+            "symbol" => 'RUB',
+            "price" => 1,
+            "lowPrice" => 1,
+            "highPrice" => 1,
+            "percent" => 1,
+            "icon" => Url::to(["/images/icons/RUB.png"], "https"),
+            "chart_image" => Url::to(["/charts/RUB.png"], "https"),
+        ];
+
+        $data[] = [
+            "id" => 2025,
             "name" => 'CLV',
             "symbol" => 'CLV',
             "price" => 1,
