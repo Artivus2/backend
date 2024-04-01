@@ -177,17 +177,17 @@ class ChartController extends BaseController
         // $data = [];
 
         // if ($requestfromb2b) {
-        $data[] = [
-            "id" => 2024,
-            "name" => 'RUB',
-            "symbol" => 'RUB',
-            "price" => 1,
-            "lowPrice" => 1,
-            "highPrice" => 1,
-            "percent" => 1,
-            "icon" => Url::to(["/images/icons/RUB.png"], "https"),
-            "chart_image" => Url::to(["/charts/RUB.png"], "https"),
-        ];
+        // $data[] = [
+        //     "id" => 2024,
+        //     "name" => 'RUB',
+        //     "symbol" => 'RUB',
+        //     "price" => 1,
+        //     "lowPrice" => 1,
+        //     "highPrice" => 1,
+        //     "percent" => 1,
+        //     "icon" => Url::to(["/images/icons/RUB.png"], "https"),
+        //     "chart_image" => Url::to(["/charts/RUB.png"], "https"),
+        // ];
 
         $data[] = [
             "id" => 2025,
@@ -197,8 +197,8 @@ class ChartController extends BaseController
             "lowPrice" => 1,
             "highPrice" => 1,
             "percent" => 1,
-            "icon" => Url::to(["/images/icons/RUB.png"], "https"),
-            "chart_image" => Url::to(["/charts/RUB.png"], "https"),
+            "icon" => Url::to(["/images/icons/CLV.png"], "https"),
+            "chart_image" => Url::to(["/charts/CLV.png"], "https"),
         ];
         // }
 
@@ -460,8 +460,8 @@ class ChartController extends BaseController
 
         $curl = curl_init();
     
-        if ($chart1 == "TCN") {
-            $chart1 = "USDT";
+        if ($chart1 == "CLV") {
+            $chart1 = "RUB";
         
 
         }
