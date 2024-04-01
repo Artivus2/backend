@@ -177,17 +177,17 @@ class ChartController extends BaseController
         // $data = [];
 
         // if ($requestfromb2b) {
-        //     $data[] = [
-        //         "id" => 2024,
-        //         "name" => 'RUB',
-        //         "symbol" => 'RUB',
-        //         "price" => 1,
-        //         "lowPrice" => 1,
-        //         "highPrice" => 1,
-        //         "percent" => 1,
-        //         "icon" => Url::to(["/images/icons/RUB.png"], "https"),
-        //         "chart_image" => Url::to(["/charts/RUB.png"], "https"),
-        //     ];
+        $data[] = [
+            "id" => 2024,
+            "name" => 'CLV',
+            "symbol" => 'CLV',
+            "price" => 1,
+            "lowPrice" => 1,
+            "highPrice" => 1,
+            "percent" => 1,
+            "icon" => Url::to(["/images/icons/RUB.png"], "https"),
+            "chart_image" => Url::to(["/charts/RUB.png"], "https"),
+        ];
         // }
 
         // $ch = curl_init("https://api.binance.com/api/v3/ticker/24hr?symbols=" . json_encode($symbols));
