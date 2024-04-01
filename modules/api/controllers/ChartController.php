@@ -126,115 +126,115 @@ class ChartController extends BaseController
             return ["success" => false, "message" => "Token не найден"];
         }
 
-        $requestfromp2p = Yii::$app->request->get('p2p');
+        // $requestfromp2p = Yii::$app->request->get('p2p');
         
-        $request=["cryptomus" => 1];
-        if($requestfromp2p) {
+        // $request=["cryptomus" => 1];
+        // if($requestfromp2p) {
             
-            $request=["p2p" => 1];
-            }
+        //     $request=["p2p" => 1];
+        //     }
 
 
-        $requestfromb2b = Yii::$app->request->get('b2b');
+        // $requestfromb2b = Yii::$app->request->get('b2b');
         
-        if($requestfromb2b) {
+        // if($requestfromb2b) {
             
-            $request=["b2b" => 1];
+        //     $request=["b2b" => 1];
 
             
-            }
+        //     }
 
-        $charts = [];
-        $symbols = [];
-        $chart_query = Chart::find()->joinWith(["favourite" => function ($query)  {
-            $query->onCondition(['chart_favourite.user_id' => $this->user->id]);
-        }])->where(["active" => 1])->andWhere(["cryptomus" => 1])->andwhere($request)->all();
+        // $charts = [];
+        // $symbols = [];
+        // $chart_query = Chart::find()->joinWith(["favourite" => function ($query)  {
+        //     $query->onCondition(['chart_favourite.user_id' => $this->user->id]);
+        // }])->where(["active" => 1])->andWhere(["cryptomus" => 1])->andwhere($request)->all();
         
-        if (!$chart_query) {
-            Yii::$app->response->statusCode = 401;
-            return ["success" => false, "message" => "Список валют не найден"];
-        }
+        // if (!$chart_query) {
+        //     Yii::$app->response->statusCode = 401;
+        //     return ["success" => false, "message" => "Список валют не найден"];
+        // }
         
-        foreach ($chart_query as $chart) {
-            if($chart->symbol == "RUB") {
-                continue;
-            }
-            if($chart->symbol == "USDT") {
-                continue;
-            }
+        // foreach ($chart_query as $chart) {
+        //     if($chart->symbol == "RUB") {
+        //         continue;
+        //     }
+        //     if($chart->symbol == "USDT") {
+        //         continue;
+        //     }
             
-            if($chart->symbol != "USDT") {
+        //     if($chart->symbol != "USDT") {
                   
-                $symbol = $chart->symbol . "USDT";
-                $symbols[] = $symbol;
-                $charts[$symbol] = $chart;
-                }   
+        //         $symbol = $chart->symbol . "USDT";
+        //         $symbols[] = $symbol;
+        //         $charts[$symbol] = $chart;
+        //         }   
             
             
-            }
+        //     }
         
-        //return ["success" => false, "message" => "Список валют не найден", $symbols];
-        $data = [];
+        // //return ["success" => false, "message" => "Список валют не найден", $symbols];
+        // $data = [];
 
-        if ($requestfromb2b) {
-            $data[] = [
-                "id" => 2024,
-                "name" => 'RUB',
-                "symbol" => 'RUB',
-                "price" => 1,
-                "lowPrice" => 1,
-                "highPrice" => 1,
-                "percent" => 1,
-                "icon" => Url::to(["/images/icons/RUB.png"], "https"),
-                "chart_image" => Url::to(["/charts/RUB.png"], "https"),
-            ];
-        }
+        // if ($requestfromb2b) {
+        //     $data[] = [
+        //         "id" => 2024,
+        //         "name" => 'RUB',
+        //         "symbol" => 'RUB',
+        //         "price" => 1,
+        //         "lowPrice" => 1,
+        //         "highPrice" => 1,
+        //         "percent" => 1,
+        //         "icon" => Url::to(["/images/icons/RUB.png"], "https"),
+        //         "chart_image" => Url::to(["/charts/RUB.png"], "https"),
+        //     ];
+        // }
 
-        $ch = curl_init("https://api.binance.com/api/v3/ticker/24hr?symbols=" . json_encode($symbols));
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_HEADER, false);
-        $res = curl_exec($ch);
-        curl_close($ch);
-        $result = json_decode($res);
+        // $ch = curl_init("https://api.binance.com/api/v3/ticker/24hr?symbols=" . json_encode($symbols));
+        // curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        // curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        // curl_setopt($ch, CURLOPT_HEADER, false);
+        // $res = curl_exec($ch);
+        // curl_close($ch);
+        // $result = json_decode($res);
 
-        foreach ($result as $item) {
-            $chart = $charts[$item->symbol];
+        // foreach ($result as $item) {
+        //     $chart = $charts[$item->symbol];
 
-            if($item->symbol == "USDCUSDT") {
-                $_chart = Chart::find()->joinWith(["favourite" => function ($query)  {
-                    $query->onCondition(['chart_favourite.user_id' => $this->user->id]);
-                }])->where(["active" => 1, "symbol" => "USDT"])->one();
+        //     if($item->symbol == "USDCUSDT") {
+        //         $_chart = Chart::find()->joinWith(["favourite" => function ($query)  {
+        //             $query->onCondition(['chart_favourite.user_id' => $this->user->id]);
+        //         }])->where(["active" => 1, "symbol" => "USDT"])->one();
 
-                if($_chart) {
-                    $data[] = [
-                        "id" => $_chart->id,
-                        "name" => $_chart->name,
-                        "symbol" => $_chart->symbol,
-                        "price" => $item->lastPrice,
-                        "lowPrice" => $item->lowPrice,
-                        "highPrice" => $item->highPrice,
-                        "percent" => $item->priceChangePercent,
-                        "favorite" => isset($_chart->favourite),
-                        "icon" => Url::to(["/images/icons/" . $_chart->symbol . ".png"], "https"),
-                        "chart_image" => Url::to(["/charts/" . $_chart->symbol . ".png"], "https"),
-                    ];
-                }
-            }
+        //         if($_chart) {
+        //             $data[] = [
+        //                 "id" => $_chart->id,
+        //                 "name" => $_chart->name,
+        //                 "symbol" => $_chart->symbol,
+        //                 "price" => $item->lastPrice,
+        //                 "lowPrice" => $item->lowPrice,
+        //                 "highPrice" => $item->highPrice,
+        //                 "percent" => $item->priceChangePercent,
+        //                 "favorite" => isset($_chart->favourite),
+        //                 "icon" => Url::to(["/images/icons/" . $_chart->symbol . ".png"], "https"),
+        //                 "chart_image" => Url::to(["/charts/" . $_chart->symbol . ".png"], "https"),
+        //             ];
+        //         }
+        //     }
 
-            $data[] = [
-                "id" => $chart->id,
-                "name" => $chart->name,
-                "symbol" => $chart->symbol,
-                "price" => $item->lastPrice,
-                "lowPrice" => $item->lowPrice,
-                "highPrice" => $item->highPrice,
-                "percent" => $item->priceChangePercent,
-                "favorite" => isset($chart->favourite),
-                "icon" => Url::to(["/images/icons/" . $chart->symbol . ".png"], "https"),
-                "chart_image" => Url::to(["/charts/" . $chart->symbol . ".png"], "https"),
-            ];
-        }
+        //     $data[] = [
+        //         "id" => $chart->id,
+        //         "name" => $chart->name,
+        //         "symbol" => $chart->symbol,
+        //         "price" => $item->lastPrice,
+        //         "lowPrice" => $item->lowPrice,
+        //         "highPrice" => $item->highPrice,
+        //         "percent" => $item->priceChangePercent,
+        //         "favorite" => isset($chart->favourite),
+        //         "icon" => Url::to(["/images/icons/" . $chart->symbol . ".png"], "https"),
+        //         "chart_image" => Url::to(["/charts/" . $chart->symbol . ".png"], "https"),
+        //     ];
+        // }
 
         $data[] = [
             "id" => 259,
