@@ -10,13 +10,13 @@ use app\models\Currency;
 use app\models\Chain;
 use app\models\Wallet;
 use app\models\WalletType;
+use app\models\WalletAddress;
 use app\models\PaymentUser;
 use app\models\PaymentStatus;
 use app\models\B2bPayment;
 use app\models\User;
 use app\models\History;
 use app\models\ChartChain;
-use app\models\WalletAddress;
 use Endroid\QrCode\Color\Color;
 use Endroid\QrCode\Encoding\Encoding;
 use Endroid\QrCode\ErrorCorrectionLevel\ErrorCorrectionLevelLow;
@@ -495,7 +495,7 @@ class WalletController extends BaseController
      * @SWG\Post(
      *    path = "/wallet/sell",
      *    tags = {"Wallet"},
-     *    summary = "Продать/вывести криптовалюту",
+     *    summary = "Вывести криптовалюту",
      *    security={{"access_token":{}}},
      *    @SWG\Parameter(
      *      name="chart_id",
@@ -507,14 +507,14 @@ class WalletController extends BaseController
      *    @SWG\Parameter(
      *      name="price",
      *      in="body",
-     *      description="Сумма продажи/вывода",
+     *      description="Сумма вывода",
      *      required=true,
      *      @SWG\Schema(type="number")
      *     ),
      *    @SWG\Parameter(
-     *      name="id",
+     *      name="address",
      *      in="body",
-     *      description="ID способа вывода",
+     *      description="адрес кошелька",
      *      required=true,
      *      @SWG\Schema(type="integer")
      *     ),
@@ -561,6 +561,14 @@ class WalletController extends BaseController
         $history = new History(["date" => time(), "user_id" => $this->user->id, "type" => 0, 'wallet_direct_id' => 10]);
 
         $history->start_chart_id = (int)Yii::$app->request->post("chart_id");
+        $address = trim((int)Yii::$app->request->post("address"));
+        $history->ipn_id = $address;
+        if (!$address) {
+            Yii::$app->response->statusCode = 400;
+            return ["success" => false, "message" => "Укажите валидный адрес USDT"];
+        }
+
+
         $history->end_chart_id = 0;
         $history->start_price = (float)Yii::$app->request->post("price");
 
@@ -570,13 +578,13 @@ class WalletController extends BaseController
             return ["success" => false, "message" => "Валюта не найдена"];
         }
 
-        $id = (int)Yii::$app->request->post("id");
-        $payments = PaymentUser::find()->where(['user_id'=>$this->user->id, 'id' => $id])->all();
-        if (!$payments) {
-            Yii::$app->response->statusCode = 400;
-            return ["success" => false, "message" => "Указан не существующий метод вывода/продажи"];
-        }
-        $history->payment_id = $id;
+        // $id = (int)Yii::$app->request->post("id");
+        // $payments = PaymentUser::find()->where(['user_id'=>$this->user->id, 'id' => $id])->all();
+        // if (!$payments) {
+        //     Yii::$app->response->statusCode = 400;
+        //     return ["success" => false, "message" => "Указан не существующий метод вывода/продажи"];
+        // }
+        // $history->payment_id = $id;
         
         $history->status = 0;
 
@@ -593,15 +601,16 @@ class WalletController extends BaseController
             return ["success" => false, "message" => "Недостаточно средств на балансе"];
         }
 
-        if (!(float)$this->price($chart->symbol, "RUB")) {
-            $history->end_price = 0;
-        } else {
-        $history->end_price = (float)$this->price($chart->symbol, "RUB") * $history->start_price / 1;
-        }
+        // if (!(float)$this->price($chart->symbol, "RUB")) {
+        //     $history->end_price = 0;
+        // } else {
+        // $history->end_price = (float)$this->price($chart->symbol, "RUB") * $history->start_price / 1;
+        // }
+        $history->end_price = $history->start_price;
 
         if(!$history->save()) {
             Yii::$app->response->statusCode = 400;
-            return ["success" => false, "message" => "Ошибка создания запроса", $history];
+            return ["success" => false, "message" => "Ошибка создания запроса"];
         }
 
         if(!$wallet->save()) {
@@ -797,7 +806,7 @@ class WalletController extends BaseController
         }
         $id = Yii::$app->request->post("id");
         $summa = Yii::$app->request->post("summa");
-        $b2bpayments = B2bPayment::find(['company_id' => $this->user->id,'id' => $id])->one();
+        $b2bpayments = B2bPayment::find()->where(['company_id' => $this->user->id,'id' => $id])->one();
         $b2bpayments->summa = $summa;
         if(!$b2bpayments->save()) {
             Yii::$app->response->statusCode = 400;
