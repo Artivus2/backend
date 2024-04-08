@@ -87,7 +87,7 @@ class History extends \yii\db\ActiveRecord
             'id' => 'ID',
             'user_id' => 'ID',
             'type' => 'Type',
-            'start_price' => 'Нач. сумма',
+            'start_price' => 'Сумма',
             'end_price' => 'Кон. сумма',
             'start_chart_id' => 'Крипта',
             'end_chart_id' => 'Валюта',

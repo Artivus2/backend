@@ -37,20 +37,20 @@ $this->params['breadcrumbs'][] ='   >>>>  Заявка №'. $this->title;
             'start_price',
             'status',
             [   
-                'label' => 'Способ оплаты',
-                'attribute' => 'payment_id',
-                'value' => function($model){return $model->type == 0 ? $model->paymentUser->type->name : '-';} 
+                'label' => 'Адрес кошелька',
+                'attribute' => 'Wallet address',
+                'value' => function($model){return $model->type == 0 ? $model->ipn_id : '-';} 
             ],
-            [   
-                'label' => 'Номер карты',
-                'attribute' => 'chart_id',
-                'value' => function($model){return $model->type == 0 ? $model->paymentUser->value : '-';} 
-            ],
-            [   
-                'label' => 'Получатель',
-                'attribute' => 'recepient',
-                'value' => function($model){return $model->type == 0 ? $model->paymentUser->payment_receiver :'-';} 
-            ]
+            // [   
+            //     'label' => 'Номер карты',
+            //     'attribute' => 'chart_id',
+            //     'value' => function($model){return $model->type == 0 ? $model->paymentUser->value : '-';} 
+            // ],
+            // [   
+            //     'label' => 'Получатель',
+            //     'attribute' => 'recepient',
+            //     'value' => function($model){return $model->type == 0 ? $model->paymentUser->payment_receiver :'-';} 
+            // ]
             
             
         ],
