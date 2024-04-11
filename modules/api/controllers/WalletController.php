@@ -286,32 +286,34 @@ class WalletController extends BaseController
 
 
         curl_setopt_array($curl, array(
-        CURLOPT_URL => 'https://api.nowpayments.io/v1/invoice',
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_ENCODING => '',
-        CURLOPT_MAXREDIRS => 10,
-        CURLOPT_TIMEOUT => 0,
-        CURLOPT_FOLLOWLOCATION => true,
-        CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-        CURLOPT_CUSTOMREQUEST => 'POST',
-        CURLOPT_POSTFIELDS => array(
-            'price_amount: 1000',
-            'price_currency: usd',
-            'order_id: RGDBP-21314',
-            'order_description: Apple Macbook Pro 2019 x 1',
-            'ipn_callback_url: https://greenavi.com/api/payment/notice-ipn',
-            'success_url: https://greenavi.com/api/payment/success-ipn',
-            'cancel_url: https://greenavi.com/api/payment/fail-ipn'
-        ),
-        CURLOPT_HTTPHEADER => array(
+            CURLOPT_URL => 'https://api.nowpayments.io/v1/invoice',
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => '',
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 0,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => 'POST',
+            CURLOPT_POSTFIELDS =>'{
+            "price_amount": 10,
+            "price_currency": "usd",
+            "order_id": "RGDBP-21314",
+            "order_description": "Apple Macbook Pro 2019 x 1",
+            "ipn_callback_url": "https://nowpayments.io",
+            "success_url": "https://nowpayments.io",
+            "cancel_url": "https://nowpayments.io"
+          }
+          
+          ',
+            CURLOPT_HTTPHEADER => array(
               'x-api-key: '.$api_key,
               'Content-Type: application/json'
             ),
-        ));
+          ));
 
 
         $response = curl_exec($curl);
-
+        return $response;
         curl_close($curl);
         $data = json_decode($response, true);
 
