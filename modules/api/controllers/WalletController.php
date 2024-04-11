@@ -223,51 +223,81 @@ class WalletController extends BaseController
             Yii::$app->response->statusCode = 401;
             return ["success" => false, "message" => "Token не найден"];
         }
-        // $history = History::find()->where(["user_id" => $this->user->id, "type" => 0, 'wallet_direct_id' => 12, 'status' => 0])->all();
-        // if ($history) {
-        //     // Yii::$app->response->statusCode = 400;
-        //     // return ["success" => false, "message" => "Завершите предыдущие заявки на пополнение или обратитесь к технической поддержке"];
-        //     $history = new History(["date" => time(), "user_id" => $this->user->id, "type" => 0, 'wallet_direct_id' => 12, 'status' => 0]);
-        // } else {
-        //     $history = new History(["date" => time(), "user_id" => $this->user->id, "type" => 0, 'wallet_direct_id' => 12, 'status' => 0]);
-        // }
+        $history = History::find()->where(["user_id" => $this->user->id, "type" => 0, 'wallet_direct_id' => 12, 'status' => 0])->all();
+        if ($history) {
+            // Yii::$app->response->statusCode = 400;
+            // return ["success" => false, "message" => "Завершите предыдущие заявки на пополнение или обратитесь к технической поддержке"];
+            $history = new History(["date" => time(), "user_id" => $this->user->id, "type" => 0, 'wallet_direct_id' => 12, 'status' => 0]);
+        } else {
+            $history = new History(["date" => time(), "user_id" => $this->user->id, "type" => 0, 'wallet_direct_id' => 12, 'status' => 0]);
+        }
 
         
-        // $chart_id = Yii::$app->request->post("chart_id");
-        // $history->end_chart_id = $chart_id;
-        // $currency_id = Yii::$app->request->post("currency_id", 1);
-        // $chain_id = Yii::$app->request->post("chain_id");
-        // $history->start_chart_id = $history->end_chart_id;
+        $chart_id = Yii::$app->request->post("chart_id");
+        $history->end_chart_id = $chart_id;
+        $currency_id = Yii::$app->request->post("currency_id", 1);
+        $chain_id = Yii::$app->request->post("chain_id");
+        $history->start_chart_id = $history->end_chart_id;
         
-        // $history->start_price = (float)Yii::$app->request->post("price");
+        $history->start_price = (float)Yii::$app->request->post("price");
 
-        // $chart = Chart::findOne($chart_id);
-        // $currency = Currency::findOne($currency_id);
-        // $chain = ChartChain::findOne($chain_id);
-        // $history->end_price = 0;
-        // if (!$chart) {
-        //     Yii::$app->response->statusCode = 400;
-        //     return ["success" => false, "message" => "Валюта не найдена"];
-        // }
-        $ipn_key = 'xk8OoaVpKYOWI7mPoeXwl9azuBd+dL4A';
+        $chart = Chart::findOne($chart_id);
+        $currency = Currency::findOne($currency_id);
+        $chain = ChartChain::findOne($chain_id);
+        $history->end_price = 0;
+        if (!$chart) {
+            Yii::$app->response->statusCode = 400;
+            return ["success" => false, "message" => "Валюта не найдена"];
+        }
+        // $ipn_key = 'xk8OoaVpKYOWI7mPoeXwl9azuBd+dL4A';
         $api_key = 'THBJKRT-Y5EMJSM-H95YDKQ-1RFRWS8';
-        $tid = '477bf661-8cfb-428a-9ba9-1aba92dece9a';
+        // $tid = '477bf661-8cfb-428a-9ba9-1aba92dece9a';
         
+        // $curl = curl_init();
+
+        // curl_setopt_array($curl, array(
+        // CURLOPT_URL => 'https://api.nowpayments.io/v1/merchant/coins',
+        // CURLOPT_RETURNTRANSFER => true,
+        // CURLOPT_ENCODING => '',
+        // CURLOPT_MAXREDIRS => 10,
+        // CURLOPT_TIMEOUT => 0,
+        // CURLOPT_FOLLOWLOCATION => true,
+        // CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+        // CURLOPT_CUSTOMREQUEST => 'GET',
+        // CURLOPT_HTTPHEADER => array(
+        //     'x-api-key '. $api_key
+        // ),
+        // ));
         $curl = curl_init();
+        $headers = array(
+            "x-api-key: ".$api_key,
+            "Content-Type: application/json"
+        );
+
+        $data = array(
+        "price_amount" => $history->start_price,
+        "price_currency" => "usd",
+        "order_id" => rand(100000000,999999999),
+        //"order_description" => "Apple Macbook Pro 2019 x 1",
+        "ipn_callback_url" => "https://greenavi.com/api/payment/notice-ipn",
+        "success_url" => "https://greenavi.com/api/payment/success-ipn",
+        "cancel_url" => "https://greenavi.com/api/payment/fail-ipn"
+        );
+
 
         curl_setopt_array($curl, array(
-        CURLOPT_URL => 'https://api.nowpayments.io/v1/merchant/coins',
+        CURLOPT_URL => 'https://api.nowpayments.io/v1/invoice',
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_ENCODING => '',
         CURLOPT_MAXREDIRS => 10,
         CURLOPT_TIMEOUT => 0,
         CURLOPT_FOLLOWLOCATION => true,
         CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-        CURLOPT_CUSTOMREQUEST => 'GET',
-        CURLOPT_HTTPHEADER => array(
-            'x-api-key '. $api_key
-        ),
+        CURLOPT_CUSTOMREQUEST => 'POST',
+        CURLOPT_POSTFIELDS =>$data,
+        CURLOPT_HTTPHEADER => $headers,
         ));
+
 
         $response = curl_exec($curl);
 
