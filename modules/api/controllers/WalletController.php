@@ -274,7 +274,7 @@ class WalletController extends BaseController
             "Content-Type: application/json"
         );
 
-        $data = array(
+        $datas = array(
         "price_amount" => $history->start_price,
         "price_currency" => "usd",
         "order_id" => rand(100000000,999999999),
@@ -294,8 +294,19 @@ class WalletController extends BaseController
         CURLOPT_FOLLOWLOCATION => true,
         CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
         CURLOPT_CUSTOMREQUEST => 'POST',
-        CURLOPT_POSTFIELDS =>$data,
-        CURLOPT_HTTPHEADER => $headers,
+        CURLOPT_POSTFIELDS => array(
+            'price_amount: 1000',
+            'price_currency: usd',
+            'order_id: RGDBP-21314',
+            'order_description: Apple Macbook Pro 2019 x 1',
+            'ipn_callback_url: https://greenavi.com/api/payment/notice-ipn',
+            'success_url: https://greenavi.com/api/payment/success-ipn',
+            'cancel_url: https://greenavi.com/api/payment/fail-ipn'
+        ),
+        CURLOPT_HTTPHEADER => array(
+              'x-api-key: '.$api_key,
+              'Content-Type: application/json'
+            ),
         ));
 
 
