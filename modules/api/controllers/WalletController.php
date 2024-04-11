@@ -294,7 +294,17 @@ class WalletController extends BaseController
             CURLOPT_FOLLOWLOCATION => true,
             CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
             CURLOPT_CUSTOMREQUEST => 'POST',
-            CURLOPT_POSTFIELDS => $datas,
+            CURLOPT_POSTFIELDS =>'{
+                "price_amount": '.$history->start_price.',
+                "price_currency": "usd",
+                "order_id": "RGDBP-21314",
+                "order_description": "Apple Macbook Pro 2019 x 1",
+                "ipn_callback_url": "https://greenavi.com/api/payment/notice-ipn",
+                "success_url": "https://greenavi.com/api/payment/success-ipn",
+                "cancel_url": "https://greenavi.com/api/payment/fail-ipn"
+              }
+              
+              ',
             CURLOPT_HTTPHEADER => array(
               'x-api-key: '.$api_key,
               'Content-Type: application/json'
@@ -320,7 +330,7 @@ class WalletController extends BaseController
             return ["success" => false, "message" => "Ошибка создания ссылки"];
         }
 
-        return $data["invoice_url"];
+        return $data;
      }
 
 
