@@ -265,22 +265,27 @@ class WalletController extends BaseController
         CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
         CURLOPT_CUSTOMREQUEST => 'GET',
         CURLOPT_HTTPHEADER => array(
-            'Authorization: x-api-key '. $api_key
+            'x-api-key '. $api_key
         ),
         ));
 
         $response = curl_exec($curl);
 
         curl_close($curl);
+        $data = json_decode($response, true);
+
+            foreach ($data as $item) {
+                $result[]=$item;
+            }
         //echo $response;
 
         
         
-        if(!$history->save()) {
-            Yii::$app->response->statusCode = 400;
-            return ["success" => false, "message" => "Ошибка создания ссылки"];
-        }
-        return $response;
+        // if(!$history->save()) {
+        //     Yii::$app->response->statusCode = 400;
+        //     return ["success" => false, "message" => "Ошибка создания ссылки"];
+        // }
+        return $result;
      }
 
 
