@@ -223,32 +223,32 @@ class WalletController extends BaseController
             Yii::$app->response->statusCode = 401;
             return ["success" => false, "message" => "Token не найден"];
         }
-        $history = History::find()->where(["user_id" => $this->user->id, "type" => 0, 'wallet_direct_id' => 12, 'status' => 0])->all();
-        if ($history) {
-            // Yii::$app->response->statusCode = 400;
-            // return ["success" => false, "message" => "Завершите предыдущие заявки на пополнение или обратитесь к технической поддержке"];
-            $history = new History(["date" => time(), "user_id" => $this->user->id, "type" => 0, 'wallet_direct_id' => 12, 'status' => 0]);
-        } else {
-            $history = new History(["date" => time(), "user_id" => $this->user->id, "type" => 0, 'wallet_direct_id' => 12, 'status' => 0]);
-        }
+        // $history = History::find()->where(["user_id" => $this->user->id, "type" => 0, 'wallet_direct_id' => 12, 'status' => 0])->all();
+        // if ($history) {
+        //     // Yii::$app->response->statusCode = 400;
+        //     // return ["success" => false, "message" => "Завершите предыдущие заявки на пополнение или обратитесь к технической поддержке"];
+        //     $history = new History(["date" => time(), "user_id" => $this->user->id, "type" => 0, 'wallet_direct_id' => 12, 'status' => 0]);
+        // } else {
+        //     $history = new History(["date" => time(), "user_id" => $this->user->id, "type" => 0, 'wallet_direct_id' => 12, 'status' => 0]);
+        // }
 
         
-        $chart_id = Yii::$app->request->post("chart_id");
-        $history->end_chart_id = $chart_id;
-        $currency_id = Yii::$app->request->post("currency_id", 1);
-        $chain_id = Yii::$app->request->post("chain_id");
-        $history->start_chart_id = $history->end_chart_id;
+        // $chart_id = Yii::$app->request->post("chart_id");
+        // $history->end_chart_id = $chart_id;
+        // $currency_id = Yii::$app->request->post("currency_id", 1);
+        // $chain_id = Yii::$app->request->post("chain_id");
+        // $history->start_chart_id = $history->end_chart_id;
         
-        $history->start_price = (float)Yii::$app->request->post("price");
+        // $history->start_price = (float)Yii::$app->request->post("price");
 
-        $chart = Chart::findOne($chart_id);
-        $currency = Currency::findOne($currency_id);
-        $chain = ChartChain::findOne($chain_id);
-        $history->end_price = 0;
-        if (!$chart) {
-            Yii::$app->response->statusCode = 400;
-            return ["success" => false, "message" => "Валюта не найдена"];
-        }
+        // $chart = Chart::findOne($chart_id);
+        // $currency = Currency::findOne($currency_id);
+        // $chain = ChartChain::findOne($chain_id);
+        // $history->end_price = 0;
+        // if (!$chart) {
+        //     Yii::$app->response->statusCode = 400;
+        //     return ["success" => false, "message" => "Валюта не найдена"];
+        // }
         // $ipn_key = 'xk8OoaVpKYOWI7mPoeXwl9azuBd+dL4A';
         $api_key = 'THBJKRT-Y5EMJSM-H95YDKQ-1RFRWS8';
         // $tid = '477bf661-8cfb-428a-9ba9-1aba92dece9a';
@@ -313,8 +313,9 @@ class WalletController extends BaseController
 
 
         $response = curl_exec($curl);
-        return $response;
+        
         curl_close($curl);
+        
         $data = json_decode($response, true);
 
             foreach ($data as $item) {
@@ -324,10 +325,10 @@ class WalletController extends BaseController
 
         
         
-        if(!$history->save()) {
-            Yii::$app->response->statusCode = 400;
-            return ["success" => false, "message" => "Ошибка создания ссылки"];
-        }
+        // if(!$history->save()) {
+        //     Yii::$app->response->statusCode = 400;
+        //     return ["success" => false, "message" => "Ошибка создания ссылки"];
+        // }
         return $result;
      }
 
