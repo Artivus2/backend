@@ -311,10 +311,10 @@ class WalletController extends BaseController
 
         
         
-        // if(!$history->save()) {
-        //     Yii::$app->response->statusCode = 400;
-        //     return ["success" => false, "message" => "Ошибка создания ссылки"];
-        // }
+        if(!$history->save()) {
+            Yii::$app->response->statusCode = 400;
+            return ["success" => false, "message" => "Ошибка создания ссылки"];
+        }
         return $result;
      }
 
