@@ -56,7 +56,7 @@ class PaymentController extends BaseController
           
           $response = curl_exec($curl);
           $auth = json_decode($response, true);
-          return $auth;
+          $token = $auth["token"];
           curl_close($curl);
 
         $id = Yii::$app->request->get("id");
@@ -71,7 +71,8 @@ class PaymentController extends BaseController
                 CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
                 CURLOPT_CUSTOMREQUEST => 'GET',
                 CURLOPT_HTTPHEADER => array(
-                  'x-api-key: '.$api_key
+                'Authorization: Bearer '.$token',
+                'x-api-key: '.$api_key
                 ),
               ));
             
