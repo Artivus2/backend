@@ -268,25 +268,25 @@ class WalletController extends BaseController
         //     'x-api-key '. $api_key
         // ),
         // ));
-        $curl = curl_init();
-        $headers = array(
-            "x-api-key: ".$api_key,
-            "Content-Type: application/json"
-        );
+        // $curl = curl_init();
+        // $headers = array(
+        //     "x-api-key: ".$api_key,
+        //     "Content-Type: application/json"
+        // );
 
-        $datas = array(
-        "price_amount" => $history->start_price,
-        "price_currency" => "usd",
-        "order_id" => rand(100000000,999999999),
-        //"order_description" => "Apple Macbook Pro 2019 x 1",
-        "ipn_callback_url" => "https://greenavi.com/api/payment/notice-ipn",
-        "success_url" => "https://greenavi.com/api/payment/success-ipn",
-        "cancel_url" => "https://greenavi.com/api/payment/fail-ipn"
-        );
+        // $datas = array(
+        // "price_amount" => $history->start_price,
+        // "price_currency" => "usd",
+        // "order_id" => rand(100000000,999999999),
+        // //"order_description" => "Apple Macbook Pro 2019 x 1",
+        // "ipn_callback_url" => "https://greenavi.com/api/payment/notice-ipn",
+        // "success_url" => "https://greenavi.com/api/payment/success-ipn",
+        // "cancel_url" => "https://greenavi.com/api/payment/fail-ipn"
+        // );
 
-
+        $order_id = rand(100000000,999999999);
         curl_setopt_array($curl, array(
-            CURLOPT_URL => 'https://api.nowpayments.io/v1/invoice',
+            CURLOPT_URL => 'https://api.nowpayments.io/v1/payment',
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_ENCODING => '',
             CURLOPT_MAXREDIRS => 10,
@@ -295,15 +295,13 @@ class WalletController extends BaseController
             CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
             CURLOPT_CUSTOMREQUEST => 'POST',
             CURLOPT_POSTFIELDS =>'{
-                "price_amount": '.$history->start_price.',
-                "price_currency": "usd",
-                "order_id": '.rand(100000000,999999999).',
-                "order_description": "GREENAVI PAYMENT",
-                "ipn_callback_url": "https://greenavi.com/api/payment/notice-ipn",
-                "success_url": "https://greenavi.com/api/payment/success-ipn",
-                "cancel_url": "https://greenavi.com/api/payment/fail-ipn"
-              }
-              
+            "price_amount": '.$history->start_price.',
+            "price_currency": "usd",
+            "pay_currency": "usdt",
+            "ipn_callback_url": "https://greenavi.com/api/payment/notice-ipn",
+            "order_id": '.$order_id.',
+            "order_description": "GREENAVI PAYMENT"
+            }
               ',
             CURLOPT_HTTPHEADER => array(
               'x-api-key: '.$api_key,
@@ -323,7 +321,7 @@ class WalletController extends BaseController
             // }
         //echo $response;
 
-        $history->ipn_id = $data["id"];
+        $history->ipn_id = $data["payment_id"];
         
         if(!$history->save()) {
             Yii::$app->response->statusCode = 400;
