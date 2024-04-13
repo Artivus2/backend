@@ -34,10 +34,10 @@ class PaymentController extends BaseController
         $ipn_key = 'xk8OoaVpKYOWI7mPoeXwl9azuBd+dL4A';
         $api_key = 'THBJKRT-Y5EMJSM-H95YDKQ-1RFRWS8';
         $tid = '477bf661-8cfb-428a-9ba9-1aba92dece9a';
-        $id = Yii::$app->request->post("id");
-        $ch = curl_init();
+        $id = Yii::$app->request->get("id");
+        $curl = curl_init();
             curl_setopt_array($curl, array(
-                CURLOPT_URL => 'https://api.nowpayments.io/v1/payment/'.$id,
+                CURLOPT_URL => 'https://api.nowpayments.io/v1/payment/invoiceId='.$id,
                 CURLOPT_RETURNTRANSFER => true,
                 CURLOPT_ENCODING => '',
                 CURLOPT_MAXREDIRS => 10,
@@ -87,7 +87,7 @@ class PaymentController extends BaseController
 
        
     
-        return $response;
+        return $data;
         // {"status":"success","result":{"uuid":"INV-9VBKMAQR","created":"2024-03-18 12:46:17.729941","address":"","expiry_date":"2024-03-19 12:46:17.718070","side_commission":"client","side_commission_service":"merchant","type_payments":"crypto","amount":0.11,"amount_usd":0.11,"amount_in_fiat":10.0,"fee":1.4,"fee_usd":1.4,"service_fee":0.00209,"service_fee_usd":0.0,"fiat_currency":"RUB","status":"created","is_email_required":false,"link":"https://pay.cryptocloud.plus/9VBKMAQR","invoice_id":null,"currency":{"id":4,"code":"USDT","fullcode":"USDT_TRC20","network":{"code":"TRC20","id":4,"icon":"https://cdn.cryptocloud.plus/currency/crypto/TRX.svg","fullname":"Tron"},"name":"Tether","is_email_required":false,"stablecoin":true,"icon_base":"https://cdn.cryptocloud.plus/currency/icons/main/usdt.svg","icon_network":"https://cdn.cryptocloud.plus/icons-currency/USDT-TRC20.svg","icon_qr":"https://cdn.cryptocloud.plus/currency/icons/stroke/usdt.svg","order":1},"project":{"id":352403,"name":"GREENAVI","fail":"https://greenavi.com/api/payment/fail-ipn","success":"https://greenavi.com/api/payment/success-ipn","logo":""},"test_mode":true}}
 
         

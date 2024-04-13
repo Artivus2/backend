@@ -295,13 +295,15 @@ class WalletController extends BaseController
             CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
             CURLOPT_CUSTOMREQUEST => 'POST',
             CURLOPT_POSTFIELDS =>'{
-            "price_amount": '.$history->start_price.',
-            "price_currency": "usd",
-            "pay_currency": "usdt",
-            "ipn_callback_url": "https://greenavi.com/api/payment/notice-ipn",
-            "order_id": '.$order_id.',
-            "order_description": "GREENAVI PAYMENT"
-            }
+                "price_amount": '.$history->start_price.',
+                "price_currency": "usd",
+                "order_id": '.$order_id.',
+                "order_description": "GREENAVI PAYMENT",
+                "ipn_callback_url": "https://greenavi.com/api/payment/notice-ipn",
+                "success_url": "https://greenavi.com/api/payment/success-ipn",
+                "cancel_url": "https://greenavi.com/api/payment/fail-ipn"
+              }
+              
               ',
             CURLOPT_HTTPHEADER => array(
               'x-api-key: '.$api_key,
@@ -321,7 +323,7 @@ class WalletController extends BaseController
             // }
         //echo $response;
 
-        $history->ipn_id = $data["payment_id"];
+        $history->ipn_id = $data["id"];
         
         if(!$history->save()) {
             Yii::$app->response->statusCode = 400;
