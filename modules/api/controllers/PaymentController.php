@@ -30,7 +30,30 @@ class PaymentController extends BaseController
 {
     
     public function actionCheckPayment() {
-        //Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+        $ipn_key = 'xk8OoaVpKYOWI7mPoeXwl9azuBd+dL4A';
+        $api_key = 'THBJKRT-Y5EMJSM-H95YDKQ-1RFRWS8';
+        $tid = '477bf661-8cfb-428a-9ba9-1aba92dece9a';
+        $id = Yii::$app->request->post("id");
+        $ch = curl_init();
+            curl_setopt_array($curl, array(
+                CURLOPT_URL => 'https://api.nowpayments.io/v1/payment/'.$id,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_ENCODING => '',
+                CURLOPT_MAXREDIRS => 10,
+                CURLOPT_TIMEOUT => 0,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                CURLOPT_CUSTOMREQUEST => 'GET',
+                CURLOPT_HTTPHEADER => array(
+                  'x-api-key: '.$api_key
+                ),
+              ));
+            
+            $response = curl_exec($curl);
+            curl_close($curl);
+            $data = json_decode($response, true);
+        
 
         // $history = History::find()->where(["user_id" => $this->user->id, "type" => 0, 'wallet_direct_id' => 12, 'status' => 3])->one();
         // if (!$history) {
@@ -61,48 +84,10 @@ class PaymentController extends BaseController
         //     "total_amount" => (float)$total_amount,
         //     "status_code" => $invoice["data"]["status_code"]
         // ];
-        $id = Yii::$app->request->get("id");
-        $api_key='eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1dWlkIjoiTVRrNE5UWT0iLCJ0eXBlIjoicHJvamVjdCIsInYiOiI2M2QzNDYyZjRhY2I0NjUzZGEyYTIwNGQ2YTlmZGJjYmZiZjIyY2NiZjIwYWVlOWI0MWIxODc2Njc4ZTA1Mjk5IiwiZXhwIjo4ODExMDU4MTQ0OH0.X0R_PfjNs2QeecNutTS2EKGwtf0r_LWnf8CKqQA7IUc';
-        $shop_id='CghDrxpwxUVFXbq3';
-        //$url = "https://api.cryptocloud.plus/v2/invoice/create";
 
-        $ch = curl_init();
-
-        curl_setopt($ch, CURLOPT_URL, "https://api.cryptocloud.plus/v2/invoice/merchant/info");
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode(array(
-            "uuids" => array($id)
-        )));
-
-        $headers = array(
-            "Authorization: Token ".$api_key,
-            "Content-Type: application/json"
-        );
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-
-        $response = curl_exec($ch);
-        
-        if (curl_errno($ch)) {
-            echo 'Error:' . curl_error($ch);
-        } else {
-            $statusCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-            if ($statusCode == 200) {
-                curl_close($ch);
-
-
-                //return $response;
-            } else {
-                echo "Fail: " . $statusCode . " " . $response;
-            }
-        }
-        $data = json_decode($response, true);
-        $result = [];
-        foreach ($data as $item){
-            $result[] = $item;
-        }
-
-        return $result[1][0];
+       
+    
+        return $response;
         // {"status":"success","result":{"uuid":"INV-9VBKMAQR","created":"2024-03-18 12:46:17.729941","address":"","expiry_date":"2024-03-19 12:46:17.718070","side_commission":"client","side_commission_service":"merchant","type_payments":"crypto","amount":0.11,"amount_usd":0.11,"amount_in_fiat":10.0,"fee":1.4,"fee_usd":1.4,"service_fee":0.00209,"service_fee_usd":0.0,"fiat_currency":"RUB","status":"created","is_email_required":false,"link":"https://pay.cryptocloud.plus/9VBKMAQR","invoice_id":null,"currency":{"id":4,"code":"USDT","fullcode":"USDT_TRC20","network":{"code":"TRC20","id":4,"icon":"https://cdn.cryptocloud.plus/currency/crypto/TRX.svg","fullname":"Tron"},"name":"Tether","is_email_required":false,"stablecoin":true,"icon_base":"https://cdn.cryptocloud.plus/currency/icons/main/usdt.svg","icon_network":"https://cdn.cryptocloud.plus/icons-currency/USDT-TRC20.svg","icon_qr":"https://cdn.cryptocloud.plus/currency/icons/stroke/usdt.svg","order":1},"project":{"id":352403,"name":"GREENAVI","fail":"https://greenavi.com/api/payment/fail-ipn","success":"https://greenavi.com/api/payment/success-ipn","logo":""},"test_mode":true}}
 
         
@@ -424,6 +409,12 @@ class PaymentController extends BaseController
      *      description="для b2b",
      *      @SWG\Schema(type="string")
      *     ),
+     *    @SWG\Parameter(
+     *      name="history_id",
+     *      in="body",
+     *      description="id history",
+     *      @SWG\Schema(type="string")
+     *     ),
      *	  @SWG\Response(
      *      response = 200,
      *      description = "Успешно сохранено",
@@ -473,7 +464,7 @@ class PaymentController extends BaseController
             
 
 
-            if ($payments_count > 10 || count($payment_id) > 10) {
+            if ($payments_count > 10) {
                 Yii::$app->response->statusCode = 400;
                 return ["success" => false, "message" => "Превышено максимальное количество способов оплаты", $payments_count];
             }
@@ -484,6 +475,8 @@ class PaymentController extends BaseController
             }
 
         } else {
+
+            
             $payment_id = Yii::$app->request->post("payment_id");
             $fio = Yii::$app->request->post("fio_courier");
             $phone = Yii::$app->request->post("phone_courier");
@@ -491,7 +484,7 @@ class PaymentController extends BaseController
             $build = Yii::$app->request->post("build_for_courier");
             $pod = Yii::$app->request->post("pod_for_courier");
             $description = Yii::$app->request->post("description");
-            $summa = Yii::$app->request->post("summa");
+            $summa = Yii::$app->request->post("summa",0);
             $value = Yii::$app->request->post("value");
             $payment_receiver = Yii::$app->request->post("payment_receiver");
             $type = Yii::$app->request->post("type", 1);

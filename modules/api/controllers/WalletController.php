@@ -323,7 +323,7 @@ class WalletController extends BaseController
             // }
         //echo $response;
 
-        $history->ipn_id = $data["data"]["id"];
+        $history->ipn_id = $data["id"];
         
         if(!$history->save()) {
             Yii::$app->response->statusCode = 400;
