@@ -105,9 +105,10 @@ class PaymentController extends BaseController
             "withdrawals": [
                 {
                     "address": "TNdmEpN6AU2oSK7uAoPS4FaqW6okgNLTpk",
-                    "currency": "trx",
-                    "amount": 5
-                },
+                    "currency": "usdttrc20",
+                    "amount": 5,
+                    "ipn_callback_url": "https://greenavi.com/api/payment/notice-ipn"
+                }
             ]
         }',
             CURLOPT_HTTPHEADER => array(
