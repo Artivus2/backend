@@ -253,37 +253,9 @@ class WalletController extends BaseController
         $api_key = 'THBJKRT-Y5EMJSM-H95YDKQ-1RFRWS8';
         // $tid = '477bf661-8cfb-428a-9ba9-1aba92dece9a';
         
-        // $curl = curl_init();
-
-        // curl_setopt_array($curl, array(
-        // CURLOPT_URL => 'https://api.nowpayments.io/v1/merchant/coins',
-        // CURLOPT_RETURNTRANSFER => true,
-        // CURLOPT_ENCODING => '',
-        // CURLOPT_MAXREDIRS => 10,
-        // CURLOPT_TIMEOUT => 0,
-        // CURLOPT_FOLLOWLOCATION => true,
-        // CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-        // CURLOPT_CUSTOMREQUEST => 'GET',
-        // CURLOPT_HTTPHEADER => array(
-        //     'x-api-key '. $api_key
-        // ),
-        // ));
+        
         $curl = curl_init();
-        // $headers = array(
-        //     "x-api-key: ".$api_key,
-        //     "Content-Type: application/json"
-        // );
-
-        // $datas = array(
-        // "price_amount" => $history->start_price,
-        // "price_currency" => "usd",
-        // "order_id" => rand(100000000,999999999),
-        // //"order_description" => "Apple Macbook Pro 2019 x 1",
-        // "ipn_callback_url" => "https://greenavi.com/api/payment/notice-ipn",
-        // "success_url" => "https://greenavi.com/api/payment/success-ipn",
-        // "cancel_url" => "https://greenavi.com/api/payment/fail-ipn"
-        // );
-
+        
         $order_id = rand(100000000,999999999);
         curl_setopt_array($curl, array(
             CURLOPT_URL => 'https://api.nowpayments.io/v1/invoice',
@@ -299,9 +271,7 @@ class WalletController extends BaseController
                 "price_currency": "usd",
                 "order_id": '.$order_id.',
                 "order_description": "GREENAVI PAYMENT",
-                "ipn_callback_url": "https://greenavi.com/api/payment/notice-ipn",
-                "success_url": "https://greenavi.com/api/payment/success-ipn",
-                "cancel_url": "https://greenavi.com/api/payment/fail-ipn"
+                "ipn_callback_url": "https://greenavi.com/api/payment/notice-ipn"
               }
               
               ',
@@ -317,11 +287,6 @@ class WalletController extends BaseController
         curl_close($curl);
         
         $data = json_decode($response, true);
-
-            // foreach ($data as $item) {
-            //     $result[]=$item;
-            // }
-        //echo $response;
 
         $history->ipn_id = $data["id"];
         
