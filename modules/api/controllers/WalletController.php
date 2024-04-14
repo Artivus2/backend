@@ -268,7 +268,7 @@ class WalletController extends BaseController
         //     'x-api-key '. $api_key
         // ),
         // ));
-        // $curl = curl_init();
+        $curl = curl_init();
         // $headers = array(
         //     "x-api-key: ".$api_key,
         //     "Content-Type: application/json"
@@ -286,7 +286,7 @@ class WalletController extends BaseController
 
         $order_id = rand(100000000,999999999);
         curl_setopt_array($curl, array(
-            CURLOPT_URL => 'https://api.nowpayments.io/v1/payment',
+            CURLOPT_URL => 'https://api.nowpayments.io/v1/invoice',
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_ENCODING => '',
             CURLOPT_MAXREDIRS => 10,

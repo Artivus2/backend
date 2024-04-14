@@ -71,7 +71,7 @@ class PaymentController extends BaseController
                 CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
                 CURLOPT_CUSTOMREQUEST => 'GET',
                 CURLOPT_HTTPHEADER => array(
-                'Authorization: Bearer '.$token',
+                'Authorization: Bearer '.$token,
                 'x-api-key: '.$api_key
                 ),
               ));
@@ -80,41 +80,8 @@ class PaymentController extends BaseController
             curl_close($curl);
             $data = json_decode($response, true);
         
-
-        // $history = History::find()->where(["user_id" => $this->user->id, "type" => 0, 'wallet_direct_id' => 12, 'status' => 3])->one();
-        // if (!$history) {
-        //     Yii::$app->response->statusCode = 401;
-        //     return ["success" => false, "message" => "Платеж не найден, обратитесь к администратору"];
-        // }
-
-        // $params = [
-        //     'coin'=>'TCN', //coin for which you want to use this object.
-        //     'api_key'=> Yii::$app->params['API_KEY_COINREMITTER'], //api key from coinremitter wallet
-        //     'password'=> Yii::$app->params['API_KEY_PASSWORD'] //password for selected wallet
-        //  ];
-        // $obj = new CoinRemitter($params);
-
-        // $param = [
-        //     'invoice_id'=>$history->ipn_id
-        // ];
+        return $data["data"][0]["payment_id"];
         
-        // $invoice = $obj->get_invoice($param);
-        // $coin = $invoice["data"]["coin"];
-        // $base_currency = $invoice["data"]["base_currency"];
-        // $paid_amount = $invoice["data"]["paid_amount"][$coin] ?? 0;
-        // $total_amount = $invoice["data"]["total_amount"][$coin] ?? 0;
-        // $data[] = [
-        //     "coin" => $coin,
-        //     "base_currency" => $base_currency,
-        //     "paid_amount" => (float)$paid_amount,
-        //     "total_amount" => (float)$total_amount,
-        //     "status_code" => $invoice["data"]["status_code"]
-        // ];
-
-       
-    
-        return $data;
-        // {"status":"success","result":{"uuid":"INV-9VBKMAQR","created":"2024-03-18 12:46:17.729941","address":"","expiry_date":"2024-03-19 12:46:17.718070","side_commission":"client","side_commission_service":"merchant","type_payments":"crypto","amount":0.11,"amount_usd":0.11,"amount_in_fiat":10.0,"fee":1.4,"fee_usd":1.4,"service_fee":0.00209,"service_fee_usd":0.0,"fiat_currency":"RUB","status":"created","is_email_required":false,"link":"https://pay.cryptocloud.plus/9VBKMAQR","invoice_id":null,"currency":{"id":4,"code":"USDT","fullcode":"USDT_TRC20","network":{"code":"TRC20","id":4,"icon":"https://cdn.cryptocloud.plus/currency/crypto/TRX.svg","fullname":"Tron"},"name":"Tether","is_email_required":false,"stablecoin":true,"icon_base":"https://cdn.cryptocloud.plus/currency/icons/main/usdt.svg","icon_network":"https://cdn.cryptocloud.plus/icons-currency/USDT-TRC20.svg","icon_qr":"https://cdn.cryptocloud.plus/currency/icons/stroke/usdt.svg","order":1},"project":{"id":352403,"name":"GREENAVI","fail":"https://greenavi.com/api/payment/fail-ipn","success":"https://greenavi.com/api/payment/success-ipn","logo":""},"test_mode":true}}
 
         
 

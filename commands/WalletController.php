@@ -24,77 +24,71 @@ class WalletController extends BaseController
             return ExitCode::OK;
         }
 
-        $api_key='eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1dWlkIjoiTVRrNE5UWT0iLCJ0eXBlIjoicHJvamVjdCIsInYiOiI2M2QzNDYyZjRhY2I0NjUzZGEyYTIwNGQ2YTlmZGJjYmZiZjIyY2NiZjIwYWVlOWI0MWIxODc2Njc4ZTA1Mjk5IiwiZXhwIjo4ODExMDU4MTQ0OH0.X0R_PfjNs2QeecNutTS2EKGwtf0r_LWnf8CKqQA7IUc';
-        $shop_id='CghDrxpwxUVFXbq3';
+        // $api_key='eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1dWlkIjoiTVRrNE5UWT0iLCJ0eXBlIjoicHJvamVjdCIsInYiOiI2M2QzNDYyZjRhY2I0NjUzZGEyYTIwNGQ2YTlmZGJjYmZiZjIyY2NiZjIwYWVlOWI0MWIxODc2Njc4ZTA1Mjk5IiwiZXhwIjo4ODExMDU4MTQ0OH0.X0R_PfjNs2QeecNutTS2EKGwtf0r_LWnf8CKqQA7IUc';
+        // $shop_id='CghDrxpwxUVFXbq3';
+        $api_key = 'THBJKRT-Y5EMJSM-H95YDKQ-1RFRWS8';
 
 
+        $curl = curl_init();
+        // https://api.nowpayments.io/v1/auth
+        curl_setopt_array($curl, array(
+            CURLOPT_URL => 'https://api.nowpayments.io/v1/auth',
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => '',
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 0,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => 'POST',
+            CURLOPT_POSTFIELDS =>'{
+              "email": "artivus2@gmail.com",
+              "password": "Adm142!@" 
+          }',
+            CURLOPT_HTTPHEADER => array(
+              'Content-Type: application/json'
+            ),
+          ));
+          
+          $response = curl_exec($curl);
+          $auth = json_decode($response, true);
+          $token = $auth["token"];
+          curl_close($curl);
 
-
-
-
-        // $params = [
-        //     'coin'=>'TCN', //coin for which you want to use this object.
-        //     'api_key'=> Yii::$app->params['API_KEY_COINREMITTER'], //api key from coinremitter wallet
-        //     'password'=>Yii::$app->params['API_KEY_PASSWORD'] //password for selected wallet
-        // ];
-        // $obj = new CoinRemitter($params);
-        
-
-
-        
-        
+  
         $input_offers = History::find()->where(['wallet_direct_id' => 12])->andWhere(['>=','status',0])->all();
         foreach ($input_offers as $item) {
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, "https://api.cryptocloud.plus/v2/invoice/merchant/info");
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-            curl_setopt($ch, CURLOPT_POST, 1);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode(array(
-                "uuids" => array($item->ipn_id)
-            )));
-            $headers = array(
-                "Authorization: Token ".$api_key,
-                "Content-Type: application/json"
-            );
-            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-            $response = curl_exec($ch);
-            $result = [];
-            if (curl_errno($ch)) {
-                echo 'Error:' . curl_error($ch);
-            } else {
-                $statusCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-                if ($statusCode == 200) {
-                    curl_close($ch);
-                    $data = json_decode($response, true);
-                    
-                    foreach ($data as $item){
-                    $result[] = $item;
-                    }
-                } else {
-                    break;
-                }
-            }
- 
-            //При отправке запроса на создание счета всегда равен created. 
-            //Так же есть статусы paid (оплачен), 
-            //partial (оплачен частично), 
-            //overpaid (переплачен) и 
-            //canceled (отменен).
+            $curl = curl_init();
+            curl_setopt_array($curl, array(
+                CURLOPT_URL => 'https://api.nowpayments.io/v1/payment/?invoiceId='.$item->ipn_id,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_ENCODING => '',
+                CURLOPT_MAXREDIRS => 10,
+                CURLOPT_TIMEOUT => 0,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                CURLOPT_CUSTOMREQUEST => 'GET',
+                CURLOPT_HTTPHEADER => array(
+                'Authorization: Bearer '.$token,
+                'x-api-key: '.$api_key
+                ),
+              ));
             
-            //$coin = $result[1][0]
-            //var_dump($invoice["data"]["status_code"]);
-            // $coin = $invoice["data"]["coin"];
-            // $base_currency = $invoice["data"]["base_currency"];
-            // $paid_amount = $invoice["data"]["paid_amount"][$coin] ?? 0;
-            // $total_amount = $invoice["data"]["total_amount"][$coin] ?? 0;
-            $coin = $result[1][0]["currency"]["code"];
-            $paid_amount = $result[1][0]["amount"] ?? 0;
-            $total_amount = $result[1][0]["amount"] ?? 0;
+            $response = curl_exec($curl);
+            curl_close($curl);
+            $data = json_decode($response, true);
+            if (count($data["data"]) > 0) {
+                $paid_amount = $data["data"][0]["actually_paid"] ?? 0;
+                $total_amount = $item->start_price;
+                $payment_id = $data["data"][0]["payment_id"];
+                $status = $data["data"][0]["payment_status"];
 
-            //$total_amount = $invoice["data"]["total_amount"][$coin] ?? 0;
-            if ($result) {
+                //$total_amount = $invoice["data"]["total_amount"][$coin] ?? 0;
+                if ($status == "waiting") {
+                    echo "waiting".$payment_id;
+                }
+            
 
-                if ($result[1][0]["status"] == "canceled") {
+                if ($status == "failed") {
                     $item->status = -4;
                     $wallet = Wallet::findOne(["user_id" => $item->user_id, "chart_id" => $item->start_chart_id, "type" => 0]);
                         if(!$wallet) {
@@ -105,12 +99,12 @@ class WalletController extends BaseController
                     $item->save();
                 }
 
-                if ($result[1][0]["status"] == "canceled") {
+                if ($status == "expired") {
                     $item->status = -1;
                     $item->save();
                 }
                 
-                if ($result[1][0]["status"] == "paid") {
+                if ($status == "finished") {
                     
                     $item->status = -1;
                     $wallet = Wallet::findOne(["user_id" => $item->user_id, "chart_id" => $item->start_chart_id, "type" => 0]);
@@ -122,7 +116,7 @@ class WalletController extends BaseController
                     $item->save();
                 }
                 
-                if ($result[1][0]["status"] == "partial") {
+                if ($status == "partially_paid") {
                     //недоплачен ждем просрочки
                     
                     $item->status = -1;
@@ -139,7 +133,7 @@ class WalletController extends BaseController
                     
                 }
 
-                if ($result[1][0]["status"] == "overpaid") {
+                if ($status == "overpaid") {
                     //добавляем но надо смотреть
                     $item->status = -1;
                     
