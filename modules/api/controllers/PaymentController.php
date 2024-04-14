@@ -71,6 +71,7 @@ class PaymentController extends BaseController
             CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
             CURLOPT_CUSTOMREQUEST => 'POST',
             CURLOPT_POSTFIELDS =>'{
+            "ipn_callback_url": "https://greenavi.com/api/payment/notice-ipn",
             "withdrawals": [
                 {
                     "address": "TNdmEpN6AU2oSK7uAoPS4FaqW6okgNLTpk",
