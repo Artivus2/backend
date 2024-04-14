@@ -34,8 +34,8 @@ class PaymentController extends BaseController
         $ipn_key = 'xk8OoaVpKYOWI7mPoeXwl9azuBd+dL4A';
         $api_key = 'THBJKRT-Y5EMJSM-H95YDKQ-1RFRWS8';
         $tid = '477bf661-8cfb-428a-9ba9-1aba92dece9a';
-        $curl = curl_init();
-        // https://api.nowpayments.io/v1/auth
+        
+        https://api.nowpayments.io/v1/auth
         curl_setopt_array($curl, array(
             CURLOPT_URL => 'https://api.nowpayments.io/v1/auth',
             CURLOPT_RETURNTRANSFER => true,
@@ -58,29 +58,59 @@ class PaymentController extends BaseController
           $auth = json_decode($response, true);
           $token = $auth["token"];
           curl_close($curl);
-
-        $id = Yii::$app->request->get("id");
-        $curl = curl_init();
-            curl_setopt_array($curl, array(
-                CURLOPT_URL => 'https://api.nowpayments.io/v1/payment/?invoiceId='.$id,
-                CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_ENCODING => '',
-                CURLOPT_MAXREDIRS => 10,
-                CURLOPT_TIMEOUT => 0,
-                CURLOPT_FOLLOWLOCATION => true,
-                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-                CURLOPT_CUSTOMREQUEST => 'GET',
-                CURLOPT_HTTPHEADER => array(
+          $curl = curl_init();
+          curl_setopt_array($curl, array(
+              CURLOPT_URL => 'https://api.nowpayments.io/v1/payout',
+              CURLOPT_RETURNTRANSFER => true,
+              CURLOPT_ENCODING => '',
+              CURLOPT_MAXREDIRS => 10,
+              CURLOPT_TIMEOUT => 0,
+              CURLOPT_FOLLOWLOCATION => true,
+              CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+              CURLOPT_CUSTOMREQUEST => 'POST',
+              CURLOPT_POSTFIELDS =>'{
+                "ipn_callback_url": "https://greenavi.com/api/payment/notice-ipn",
+                "withdrawals": [
+                    {
+                        "address": "TNdmEpN6AU2oSK7uAoPS4FaqW6okgNLTpk",
+                        "currency": "trx",
+                        "amount": 5,
+                        "ipn_callback_url": "https://greenavi.com/api/payment/notice-ipn"
+                    },
+                ]
+            }',
+              CURLOPT_HTTPHEADER => array(
                 'Authorization: Bearer '.$token,
-                'x-api-key: '.$api_key
-                ),
-              ));
-            
+                'x-api-key: '.$api_key,
+                'Content-Type: application/json'
+              ),
+            ));
             $response = curl_exec($curl);
             curl_close($curl);
-            $data = json_decode($response, true);
+            $data = json_decode($response, true); 
+
+        // $id = Yii::$app->request->get("id");
+        // $curl = curl_init();
+        //     curl_setopt_array($curl, array(
+        //         CURLOPT_URL => 'https://api.nowpayments.io/v1/payment/?invoiceId='.$id,
+        //         CURLOPT_RETURNTRANSFER => true,
+        //         CURLOPT_ENCODING => '',
+        //         CURLOPT_MAXREDIRS => 10,
+        //         CURLOPT_TIMEOUT => 0,
+        //         CURLOPT_FOLLOWLOCATION => true,
+        //         CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+        //         CURLOPT_CUSTOMREQUEST => 'GET',
+        //         CURLOPT_HTTPHEADER => array(
+        //         'Authorization: Bearer '.$token,
+        //         'x-api-key: '.$api_key
+        //         ),
+        //       ));
+            
+        //     $response = curl_exec($curl);
+        //     curl_close($curl);
+        //     $data = json_decode($response, true);
         
-        return $data["data"][0]["payment_id"];
+        return $data;
         
 
         
