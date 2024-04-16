@@ -49,7 +49,8 @@ class PaymentController extends BaseController
         $timeout = 30;
         $provider = new Web3(new HttpProvider($providerUri, 0.1));
         $contract = new Contract($provider, $abi);
-        
+        $contractAddress = '0x4d57Ce7E453D652DEf305e43536491B4d433f9F1';
+        $contract->at($contractAddress)->call($functionName, $params, $callback);
         return var_dump($contract);
     }
 
