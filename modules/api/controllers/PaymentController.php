@@ -47,7 +47,7 @@ class PaymentController extends BaseController
 
         $providerUri='https://bsc.blockpi.network/v1/rpc/publiс';
         $timeout = 30;
-        $provider = new HttpProvider(new HttpRequestManager($providerUri, $timeout));
+        $provider = new Web3(new HttpProvider($providerUri, 0.1));
         $contract = new Contract($provider, $abi);
         
         return var_dump($contract);
