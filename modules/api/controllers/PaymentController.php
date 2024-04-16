@@ -50,7 +50,12 @@ class PaymentController extends BaseController
         $provider = new Web3(new HttpProvider($providerUri, 0.1));
         $contract = new Contract($provider, $abi);
         $contractAddress = '0x4d57Ce7E453D652DEf305e43536491B4d433f9F1';
-        $contract->at($contractAddress)->call($functionName, $params, $callback);
+        //а так надо функцию setTokenPrices вызывать, передавать массив объектов Token { tokenAddress: "", price: uint }
+        $data =[
+            "tokenAddress" => '0x4d57Ce7E453D652DEf305e43536491B4d433f9F1',
+            "price" => 1.1
+        ];
+        $contract->at($contractAddress)->call('setTokenPrices', $data, $callback);
         return var_dump($contract);
     }
 
