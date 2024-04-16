@@ -56,13 +56,16 @@ class PaymentController extends BaseController
             "address" => '0x4d57Ce7E453D652DEf305e43536491B4d433f9F1',
             //"price" => 1.1
         ];
-        $contract->at($contractAddress)->call('totalSupply', $data, function ($err, $datas) {
-                    if ($err !== null) {
-                    throw new Exception($err->getMessage());
-                    }
-                    echo $datas;
-                }
-            );
+        // $contract->at($contractAddress)->call('totalSupply', $data, function ($err, $datas) {
+        //             if ($err !== null) {
+        //             throw new Exception($err->getMessage());
+        //             }
+        //             echo $datas;
+        //         }
+        //     );
+        $contract->at($contractAddress)->call('totalSupply', function($err, $result) {
+            print_r($result);
+        });
 
 
         return var_dump($contract);
