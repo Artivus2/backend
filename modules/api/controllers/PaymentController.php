@@ -49,7 +49,7 @@ class PaymentController extends BaseController
         $timeout = 30;
         $provider = new Web3(new HttpProvider($providerUri, 0.1));
         $contract = new Contract($provider, $abi);
-        $contractAddress = '0x4d57Ce7E453D652DEf305e43536491B4d433f9F1';
+        $contractAddress = '0xFA6987c58AdF0832DCB2E476Abb2586ed749e7DF';
         //а так надо функцию setTokenPrices вызывать, передавать массив объектов Token { tokenAddress: "", price: uint }
         $data =[
             //"tokenAddress" => '0xFA6987c58AdF0832DCB2E476Abb2586ed749e7DF',
