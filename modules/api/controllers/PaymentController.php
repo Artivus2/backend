@@ -55,7 +55,15 @@ class PaymentController extends BaseController
             "tokenAddress" => '0xFA6987c58AdF0832DCB2E476Abb2586ed749e7DF',
             "price" => 1.1
         ];
-        $contract->at($contractAddress)->call('setTokenPrices', $data, $callback);
+        $contract->at($contractAddress)->call('allowance', $data, function ($err, $datas) {
+                    if ($err !== null) {
+                    throw new Exception($err->getMessage());
+                    }
+                    echo $datas;
+                }
+            );
+
+
         return var_dump($contract);
     }
 
