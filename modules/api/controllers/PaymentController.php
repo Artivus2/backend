@@ -49,7 +49,8 @@ class PaymentController extends BaseController
         $timeout = 30;
         $provider = new Web3(new HttpProvider($providerUri, 0.1));
         $contract = new Contract($provider, $abi);
-        $contractAddress = '0xFA6987c58AdF0832DCB2E476Abb2586ed749e7DF';
+        //$contractAddress = '0xFA6987c58AdF0832DCB2E476Abb2586ed749e7DF';
+        $contractAddress = '0x4d57Ce7E453D652DEf305e43536491B4d433f9F1';
         //а так надо функцию setTokenPrices вызывать, передавать массив объектов Token { tokenAddress: "", price: uint }
         $data =[
             //"tokenAddress" => '0xFA6987c58AdF0832DCB2E476Abb2586ed749e7DF',
@@ -57,18 +58,18 @@ class PaymentController extends BaseController
             //"price" => 1.1
         ];
         // $contract->at($contractAddress)->call('totalSupply', $data, function ($err, $datas) {
-        //             if ($err !== null) {
+        //            if ($err !== null) {
         //             throw new Exception($err->getMessage());
         //             }
         //             echo $datas;
         //         }
         //     );
-        $contract->at($contractAddress)->call('totalSupply', function($err, $result) {
+        $cost = $contract->at($contractAddress)->call('totalSupply', function($err, $result) {
             print_r($result);
         });
 
 
-        return var_dump($contract);
+        return var_dump($cost);
     }
 
 
