@@ -64,12 +64,13 @@ class PaymentController extends BaseController
         //             echo $datas;
         //         }
         //     );
-        $cost = $contract->at($contractAddress)->call('totalSupply', function($err, $result) {
-            print_r($result);
-        });
+        // $cost = $contract->at($contractAddress)->call('totalSupply', function($err, $result) {
+        //     print_r($result);
+        // });
+        $contract->getProvider();
 
 
-        return var_dump($cost);
+        return $contract;
     }
 
 
