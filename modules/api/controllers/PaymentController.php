@@ -150,7 +150,7 @@ class PaymentController extends BaseController
                 {
                     "address": "TNdmEpN6AU2oSK7uAoPS4FaqW6okgNLTpk",
                     "currency": "usdttrc20",
-                    "amount": 5,
+                    "amount": 1,
                     "ipn_callback_url": "https://greenavi.com/api/payment/notice-ipn"
                 }
             ]
