@@ -38,7 +38,7 @@ class P2pController extends BaseController
                 }
                 if($item->ads->type == 2) {
                     if($item->ads->status == 6) {
-                        $wallet_seller = Wallet::find()->where(["user_id" => $item->creator_id, "chart_id" => $item->ads->chart_id])->one();
+                        $wallet_seller = Wallet::find()->where(["user_id" => $item->creator_id, "chart_id" => $item->ads->chart_id,'type' => 0])->one();
                         $wallet_seller->balance += $item->price;
                         $wallet_seller->save();
                     }
@@ -59,7 +59,7 @@ class P2pController extends BaseController
                 }
                 if($item->ads->type == 2) {
                     if($item->ads->status == 6) {
-                        $wallet_seller = Wallet::find()->where(["user_id" => $item->creator_id, "chart_id" => $item->ads->chart_id])->one();
+                        $wallet_seller = Wallet::find()->where(["user_id" => $item->creator_id, "chart_id" => $item->ads->chart_id,'type' => 1])->one();
                         $wallet_seller->balance += $item->price;
                         $wallet_seller->save();
                     }
@@ -137,7 +137,7 @@ class P2pController extends BaseController
                     if($item->amount * $item->course > 0 && $item->amount * $item->course < 500) {
                         
                             if($item->type == 2) {
-                                $wallet_seller = Wallet::find()->where(["user_id" => $item->company_id, "chart_id" => $item->chart_id,'type' => 0])->one();
+                                $wallet_seller = Wallet::find()->where(["user_id" => $item->company_id, "chart_id" => $item->chart_id,'type' => 1])->one();
                                 $wallet_seller->balance += $item->amount;
                                 $wallet_seller->save();
                             }

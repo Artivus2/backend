@@ -162,7 +162,7 @@ class UserController extends BaseController
             Yii::$app->response->statusCode = 401;
             return ["success" => false, "message" => "Token не найден"];
         }
-        $avatar = (int)Yii::$app->request->post("avatar");
+        $avatar = (int)Yii::$app->request->post("id");
         $user = User::find()->where(["id" => $this->user->id])->one();
         $user->avatar = $avatar;
         if(!$user->save()) {

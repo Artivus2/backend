@@ -39,7 +39,7 @@ class B2bPayment extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [["company_id"], 'required'],
+            [["company_id",'summa'], 'required'],
             [['payment_id',"company_id",'type'], 'integer'],
 
         ];

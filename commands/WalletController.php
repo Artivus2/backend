@@ -95,7 +95,7 @@ class WalletController extends BaseController
                             $wallet = new Wallet(["user_id" => $item->user_id, "chart_id" => $item->start_chart_id, "balance" => 0, "type" => 0,  'balance' => $paid_amount]);
                         }
                         //$wallet->balance += $paid_amount;
-                        //$wallet->save();
+                        $wallet->save();
                     $item->save();
                 }
 
@@ -109,7 +109,7 @@ class WalletController extends BaseController
                     $item->status = -1;
                     $wallet = Wallet::findOne(["user_id" => $item->user_id, "chart_id" => $item->start_chart_id, "type" => 0]);
                     if(!$wallet) {
-                        $wallet = new Wallet(["user_id" => $item->user_id, "chart_id" => $item->start_chart_id, "balance" => $paid_amount, "type" => 0]);
+                        $wallet = new Wallet(["user_id" => $item->user_id, "chart_id" => $item->start_chart_id, "type" => 0]);
                     }
                     $wallet->balance += $paid_amount;
                     $wallet->save();
@@ -150,17 +150,70 @@ class WalletController extends BaseController
         }
 
         //status 0 в обработке, 1 - выполнено, 2 - отменено strtotime("+3 day", $p2p_h->start_date) общий
-        $history = History::find()->where(["<=", "date", strtotime("-1 day",time())])->andWhere(["status" => 0])->andwhere(['wallet_direct_id' => [10,13], 'type'=> [0,1]])->all();
-        foreach ($history as $item) { 
-            $item->status = 2;
-            $wallet = Wallet::findOne(['user_id' => $item->user_id, 'chart_id' => $item->start_chart_id,'type' => $item->type == 0 ? 0 : 1]);
+        // $history = History::find()->where(["<=", "date", strtotime("-1 day",time())])->andWhere(["status" => 0])->andwhere(['wallet_direct_id' => [10,13], 'type'=> [0,1]])->all();
+        // foreach ($history as $item) { 
+        //     $item->status = 2;
+        //     $wallet = Wallet::findOne(['user_id' => $item->user_id, 'chart_id' => $item->start_chart_id,'type' => $item->type == 0 ? 0 : 1]);
             
-            $wallet->balance += $item->start_price;
-            $wallet->blocked = 0;
-            $wallet->save();
-            $item->save();
+        //     $wallet->balance += $item->start_price;
+        //     $wallet->blocked = 0;
+        //     $wallet->save();
+        //     $item->save();
 
-        }       
+        // }       
+
+
+        $output_offers = History::find()->where(['wallet_direct_id' => 10])->andWhere(['>=','status',0])->all();
+
+        if ($output_offers) {
+            //to do validate adress
+
+        //check balance
+
+        //create payout
+
+        foreach ($input_offers as $item) {
+
+            $curl = curl_init();
+            curl_setopt_array($curl, array(
+                CURLOPT_URL => 'https://api.nowpayments.io/v1/payout',
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_ENCODING => '',
+                CURLOPT_MAXREDIRS => 10,
+                CURLOPT_TIMEOUT => 0,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                CURLOPT_CUSTOMREQUEST => 'POST',
+                CURLOPT_POSTFIELDS =>'{
+                  "ipn_callback_url": "https://greenavi.com/api/payment/notice-ipn",
+                  "withdrawals": [
+                      {
+                          "address": "'.$item->ipn_id.'",
+                          "currency": "trx",
+                          "amount": '.$item->start_price.',
+                          "ipn_callback_url": "https://greenavi.com/api/payment/notice-ipn"
+                      },
+                  ]
+              }',
+                CURLOPT_HTTPHEADER => array(
+                  'Authorization: Bearer '.$token,
+                  'x-api-key: '.$api_key,
+                  'Content-Type: application/json'
+                ),
+              ));
+              $response = curl_exec($curl);
+              curl_close($curl);
+              $data = json_decode($response, true);
+              
+              //verify
+
+
+        
+        
+            }
+        
+
+        }
         
         
        

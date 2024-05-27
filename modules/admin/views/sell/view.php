@@ -59,33 +59,33 @@ $this->params['breadcrumbs'][] ='   >>>>  Заявка №'. $this->title;
 <div>Способы оплаты пользователя / компании</div>
 <?php
    if ($model->wallet_direct_id == 10) {
-   echo GridView::widget([
-       'dataProvider' => $payments,
-       'tableOptions' => [
+//    echo GridView::widget([
+//        'dataProvider' => $payments,
+//        'tableOptions' => [
             
-        'class'=>'table table-striped table-responsive'
-        ],
-       'columns' => [
+//         'class'=>'table table-striped table-responsive'
+//         ],
+//        'columns' => [
            
-           [
-            'label' => 'Банк',
+//            [
+//             'label' => 'Банк',
             
-            'value' => function($data){return $data->type->name ?? null;} 
-           ],
-           [
-            'label' => '№ карты',
+//             'value' => function($data){return $data->type->name ?? null;} 
+//            ],
+//            [
+//             'label' => '№ карты',
             
-            'value' => function($data){return $data->value ?? null;} 
-           ],
-           [
-            'label' => 'Получатель',
+//             'value' => function($data){return $data->value ?? null;} 
+//            ],
+//            [
+//             'label' => 'Получатель',
             
-            'value' => function($data){return $data->payment_receiver ?? null;} 
-           ],
+//             'value' => function($data){return $data->payment_receiver ?? null;} 
+//            ],
            
-        ],
+//         ],
 
-    ]);
+//     ]);
 } 
 if ($model->wallet_direct_id == 13) {
 
