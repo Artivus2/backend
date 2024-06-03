@@ -9,10 +9,13 @@ use app\models\Chart;
 use app\models\User;
 use app\models\Wallet;
 use app\models\History;
+use yii\httpclient\Client;
 use app\models\PaymentType;
 use app\models\PaymentDesc;
 use app\models\PaymentUser;
 use app\models\P2pPayment;
+use app\models\P2pHistory;
+use app\models\B2bHistory;
 use app\models\B2bPayment;
 use app\models\P2pAds;
 use app\models\WalletAddress;
@@ -27,8 +30,304 @@ use PHPMailer\PHPMailer\Exception;
 class PaymentController extends BaseController
 {
     
+
+     /**
+     * @SWG\Post(
+     *    path = "/payment/create-payment",
+     *    tags = {"Payment"},
+     *    summary = "create-payment",
+     *    security={{"access_token":{}}},
+     *    @SWG\Parameter(
+     *      name="payment_id",
+     *      in="body",
+     *      description="create-payment",
+     *      required=true,
+     *      @SWG\Schema(type="integer")
+     *     ),
+     *    @SWG\Parameter(
+     *      name="price_amount",
+     *      in="body",
+     *      description="price_amount",
+     *      @SWG\Schema(type="integer")
+     *     ),
+     *    @SWG\Parameter(
+     *      name="price_currency",
+     *      in="body",
+     *      description="price_amount",
+     *      @SWG\Schema(type="integer")
+     *     ),
+     *    @SWG\Parameter(
+     *      name="order_id",
+     *      in="body",
+     *      description="order_id",
+     *      @SWG\Schema(type="integer")
+     *     ),
+     *    @SWG\Parameter(
+     *      name="pay_currency",
+     *      in="body",
+     *      description="pay_currency",
+     *      @SWG\Schema(type="integer")
+     *     ),
+     *	  @SWG\Response(
+     *      response = 200,
+     *      description = "Успешно сохранено",
+     *      @SWG\Schema(ref = "#/definitions/Result")
+     *    ),
+     *    @SWG\Response(
+     *      response = 400,
+     *      description = "Ошибка запроса",
+     *      @SWG\Schema(ref = "#/definitions/Result")
+     *    ),
+     *    @SWG\Response(
+     *      response = 403,
+     *      description = "Ошибка авторизации",
+     *      @SWG\Schema(ref = "#/definitions/Result")
+     *    ),
+     *)
+     * @throws HttpException
+     */
+    public function actionCreatePayment() {
+        
+        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+
+        $client = new Client();
+        $data[] = [
+            "price_amount" => Yii::$app->request->post("price_amount"),
+            "price_currency" => Yii::$app->request->post("price_currency"),
+            "order_id" => Yii::$app->request->post("order_id"),
+            "pay_currency" => Yii::$app->request->post("pay_currency")            
+        ];
+        $response = $client->createRequest()
+        ->setMethod('POST')
+        ->setUrl('http://localhost:8001/create_payment')
+        ->setData($data)
+        ->send();
+        $result=$response;
+        return $result->getContent();
+    }
+
+
+    
+     /**
+     * @SWG\Post(
+     *    path = "/payment/create-payout",
+     *    tags = {"Payment"},
+     *    summary = "create-payout",
+     *    security={{"access_token":{}}},
+     *    @SWG\Parameter(
+     *      name="payment_id",
+     *      in="body",
+     *      description="create-payout",
+     *      required=true,
+     *      @SWG\Schema(type="integer")
+     *     ),
+     *    @SWG\Parameter(
+     *      name="address",
+     *      in="body",
+     *      description="address",
+     *      @SWG\Schema(type="integer")
+     *     ),
+     *    @SWG\Parameter(
+     *      name="amount",
+     *      in="body",
+     *      description="amount",
+     *      @SWG\Schema(type="integer")
+     *     ),
+     *    @SWG\Parameter(
+     *      name="currency",
+     *      in="body",
+     *      description="currency",
+     *      @SWG\Schema(type="integer")
+     *     ),
+     *    @SWG\Parameter(
+     *      name="ipn_callback_url",
+     *      in="body",
+     *      description="ipn_callback_url",
+     *      @SWG\Schema(type="string")
+     *     ),
+     *	  @SWG\Response(
+     *      response = 200,
+     *      description = "Успешно сохранено",
+     *      @SWG\Schema(ref = "#/definitions/Result")
+     *    ),
+     *    @SWG\Response(
+     *      response = 400,
+     *      description = "Ошибка запроса",
+     *      @SWG\Schema(ref = "#/definitions/Result")
+     *    ),
+     *    @SWG\Response(
+     *      response = 403,
+     *      description = "Ошибка авторизации",
+     *      @SWG\Schema(ref = "#/definitions/Result")
+     *    ),
+     *)
+     * @throws HttpException
+     */
+    public function actionCreatePayout() {
+        
+        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+
+        $client = new Client();
+        $data[] = [
+            "address" => Yii::$app->request->post("address"),
+            "amount" => Yii::$app->request->post("amount"),
+            "currency" => Yii::$app->request->post("currency"),
+            "ipn_callback_url" => Yii::$app->request->post("ipn_callback_url")            
+        ];
+        $response = $client->createRequest()
+        ->setMethod('POST')
+        ->setUrl('http://localhost:8001/create_payout')
+        ->setData($data)
+        ->send();
+        $result=$response;
+        return $result->getContent();
+    }
+
+     /**
+     * @SWG\Post(
+     *    path = "/payment/get-jwt-token",
+     *    tags = {"Payment"},
+     *    summary = "get-jwt-token",
+     *    security={{"access_token":{}}},
+     *    @SWG\Parameter(
+     *      name="email",
+     *      in="body",
+     *      description="email",
+     *      required=true,
+     *      @SWG\Schema(type="integer")
+     *     ),
+     *    @SWG\Parameter(
+     *      name="password",
+     *      in="body",
+     *      description="password",
+     *      @SWG\Schema(type="integer")
+     *     ),
+     *	  @SWG\Response(
+     *      response = 200,
+     *      description = "Успешно сохранено",
+     *      @SWG\Schema(ref = "#/definitions/Result")
+     *    ),
+     *    @SWG\Response(
+     *      response = 400,
+     *      description = "Ошибка запроса",
+     *      @SWG\Schema(ref = "#/definitions/Result")
+     *    ),
+     *    @SWG\Response(
+     *      response = 403,
+     *      description = "Ошибка авторизации",
+     *      @SWG\Schema(ref = "#/definitions/Result")
+     *    ),
+     *)
+     * @throws HttpException
+     */
+    public function actionGetJwtToken() {
+        
+        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+
+        $client = new Client();
+        $data[] = [
+            "email" => Yii::$app->request->post("email"),
+            "password" => Yii::$app->request->post("password")            
+        ];
+        $response = $client->createRequest()
+        ->setMethod('POST')
+        ->setUrl('http://localhost:8001/get_jwt_token')
+        ->setData($data)
+        ->send();
+        $result=$response;
+        return $result->getContent();
+    }
+
+
+/**
+     * @SWG\Get(
+     *    path = "/payment/get-payment-status",
+     *    tags = {"Payment"},
+     *    summary = "get_payment_status",
+     *    security={{"access_token":{}}},
+     *    @SWG\Parameter(
+     *      name="type",
+     *      in="path",
+     *      type="integer",
+     *      description="payment_id",
+     *      @SWG\Schema(type="integer")
+     *     ),
+     *	  @SWG\Response(
+     *      response = 200,
+     *      description = "get_payment_status",
+     *      @SWG\Schema(
+     *          type="array",
+     *          @SWG\Items(ref="#/definitions/Result")
+     *      ),
+     *    ),
+     *    @SWG\Response(
+     *      response = 400,
+     *      description = "Ошибка запроса",
+     *      @SWG\Schema(ref = "#/definitions/Result")
+     *    ),
+     *    @SWG\Response(
+     *      response = 403,
+     *      description = "Ошибка авторизации",
+     *      @SWG\Schema(ref = "#/definitions/Result")
+     *    ),
+     *)
+     * @throws HttpException
+     */
+    public function actionGetPaymentStatus() {
+        
+        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+
+        $client = new Client();
+        $payment_id = Yii::$app->request->get("payment_id");
+        $response = $client->createRequest()
+        ->setMethod('POST')
+        ->setUrl('http://localhost:8001/get_payment_status/'.$payment_id)
+        ->send();
+        $result=$response;
+        return $result->getContent();
+    }
+
+/**
+     * @SWG\Get(
+     *    path = "/payment/list_currencies",
+     *    tags = {"Payment"},
+     *    summary = "list_currencies",
+     *    security={{"access_token":{}}},
+     *	  @SWG\Response(
+     *      response = 200,
+     *      description = "Список",
+     *      @SWG\Schema(
+     *          type="array",
+     *          @SWG\Items(ref="#/definitions/Result")
+     *      ),
+     *    ),
+     *    @SWG\Response(
+     *      response = 400,
+     *      description = "Ошибка запроса",
+     *      @SWG\Schema(ref = "#/definitions/Result")
+     *    ),
+     *    @SWG\Response(
+     *      response = 403,
+     *      description = "Ошибка авторизации",
+     *      @SWG\Schema(ref = "#/definitions/Result")
+     *    ),
+     *)
+     * @throws HttpException
+     */
+
+    public function actionListCurrencies() {
+
+        $client = new Client();
+        $response = $client->createRequest()->setMethod('GET')->setUrl('http://localhost:8001/list_currencies')->send();
+        $result=$response;
+        return $result->getContent();
+
+          return $file;
+       
+    }
+
     public function actionCheckPayment() {
-        // Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+        //Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
 
         // $history = History::find()->where(["user_id" => $this->user->id, "type" => 0, 'wallet_direct_id' => 12, 'status' => 3])->one();
         // if (!$history) {
@@ -59,37 +358,52 @@ class PaymentController extends BaseController
         //     "total_amount" => (float)$total_amount,
         //     "status_code" => $invoice["data"]["status_code"]
         // ];
-        $mail = new PHPMailer(true);
+        $id = Yii::$app->request->get("id");
+        $api_key='eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1dWlkIjoiTVRrNE5UWT0iLCJ0eXBlIjoicHJvamVjdCIsInYiOiI2M2QzNDYyZjRhY2I0NjUzZGEyYTIwNGQ2YTlmZGJjYmZiZjIyY2NiZjIwYWVlOWI0MWIxODc2Njc4ZTA1Mjk5IiwiZXhwIjo4ODExMDU4MTQ0OH0.X0R_PfjNs2QeecNutTS2EKGwtf0r_LWnf8CKqQA7IUc';
+        $shop_id='CghDrxpwxUVFXbq3';
+        //$url = "https://api.cryptocloud.plus/v2/invoice/create";
 
-try {
-    //Server settings
-    $mail->SMTPDebug = SMTP::DEBUG_SERVER;                      //Enable verbose debug output
-    $mail->isSMTP();                                            //Send using SMTP
-    $mail->Host       = 'smtp.yandex.com';                     //Set the SMTP server to send through
-    $mail->SMTPAuth   = true;                                   //Enable SMTP authentication
-    $mail->Username   = 'support@greenavicash.ru';                     //SMTP username
-    $mail->Password   = 'M354at790!';                               //SMTP password
-    $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;            //Enable implicit TLS encryption
-    $mail->Port       = 465;                                    //TCP port to connect to; use 587 if you have set `SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS`
+        $ch = curl_init();
 
-    //Recipients
-    $mail->setFrom('support@greenavicash.ru', 'Mailer');
-    $mail->addAddress('artivus3@yandex.ru', 'Artivus');     //Add a recipient
+        curl_setopt($ch, CURLOPT_URL, "https://api.cryptocloud.plus/v2/invoice/merchant/info");
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode(array(
+            "uuids" => array($id)
+        )));
 
-    //Attachments
-    //Content
-    $mail->isHTML(true);                                  //Set email format to HTML
-    $mail->Subject = 'Here is the subject';
-    $mail->Body    = 'This is the HTML message body <b>in bold!</b>';
-    $mail->AltBody = 'This is the body in plain text for non-HTML mail clients';
+        $headers = array(
+            "Authorization: Token ".$api_key,
+            "Content-Type: application/json"
+        );
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 
-    $mail->send();
-    echo 'Message has been sent';
-} catch (Exception $e) {
-    echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
-}
+        $response = curl_exec($ch);
         
-        return "ok";
+        if (curl_errno($ch)) {
+            echo 'Error:' . curl_error($ch);
+        } else {
+            $statusCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            if ($statusCode == 200) {
+                curl_close($ch);
+
+
+                //return $response;
+            } else {
+                echo "Fail: " . $statusCode . " " . $response;
+            }
+        }
+        $data = json_decode($response, true);
+        $result = [];
+        foreach ($data as $item){
+            $result[] = $item;
+        }
+
+        return $result[1][0];
+        // {"status":"success","result":{"uuid":"INV-9VBKMAQR","created":"2024-03-18 12:46:17.729941","address":"","expiry_date":"2024-03-19 12:46:17.718070","side_commission":"client","side_commission_service":"merchant","type_payments":"crypto","amount":0.11,"amount_usd":0.11,"amount_in_fiat":10.0,"fee":1.4,"fee_usd":1.4,"service_fee":0.00209,"service_fee_usd":0.0,"fiat_currency":"RUB","status":"created","is_email_required":false,"link":"https://pay.cryptocloud.plus/9VBKMAQR","invoice_id":null,"currency":{"id":4,"code":"USDT","fullcode":"USDT_TRC20","network":{"code":"TRC20","id":4,"icon":"https://cdn.cryptocloud.plus/currency/crypto/TRX.svg","fullname":"Tron"},"name":"Tether","is_email_required":false,"stablecoin":true,"icon_base":"https://cdn.cryptocloud.plus/currency/icons/main/usdt.svg","icon_network":"https://cdn.cryptocloud.plus/icons-currency/USDT-TRC20.svg","icon_qr":"https://cdn.cryptocloud.plus/currency/icons/stroke/usdt.svg","order":1},"project":{"id":352403,"name":"GREENAVI","fail":"https://greenavi.com/api/payment/fail-ipn","success":"https://greenavi.com/api/payment/success-ipn","logo":""},"test_mode":true}}
+
+        
+
     }
 
     public function actionFailIpn (){
@@ -437,30 +751,26 @@ try {
         if ((int)$b2b !== 1) {
             
             $payment_id = Yii::$app->request->post("payment_id");
-            
+            //$payment = PaymentUser::find()->where(["user_id" => $this->user->id, "payment_id" => $payment_id])->one();
+            //if (!$payment) {
 
-            $payment = PaymentUser::find()->where(["user_id" => $this->user->id, "payment_id" => $payment_id])->one();
-            if (!$payment) {
-                
-                $payment = new PaymentUser(["user_id" => $this->user->id]);
-                $payment->payment_id = $payment_id;
-                $payment->value = Yii::$app->request->post("value");
-            
-                $payment->payment_receiver = Yii::$app->request->post("payment_receiver");
-                $payment->active = 1;
+            $payment = new PaymentUser(["user_id" => $this->user->id,'payment_id' => $payment_id,'active' => 1]);
+            $payment->value = Yii::$app->request->post("value");
+            $payment->payment_receiver = Yii::$app->request->post("payment_receiver");
+            //$payment->active = 1;
 
-            } else {
-                $payment->value = Yii::$app->request->post("value") ?? $payment->value;
-                $payment->payment_receiver = Yii::$app->request->post("payment_receiver") ?? $payment->payment_receiver;
-                $payment->active = 1;
-            }
+            //} else {
+                //$payment->value = Yii::$app->request->post("value") ?? $payment->value;
+                //$payment->payment_receiver = Yii::$app->request->post("payment_receiver") ?? $payment->payment_receiver;
+                //$payment->active = 1;
+            //}
 
 
             $payments_count = PaymentUser::find()->where(["user_id" => $this->user->id, "active" => 1])->count();
             
 
 
-            if ($payments_count > 14) {
+            if ($payments_count > 10 || count($payment_id) > 10) {
                 Yii::$app->response->statusCode = 400;
                 return ["success" => false, "message" => "Превышено максимальное количество способов оплаты", $payments_count];
             }
@@ -701,22 +1011,34 @@ try {
             return ["success" => false, "message" => "Token не найден"];
         }
 
-        $payment = PaymentUser::findOne(['id' => Yii::$app->request->post("id"), 'user_id' => $this->user->id, "active" => 1]);
+        $id = Yii::$app->request->post("id");
+        $payment = PaymentUser::findOne(['id' => $id, 'user_id' => $this->user->id, "active" => 1]);
         if(!$payment) {
             return ["success" => false, "message" => "Платеж не найден"];
         }
 
-        
-        $statuses = [1,2,3,4,5,7,8,9];
-        $p2p_payments = P2pPayment::find()->where(["user_id" => $this->user->id, "payment_id" => $payment->payment_id])->all();
-        foreach ($p2p_payments as $p2p_payment) {
-            $p2p_ads_s = P2pAds::find()->where(["id" => $p2p_payment->p2p_ads_id])->andWhere(["in","status", $statuses])->one();
-            if ($p2p_ads_s) {
+        $statuses = [1,2,5];
+        $p2p_history = P2pHistory::find()->where(['author_id' => $this->user->id, 'status' => $statuses,'payment_id' => $id])->all();
+        if ($p2p_history) {
                 Yii::$app->response->statusCode = 401;
-                return ["success" => false, "message" => "Реквизит не может быть удален, есть активные или не завершенные ордера", "Текущий статус" => $p2p_ads_s->status];
-            }
-
+                return ["success" => false, "message" => "Реквизит не может быть удален, есть активные или не завершенные ордера"];    
         }
+        $p2p_history = P2pHistory::find()->where(['creator_id' => $this->user->id, 'status' => $statuses,'payment_id' => $id])->all();
+        if ($p2p_history) {
+                Yii::$app->response->statusCode = 401;
+                return ["success" => false, "message" => "Реквизит не может быть удален, есть активные или не завершенные ордера"];    
+        }
+        $b2b_history = B2bHistory::find()->where(['author_id' => $this->user->id, 'status' => $statuses,'payment_id' => $id])->all();
+        if ($b2b_history) {
+                Yii::$app->response->statusCode = 401;
+                return ["success" => false, "message" => "Реквизит не может быть удален, есть активные или не завершенные ордера"];    
+        }
+        $b2b_history = B2bHistory::find()->where(['creator_id' => $this->user->id, 'status' => $statuses,'payment_id' => $id])->all();
+        if ($b2b_history) {
+                Yii::$app->response->statusCode = 401;
+                return ["success" => false, "message" => "Реквизит не может быть удален, есть активные или не завершенные ордера"];    
+        }
+        
         $payment->active = 0;
        
         if(!$payment->save()) {
