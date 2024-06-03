@@ -115,49 +115,62 @@ class PaymentController extends BaseController
         
         Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
 
-        $client = new Client();
-        $data[] = [
-            "price_amount" => Yii::$app->request->post("price_amount", 100),
-            "price_currency" => Yii::$app->request->post("price_currency", "usdttrc20"),
-            "order_id" => Yii::$app->request->post("order_id", "1"),
-            "pay_currency" => Yii::$app->request->post("pay_currency", "usd")
-        ];
-        $response = $client->createRequest()
-        ->setMethod('POST')
-        ->setUrl('http://127.0.0.1:8001/create_payment')
-        ->setData($data)
-        ->send();
-        $result=$response;
-       $data = var_dump(json_encode($response, true)); 
-//     $curl = curl_init();
+        // $client = new Client();
+        // $data[] = [
+        //     'price_amount' => Yii::$app->request->post("amount", 101),
+        //     'price_currency' => Yii::$app->request->post("currency", 'usdttrc20'),
+        //     'order_id' => Yii::$app->request->post("order_id", '1'),
+        //     'pay_currency' => Yii::$app->request->post("pay_currency", 'usd')];
+        // // $data[] = json_encode([
+        // //     'price_amount: 101',
+        // //     'price_currency: usdttrc20',
+        // //     'order_id: 1',
+        // //     'pay_currency: usd'
+        // // ]);
+
+        // $response = $client->createRequest()
+        // ->setMethod('POST')
+        // ->setUrl('http://127.0.0.1:8001/create_payment')
+        // ->setHeaders(['content-type' => 'application/json'])
+        // ->setData(json_encode($data))
+        // ->send();
         
-//     //$order_id = rand(100000000,999999999);
-//     curl_setopt_array($curl, array(
-//     CURLOPT_URL => 'http://127.0.0.1:8001/create_payment',
-//     CURLOPT_RETURNTRANSFER => true,
-//     CURLOPT_ENCODING => '',
-//     CURLOPT_MAXREDIRS => 10,
-//     CURLOPT_TIMEOUT => 0,
-//     CURLOPT_FOLLOWLOCATION => true,
-//     CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-//     CURLOPT_CUSTOMREQUEST => 'POST',
-//     CURLOPT_POSTFIELDS =>'{
-//         "price_amount": "111",
-//         "price_currency": "usd",
-//         "order_id": "1",
-//         "pay_currency": "https://greenavi.com/api/payment/notice-ipn"
-//       }
-      
-//       '
-//   ));
+        // return var_dump($response);
+        //$result=$response->getData();
+       //$data = json_encode($result, true); 
+            $curl = curl_init();
+            curl_setopt_array($curl, array(
+            CURLOPT_URL => 'http://127.0.0.1:8001/create_payment',
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => '',
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 0,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => 'POST',
+            CURLOPT_POSTFIELDS =>'{
+                "amount": '.Yii::$app->request->post("amount", 101).',
+                "currency": '.Yii::$app->request->post("currency", "usdttrc20").',
+                "order_id": '.Yii::$app->request->post("order_id", 1).',
+                "pay_currency": '.Yii::$app->request->post("pay_currency", "btc").'
+                }
+                
+                '
+            ,
+            CURLOPT_HTTPHEADER => array(
+                'Content-Type: application/json'
+              ),
+        ));
 
 
-// $response = curl_exec($curl);
+            $response = curl_exec($curl);
 
-// curl_close($curl);
+            curl_close($curl);
 
-// $data = json_decode($response, true);
-        return $response;
+            $data = json_decode($response, true);
+
+            return $data;
+        
     }
 
 
@@ -220,21 +233,56 @@ class PaymentController extends BaseController
     public function actionCreatePayout() {
         
         Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+        $curl = curl_init();
+        
+        $order_id = rand(100000000,999999999);
+        curl_setopt_array($curl, array(
+            CURLOPT_URL => 'http://127.0.0.1:8001/create_payout',
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => '',
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 0,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => 'POST',
+            CURLOPT_POSTFIELDS =>'{
+                "address": '.Yii::$app->request->post("address",'sdfgsdg').',
+                "amount": '.Yii::$app->request->post("amount", 1).',
+                "currency": '.Yii::$app->request->post("currency",'usd').',
+                "ipn_callback_url": "https://greenavi.com/api/payment/notice-ipn"
+              }
+              
+              ',
+            CURLOPT_HTTPHEADER => array(
+              'Content-Type: application/json'
+            ),
+          ));
 
-        $client = new Client();
-        $data[] = [
-            "address" => Yii::$app->request->post("address"),
-            "amount" => Yii::$app->request->post("amount"),
-            "currency" => Yii::$app->request->post("currency"),
-            "ipn_callback_url" => Yii::$app->request->post("ipn_callback_url")            
-        ];
-        $response = $client->createRequest()
-        ->setMethod('POST')
-        ->setUrl('http://127.0.0.1:8001/create_payout')
-        ->setData($data)
-        ->send();
-        $result=$response;
-        return $result->getContent();
+
+          $response = curl_exec($curl);
+
+          curl_close($curl);
+
+          $data = json_decode($response, true);
+
+          return $data;
+
+
+        // $client = new Client();
+        // $data = [
+        //     "address" => Yii::$app->request->post("address",'sdfgsdg'),
+        //     "amount" => Yii::$app->request->post("amount",'100'),
+        //     "currency" => Yii::$app->request->post("currency",'usd'),
+        //     "ipn_callback_url" => Yii::$app->request->post("ipn_callback_url",'https://greenavi.com')
+        // ];
+        // $response = $client->createRequest()
+        // ->setMethod('POST')
+        // ->setUrl('http://127.0.0.1:8001/create_payout')
+        // ->setHeaders(['content-type' => 'application/json'])
+        // ->setData(json_encode($data))
+        // ->send();
+       
+
     }
 
      /**
