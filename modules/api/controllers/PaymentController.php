@@ -153,12 +153,14 @@ class PaymentController extends BaseController
                 "currency": "'.Yii::$app->request->post("currency", "usdttrc20").'",
                 "order_id": "'.Yii::$app->request->post("order_id", 1).'",
                 "pay_currency": "'.Yii::$app->request->post("pay_currency", "btc").'"
+
                 }
                 
                 '
             ,
             CURLOPT_HTTPHEADER => array(
-                'Content-Type: application/json'
+                'Content-Type: application/json',
+                'Authorization: '.Yii::$app->request->post("jwt_token","0").''
               ),
         ));
 
