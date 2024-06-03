@@ -335,8 +335,7 @@ class PaymentController extends BaseController
         ];
         $response = $client->createRequest()
         ->setMethod('POST')
-        ->setUrl('http://127.0.0.1:8001/get_jwt_token')
-        ->setData($data)
+        ->setUrl('http://127.0.0.1:8001/get_jwt_token?email='.Yii::$app->request->post("email").'&password'.Yii::$app->request->post("password"))
         ->send();
         $result=$response;
         return $result->getContent();
