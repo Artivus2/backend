@@ -35,6 +35,302 @@ use Web3\Providers\HttpProvider;
 class PaymentController extends BaseController
 {
     
+         /**
+     * @SWG\Post(
+     *    path = "/payment/create-payment",
+     *    tags = {"Payment"},
+     *    summary = "create-payment",
+     *    security={{"access_token":{}}},
+     *    @SWG\Parameter(
+     *      name="payment_id",
+     *      in="body",
+     *      description="create-payment",
+     *      required=true,
+     *      @SWG\Schema(type="integer")
+     *     ),
+     *    @SWG\Parameter(
+     *      name="price_amount",
+     *      in="body",
+     *      description="price_amount",
+     *      @SWG\Schema(type="integer")
+     *     ),
+     *    @SWG\Parameter(
+     *      name="price_currency",
+     *      in="body",
+     *      description="price_amount",
+     *      @SWG\Schema(type="integer")
+     *     ),
+     *    @SWG\Parameter(
+     *      name="order_id",
+     *      in="body",
+     *      description="order_id",
+     *      @SWG\Schema(type="integer")
+     *     ),
+     *    @SWG\Parameter(
+     *      name="pay_currency",
+     *      in="body",
+     *      description="pay_currency",
+     *      @SWG\Schema(type="integer")
+     *     ),
+     *	  @SWG\Response(
+     *      response = 200,
+     *      description = "Успешно сохранено",
+     *      @SWG\Schema(ref = "#/definitions/Result")
+     *    ),
+     *    @SWG\Response(
+     *      response = 400,
+     *      description = "Ошибка запроса",
+     *      @SWG\Schema(ref = "#/definitions/Result")
+     *    ),
+     *    @SWG\Response(
+     *      response = 403,
+     *      description = "Ошибка авторизации",
+     *      @SWG\Schema(ref = "#/definitions/Result")
+     *    ),
+     *)
+     * @throws HttpException
+     */
+    public function actionCreatePayment() {
+        
+        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+
+        $client = new Client();
+        $data[] = [
+            "price_amount" => Yii::$app->request->post("price_amount"),
+            "price_currency" => Yii::$app->request->post("price_currency"),
+            "order_id" => Yii::$app->request->post("order_id"),
+            "pay_currency" => Yii::$app->request->post("pay_currency")            
+        ];
+        $response = $client->createRequest()
+        ->setMethod('POST')
+        ->setUrl('http://localhost:8001/create_payment')
+        ->setData($data)
+        ->send();
+        $result=$response;
+        return $result->getContent();
+    }
+
+
+    
+     /**
+     * @SWG\Post(
+     *    path = "/payment/create-payout",
+     *    tags = {"Payment"},
+     *    summary = "create-payout",
+     *    security={{"access_token":{}}},
+     *    @SWG\Parameter(
+     *      name="payment_id",
+     *      in="body",
+     *      description="create-payout",
+     *      required=true,
+     *      @SWG\Schema(type="integer")
+     *     ),
+     *    @SWG\Parameter(
+     *      name="address",
+     *      in="body",
+     *      description="address",
+     *      @SWG\Schema(type="integer")
+     *     ),
+     *    @SWG\Parameter(
+     *      name="amount",
+     *      in="body",
+     *      description="amount",
+     *      @SWG\Schema(type="integer")
+     *     ),
+     *    @SWG\Parameter(
+     *      name="currency",
+     *      in="body",
+     *      description="currency",
+     *      @SWG\Schema(type="integer")
+     *     ),
+     *    @SWG\Parameter(
+     *      name="ipn_callback_url",
+     *      in="body",
+     *      description="ipn_callback_url",
+     *      @SWG\Schema(type="string")
+     *     ),
+     *	  @SWG\Response(
+     *      response = 200,
+     *      description = "Успешно сохранено",
+     *      @SWG\Schema(ref = "#/definitions/Result")
+     *    ),
+     *    @SWG\Response(
+     *      response = 400,
+     *      description = "Ошибка запроса",
+     *      @SWG\Schema(ref = "#/definitions/Result")
+     *    ),
+     *    @SWG\Response(
+     *      response = 403,
+     *      description = "Ошибка авторизации",
+     *      @SWG\Schema(ref = "#/definitions/Result")
+     *    ),
+     *)
+     * @throws HttpException
+     */
+    public function actionCreatePayout() {
+        
+        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+
+        $client = new Client();
+        $data[] = [
+            "address" => Yii::$app->request->post("address"),
+            "amount" => Yii::$app->request->post("amount"),
+            "currency" => Yii::$app->request->post("currency"),
+            "ipn_callback_url" => Yii::$app->request->post("ipn_callback_url")            
+        ];
+        $response = $client->createRequest()
+        ->setMethod('POST')
+        ->setUrl('http://localhost:8001/create_payout')
+        ->setData($data)
+        ->send();
+        $result=$response;
+        return $result->getContent();
+    }
+
+     /**
+     * @SWG\Post(
+     *    path = "/payment/get-jwt-token",
+     *    tags = {"Payment"},
+     *    summary = "get-jwt-token",
+     *    security={{"access_token":{}}},
+     *    @SWG\Parameter(
+     *      name="email",
+     *      in="body",
+     *      description="email",
+     *      required=true,
+     *      @SWG\Schema(type="integer")
+     *     ),
+     *    @SWG\Parameter(
+     *      name="password",
+     *      in="body",
+     *      description="password",
+     *      @SWG\Schema(type="integer")
+     *     ),
+     *	  @SWG\Response(
+     *      response = 200,
+     *      description = "Успешно сохранено",
+     *      @SWG\Schema(ref = "#/definitions/Result")
+     *    ),
+     *    @SWG\Response(
+     *      response = 400,
+     *      description = "Ошибка запроса",
+     *      @SWG\Schema(ref = "#/definitions/Result")
+     *    ),
+     *    @SWG\Response(
+     *      response = 403,
+     *      description = "Ошибка авторизации",
+     *      @SWG\Schema(ref = "#/definitions/Result")
+     *    ),
+     *)
+     * @throws HttpException
+     */
+    public function actionGetJwtToken() {
+        
+        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+
+        $client = new Client();
+        $data[] = [
+            "email" => Yii::$app->request->post("email"),
+            "password" => Yii::$app->request->post("password")            
+        ];
+        $response = $client->createRequest()
+        ->setMethod('POST')
+        ->setUrl('http://localhost:8001/get_jwt_token')
+        ->setData($data)
+        ->send();
+        $result=$response;
+        return $result->getContent();
+    }
+
+
+/**
+     * @SWG\Get(
+     *    path = "/payment/get-payment-status",
+     *    tags = {"Payment"},
+     *    summary = "get_payment_status",
+     *    security={{"access_token":{}}},
+     *    @SWG\Parameter(
+     *      name="type",
+     *      in="path",
+     *      type="integer",
+     *      description="payment_id",
+     *      @SWG\Schema(type="integer")
+     *     ),
+     *	  @SWG\Response(
+     *      response = 200,
+     *      description = "get_payment_status",
+     *      @SWG\Schema(
+     *          type="array",
+     *          @SWG\Items(ref="#/definitions/Result")
+     *      ),
+     *    ),
+     *    @SWG\Response(
+     *      response = 400,
+     *      description = "Ошибка запроса",
+     *      @SWG\Schema(ref = "#/definitions/Result")
+     *    ),
+     *    @SWG\Response(
+     *      response = 403,
+     *      description = "Ошибка авторизации",
+     *      @SWG\Schema(ref = "#/definitions/Result")
+     *    ),
+     *)
+     * @throws HttpException
+     */
+    public function actionGetPaymentStatus() {
+        
+        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+
+        $client = new Client();
+        $payment_id = Yii::$app->request->get("payment_id");
+        $response = $client->createRequest()
+        ->setMethod('POST')
+        ->setUrl('http://localhost:8001/get_payment_status/'.$payment_id)
+        ->send();
+        $result=$response;
+        return $result->getContent();
+    }
+
+/**
+     * @SWG\Get(
+     *    path = "/payment/list_currencies",
+     *    tags = {"Payment"},
+     *    summary = "list_currencies",
+     *    security={{"access_token":{}}},
+     *	  @SWG\Response(
+     *      response = 200,
+     *      description = "Список",
+     *      @SWG\Schema(
+     *          type="array",
+     *          @SWG\Items(ref="#/definitions/Result")
+     *      ),
+     *    ),
+     *    @SWG\Response(
+     *      response = 400,
+     *      description = "Ошибка запроса",
+     *      @SWG\Schema(ref = "#/definitions/Result")
+     *    ),
+     *    @SWG\Response(
+     *      response = 403,
+     *      description = "Ошибка авторизации",
+     *      @SWG\Schema(ref = "#/definitions/Result")
+     *    ),
+     *)
+     * @throws HttpException
+     */
+
+    public function actionListCurrencies() {
+
+        $client = new Client();
+        $response = $client->createRequest()->setMethod('GET')->setUrl('http://localhost:8001/list_currencies')->send();
+        $result=$response;
+        return $result->getContent();
+
+          return $file;
+       
+    }
+
+    
     public function actionReadContract() {
         Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
         $abi = '[{"inputs":[],"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":true,"internalType":"address","name":"spender","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Approval","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Transfer","type":"event"},{"inputs":[{"internalType":"address","name":"owner","type":"address"},{"internalType":"address","name":"spender","type":"address"}],"name":"allowance","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"approve","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"decimals","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"subtractedValue","type":"uint256"}],"name":"decreaseAllowance","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"addedValue","type":"uint256"}],"name":"increaseAllowance","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"name","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"renounceOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"symbol","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"totalSupply","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"transfer","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"from","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"transferFrom","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"}]';
