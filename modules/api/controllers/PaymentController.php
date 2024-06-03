@@ -149,10 +149,10 @@ class PaymentController extends BaseController
             CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
             CURLOPT_CUSTOMREQUEST => 'POST',
             CURLOPT_POSTFIELDS =>'{
-                "amount": '.Yii::$app->request->post("amount", 101).',
-                "currency": '.Yii::$app->request->post("currency", "usdttrc20").',
-                "order_id": '.Yii::$app->request->post("order_id", 1).',
-                "pay_currency": '.Yii::$app->request->post("pay_currency", "btc").'
+                "amount": "'.Yii::$app->request->post("amount", 101).'",
+                "currency": "'.Yii::$app->request->post("currency", "usdttrc20").'",
+                "order_id": "'.Yii::$app->request->post("order_id", 1).'",
+                "pay_currency": "'.Yii::$app->request->post("pay_currency", "btc").'"
                 }
                 
                 '
@@ -246,9 +246,9 @@ class PaymentController extends BaseController
             CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
             CURLOPT_CUSTOMREQUEST => 'POST',
             CURLOPT_POSTFIELDS =>'{
-                "address": '.Yii::$app->request->post("address",'sdfgsdg').',
-                "amount": '.Yii::$app->request->post("amount", 1).',
-                "currency": '.Yii::$app->request->post("currency",'usd').',
+                "address": "'.Yii::$app->request->post("address",'sdfgsdg').'",
+                "amount": "'.Yii::$app->request->post("amount", 1).'",
+                "currency": "'.Yii::$app->request->post("currency",'usd').'",
                 "ipn_callback_url": "https://greenavi.com/api/payment/notice-ipn"
               }
               
