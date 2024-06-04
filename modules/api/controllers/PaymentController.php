@@ -131,14 +131,13 @@ class PaymentController extends BaseController
             ],
         ]);
         
-        $response = $client->createRequest()
-        ->setMethod('POST')
-        ->setUrl('create_payment')
-        ->setData($data)
+        $response = $client
+        ->post('create_payment', $data)
+        
         ->send();
         
         return $request->format;
-        
+
         //     $curl = curl_init();
         //     curl_setopt_array($curl, array(
         //     CURLOPT_URL => 'http://127.0.0.1:8001/create_payment',
