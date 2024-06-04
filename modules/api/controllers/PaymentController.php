@@ -115,63 +115,64 @@ class PaymentController extends BaseController
         
         Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
 
-        // $client = new Client();
-        // $data[] = [
-        //     'price_amount' => Yii::$app->request->post("amount", 101),
-        //     'price_currency' => Yii::$app->request->post("currency", 'usdttrc20'),
-        //     'order_id' => Yii::$app->request->post("order_id", '1'),
-        //     'pay_currency' => Yii::$app->request->post("pay_currency", 'usd')];
-        // // $data[] = json_encode([
-        // //     'price_amount: 101',
-        // //     'price_currency: usdttrc20',
-        // //     'order_id: 1',
-        // //     'pay_currency: usd'
-        // // ]);
-
-        // $response = $client->createRequest()
-        // ->setMethod('POST')
-        // ->setUrl('http://127.0.0.1:8001/create_payment')
-        // ->setHeaders(['content-type' => 'application/json'])
-        // ->setData(json_encode($data))
-        // ->send();
+        $data[] = [
+            "amount" => Yii::$app->request->post("price_amount",100),
+            "currency" => Yii::$app->request->post("price_currency","usdttrc20"),
+            "order_id" => Yii::$app->request->post("order_id","1"),
+            "pay_currency" => Yii::$app->request->post("pay_currency","btc")
+        ];
+        $client = new Client([
+            'baseUrl' => 'http://127.0.0.1:8001/',
+            'requestConfig' => [
+                'format' => Client::FORMAT_JSON
+            ],
+            'responseConfig' => [
+                'format' => Client::FORMAT_JSON
+            ],
+        ]);
         
-        // return var_dump($response);
-        //$result=$response->getData();
-       //$data = json_encode($result, true); 
-            $curl = curl_init();
-            curl_setopt_array($curl, array(
-            CURLOPT_URL => 'http://127.0.0.1:8001/create_payment',
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_ENCODING => '',
-            CURLOPT_MAXREDIRS => 10,
-            CURLOPT_TIMEOUT => 0,
-            CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-            CURLOPT_CUSTOMREQUEST => 'POST',
-            CURLOPT_POSTFIELDS =>'{
-                "amount": "'.Yii::$app->request->post("amount", 101).'",
-                "currency": "'.Yii::$app->request->post("currency", "usdttrc20").'",
-                "order_id": "'.Yii::$app->request->post("order_id", 1).'",
-                "pay_currency": "'.Yii::$app->request->post("pay_currency", "btc").'"
+        $response = $client->createRequest()
+        ->setMethod('POST')
+        ->setUrl('create_payment')
+        ->setData($data)
+        ->send();
+        
+        return $request->format;
+        
+        //     $curl = curl_init();
+        //     curl_setopt_array($curl, array(
+        //     CURLOPT_URL => 'http://127.0.0.1:8001/create_payment',
+        //     CURLOPT_RETURNTRANSFER => true,
+        //     CURLOPT_ENCODING => '',
+        //     CURLOPT_MAXREDIRS => 10,
+        //     CURLOPT_TIMEOUT => 0,
+        //     CURLOPT_FOLLOWLOCATION => true,
+        //     CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+        //     CURLOPT_CUSTOMREQUEST => 'POST',
+        //     CURLOPT_POSTFIELDS =>'{
+        //         "amount": "'.Yii::$app->request->post("amount", 101).'",
+        //         "currency": "'.Yii::$app->request->post("currency", "usdttrc20").'",
+        //         "order_id": "'.Yii::$app->request->post("order_id", 1).'",
+        //         "pay_currency": "'.Yii::$app->request->post("pay_currency", "btc").'"
 
-                }
+        //         }
                 
-                '
-            ,
-            CURLOPT_HTTPHEADER => array(
-                'Content-Type: application/json',
-                'Authorization: '.Yii::$app->request->post("jwt_token","0").''
-              ),
-        ));
+        //         '
+        //     ,
+        //     CURLOPT_HTTPHEADER => array(
+        //         'Content-Type: application/json',
+        //         'Authorization: '.Yii::$app->request->post("jwt_token","0").''
+        //       ),
+        // ));
 
 
-            $response = curl_exec($curl);
+        //     $response = curl_exec($curl);
 
-            curl_close($curl);
+        //     curl_close($curl);
 
-            $data = json_decode($response, true);
+        //     $data = json_decode($response, true);
 
-            return $data;
+        //     return $data;
         
     }
 
