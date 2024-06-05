@@ -197,7 +197,7 @@ class PaymentController extends BaseController
             "address" => Yii::$app->request->post("address","1212"),
             "amount" => Yii::$app->request->post("amount",1000),
             "currency" => Yii::$app->request->post("currency", "usdt"),
-            "jwt_token" => "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjUwOTk1OTU2NDEiLCJpYXQiOjE3MTc1Njc3NzMsImV4cCI6MTcxNzU2ODA3M30.bFLFVqzfY78xALfsBpef_ZVUWg7EQbXnsIDdA3NFAZ8"
+            "jwt_token" => Yii::$app->request->post("jwt_token", "token")
         ];
         $client = new Client([
             'baseUrl' => 'http://127.0.0.1:8001/', 
@@ -278,8 +278,8 @@ class PaymentController extends BaseController
         CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
         CURLOPT_CUSTOMREQUEST => 'POST',
         CURLOPT_POSTFIELDS =>'{
-            "email": "artivus2@gmail.com",
-            "password": "Adm142!@" 
+            "email": "'.Yii::$app->request->post("email").'",
+            "password": "'.Yii::$app->request->post("password").'"
         }',
         CURLOPT_HTTPHEADER => array(
             'Content-Type: application/json'
@@ -341,14 +341,7 @@ class PaymentController extends BaseController
         ],]);
         $payment_id = Yii::$app->request->get("payment_id","4817895924");
         $response = $client->get('get_payment_status', ['payment_id' => $payment_id])->send();
-        // $client->createRequest()
-        // ->setMethod('POST')
-        // ->setUrl('http://127.0.0.1:8001/get_payment_status')
-        // ->setData(["payment_id" => 5508279060])
-        // ->send();
-
-        $result=$response;
-        return $result->getContent();
+        return $response;
     }
 
 /**
