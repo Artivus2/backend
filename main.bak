@@ -22,12 +22,6 @@ class CreatePayoutRequest(BaseModel):
     currency: str
     address: str
 
-
-class JwtRequest(BaseModel):
-    email: str
-    password: str
-
-
 # List currencies
 @app.get("/list_currencies")
 def list_currencies():
@@ -86,14 +80,14 @@ def create_payout(request: CreatePayoutRequest):
 
 # Get JWT token
 @app.post("/get_jwt_token")
-def get_jwt_token(request: JwtRequest):
+def get_jwt_token(email: str, password: str):
     api_url = f'{base_url}auth'
     headers = {
         'Content-Type': 'application/json'
     }
     payload = {
-        'email': request.email,
-        'password': request.password
+        'email': email,
+        'password': password
     }
     response = requests.post(api_url, headers=headers, data=json.dumps(payload))
     if response.status_code != 200:
