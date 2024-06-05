@@ -197,7 +197,7 @@ class PaymentController extends BaseController
             "address" => Yii::$app->request->post("address","1212"),
             "amount" => Yii::$app->request->post("amount",1000),
             "currency" => Yii::$app->request->post("currency", "usdt"),
-            "jwt_token" => Yii::$app->request->post("jwt_token","wrg4g4g")
+            "jwt_token" => "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjUwOTk1OTU2NDEiLCJpYXQiOjE3MTc1Njc3NzMsImV4cCI6MTcxNzU2ODA3M30.bFLFVqzfY78xALfsBpef_ZVUWg7EQbXnsIDdA3NFAZ8"
         ];
         $client = new Client([
             'baseUrl' => 'http://127.0.0.1:8001/', 
