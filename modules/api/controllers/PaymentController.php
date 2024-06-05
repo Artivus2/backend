@@ -193,9 +193,6 @@ class PaymentController extends BaseController
      */
     public function actionCreatePayout() {
         
-        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
-
-        
         $data = [
             "address" => Yii::$app->request->post("address","1212"),
             "amount" => Yii::$app->request->post("amount",1000),
@@ -255,35 +252,21 @@ class PaymentController extends BaseController
      */
     public function actionGetJwtToken() {
         
-        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
-
-        $curl = curl_init();
-        // https://api.nowpayments.io/v1/auth
-        curl_setopt_array($curl, array(
-            CURLOPT_URL => 'https://api.nowpayments.io/v1/auth',
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_ENCODING => '',
-            CURLOPT_MAXREDIRS => 10,
-            CURLOPT_TIMEOUT => 0,
-            CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-            CURLOPT_CUSTOMREQUEST => 'POST',
-            CURLOPT_POSTFIELDS =>'{
-              "email": "artivus2@gmail.com",
-              "password": "Adm142!@"
-          }',
-            CURLOPT_HTTPHEADER => array(
-              'Content-Type: application/json'
-            ),
-          ));
-          
-          $response = curl_exec($curl);
-
-            curl_close($curl);
-
-            $data = json_decode($response, true);
-
-            return $data;
+        $data = [
+            "email" => Yii::$app->request->post("address","artivus2@gmail.com"),
+            "password" => Yii::$app->request->post("amount","Adm142!@")            
+        ];
+        $client = new Client([
+            'baseUrl' => 'http://127.0.0.1:8001/', 
+            'requestConfig' => [
+                'format' => Client::FORMAT_JSON
+                ],
+            'responseConfig' => [
+            'format' => Client::FORMAT_JSON
+            ],
+        ]);
+        $response = $client->post('get_jwt_token', $data)->send();
+        return $response;
     }
 
 
