@@ -253,8 +253,8 @@ class PaymentController extends BaseController
     public function actionGetJwtToken() {
         
         $data = [
-            "email" => Yii::$app->request->post("address","artivus2@gmail.com"),
-            "password" => Yii::$app->request->post("amount","Adm142!@")            
+            "email" => Yii::$app->request->post("email","artivus2@gmail.com"),
+            "password" => Yii::$app->request->post("password","Adm142!@")            
         ];
         $client = new Client([
             'baseUrl' => 'http://127.0.0.1:8001/', 
