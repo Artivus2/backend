@@ -131,7 +131,7 @@ class PaymentController extends BaseController
         $response = $client->post('create_payment', $data)->send();
     
 
-    return $response;
+    return $response->getContent();
     }
 
 
@@ -209,7 +209,7 @@ class PaymentController extends BaseController
             ],
         ]);
         $response = $client->post('create_payout', $data)->send();
-        return $response;
+        return $response->getContent();
 
     }
 
@@ -290,7 +290,7 @@ class PaymentController extends BaseController
         // $response = curl_exec($curl);
 
         // curl_close($curl);
-        return $response;
+        return $response->getContent();
     }
 
 
@@ -342,7 +342,7 @@ class PaymentController extends BaseController
         ],]);
         $payment_id = Yii::$app->request->get("payment_id");
         $response = $client->get('get_payment_status/'.$payment_id)->send();
-        return $response;
+        return $response->getContent();
     }
 
 /**
