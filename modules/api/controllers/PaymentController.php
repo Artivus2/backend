@@ -343,6 +343,9 @@ class PaymentController extends BaseController
         $payment_id = Yii::$app->request->get("payment_id");
         $response = $client->get('get_payment_status/'.$payment_id)->send();
         return $response->getContent();
+
+
+        
     }
 
 /**
