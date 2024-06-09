@@ -26,7 +26,7 @@ class WalletController extends BaseController
 
         // $api_key='eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1dWlkIjoiTVRrNE5UWT0iLCJ0eXBlIjoicHJvamVjdCIsInYiOiI2M2QzNDYyZjRhY2I0NjUzZGEyYTIwNGQ2YTlmZGJjYmZiZjIyY2NiZjIwYWVlOWI0MWIxODc2Njc4ZTA1Mjk5IiwiZXhwIjo4ODExMDU4MTQ0OH0.X0R_PfjNs2QeecNutTS2EKGwtf0r_LWnf8CKqQA7IUc';
         // $shop_id='CghDrxpwxUVFXbq3';
-        $api_key = 'THBJKRT-Y5EMJSM-H95YDKQ-1RFRWS8';
+        $api_key = '2WMC682-ATF4WCE-NW0HZNC-5E7S427';
 
 
         $curl = curl_init();
@@ -41,8 +41,8 @@ class WalletController extends BaseController
             CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
             CURLOPT_CUSTOMREQUEST => 'POST',
             CURLOPT_POSTFIELDS =>'{
-              "email": "artivus2@gmail.com",
-              "password": "Adm142!@" 
+              "email": "Test.greenavi@mail.ru",
+              "password": "M354at790!" 
           }',
             CURLOPT_HTTPHEADER => array(
               'Content-Type: application/json'
@@ -189,7 +189,7 @@ class WalletController extends BaseController
                   "withdrawals": [
                       {
                           "address": "'.$item->ipn_id.'",
-                          "currency": "trx",
+                          "currency": "usdttrc20",
                           "amount": '.$item->start_price.',
                           "ipn_callback_url": "https://greenavi.com/api/payment/notice-ipn"
                       },

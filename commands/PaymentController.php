@@ -39,7 +39,7 @@ class PaymentController extends BaseController
         //     'password'=>Yii::$app->params['API_KEY_PASSWORD'] //password for selected wallet
         // ];
         // $obj = new CoinRemitter($params);
-        $api_key = 'THBJKRT-Y5EMJSM-H95YDKQ-1RFRWS8';
+        $api_key = '2WMC682-ATF4WCE-NW0HZNC-5E7S427';
         
         // $input_offers = History::find()->where(['wallet_direct_id' => 12, 'status' => -4])->all();
         // foreach ($input_offers as $item) {
