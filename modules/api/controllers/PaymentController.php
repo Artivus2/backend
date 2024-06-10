@@ -239,7 +239,7 @@ class PaymentController extends BaseController
     public function actionCreatePayout() {
         
         //status 0 в обработке, 1 - выполнено, 2 - отменено
-        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+        //Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
 
         if(!$this->user) {
             Yii::$app->response->statusCode = 401;
@@ -297,47 +297,68 @@ class PaymentController extends BaseController
 
         
 
-        $curl = curl_init();
+        // $curl = curl_init();
         
-        curl_setopt_array($curl, array(
-            CURLOPT_URL => 'http://127.0.0.1:8001/create_payout',
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_ENCODING => '',
-            CURLOPT_MAXREDIRS => 10,
-            CURLOPT_TIMEOUT => 0,
-            CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-            CURLOPT_CUSTOMREQUEST => 'POST',
-            CURLOPT_POSTFIELDS =>'{
-                "address": '.Yii::$app->request->post("address").',
-                "amount": '.Yii::$app->request->post("amount", 1).',
-                "currency": '.$chain->symbol.',
-                "ipn_callback_url": "https://greenavi.com/api/payout/notice-ipn",
-              }
+        // curl_setopt_array($curl, array(
+        //     CURLOPT_URL => 'http://127.0.0.1:8001/create_payout',
+        //     CURLOPT_RETURNTRANSFER => true,
+        //     CURLOPT_ENCODING => '',
+        //     CURLOPT_MAXREDIRS => 10,
+        //     CURLOPT_TIMEOUT => 0,
+        //     CURLOPT_FOLLOWLOCATION => true,
+        //     CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+        //     CURLOPT_CUSTOMREQUEST => 'POST',
+        //     CURLOPT_POSTFIELDS =>'{
+        //         "address": '.Yii::$app->request->post("address").',
+        //         "amount": '.Yii::$app->request->post("amount", 1).',
+        //         "currency": '.$chain->symbol.',
+        //         "ipn_callback_url": "https://greenavi.com/api/payout/notice-ipn",
+        //       }
               
-              ',
-            CURLOPT_HTTPHEADER => array(
-              'Content-Type: application/json'
-            ),
-          ));
+        //       ',
+        //     CURLOPT_HTTPHEADER => array(
+        //       'Content-Type: application/json'
+        //     ),
+        //   ));
 
 
-          $response = curl_exec($curl);
+        //   $response = curl_exec($curl);
 
-          curl_close($curl);
+        //   curl_close($curl);
 
-          $data = json_decode($response, true);
+        //   $data = json_decode($response, true);
+        
+        $data = [
+            "address" => Yii::$app->request->post("address"),
+            "amount" => Yii::$app->request->post("amount"),
+            "currrency" => Yii::$app->request->post("currency")
+        ];
+        $client = new Client([
+            'baseUrl' => 'http://127.0.0.1:8001/',
+            'requestConfig' => [
+                'format' => Client::FORMAT_JSON
+            ],
+            'responseConfig' => [
+                'format' => Client::FORMAT_JSON
+            ],
+        ]);
+        
+        $response = $client
+        ->post('create_payout', $data)
+        
+        ->send();
+        
+        if(!$history->save()) {
+        Yii::$app->response->statusCode = 400;
+        return ["success" => false, "message" => "Ошибка создания запроса", $history];
+        }
 
-          if(!$history->save()) {
+        if(!$wallet->save()) {
             Yii::$app->response->statusCode = 400;
-            return ["success" => false, "message" => "Ошибка создания запроса", $history];
-            }
-
-            if(!$wallet->save()) {
-                Yii::$app->response->statusCode = 400;
-                return ["success" => false, "message" => "Ошибка сохранения счета"];
-            }
-        return ["success" => true, "message" => "Запрос отправлен в обработку", $data];
+            return ["success" => false, "message" => "Ошибка сохранения счета"];
+        }
+        
+        return ["success" => true, "message" => "Запрос отправлен в обработку", $data, $response->getContent()];
 
 
         // $client = new Client();
