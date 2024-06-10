@@ -338,43 +338,7 @@ class PaymentController extends BaseController
 
     }
 
-    //  /**
-    //  * @SWG\Post(
-    //  *    path = "/payment/get-jwt-token",
-    //  *    tags = {"Payment"},
-    //  *    summary = "get-jwt-token",
-    //  *    security={{"access_token":{}}},
-    //  *    @SWG\Parameter(
-    //  *      name="email",
-    //  *      in="body",
-    //  *      description="email",
-    //  *      required=true,
-    //  *      @SWG\Schema(type="integer")
-    //  *     ),
-    //  *    @SWG\Parameter(
-    //  *      name="password",
-    //  *      in="body",
-    //  *      description="password",
-    //  *      @SWG\Schema(type="integer")
-    //  *     ),
-    //  *	  @SWG\Response(
-    //  *      response = 200,
-    //  *      description = "Успешно сохранено",
-    //  *      @SWG\Schema(ref = "#/definitions/Result")
-    //  *    ),
-    //  *    @SWG\Response(
-    //  *      response = 400,
-    //  *      description = "Ошибка запроса",
-    //  *      @SWG\Schema(ref = "#/definitions/Result")
-    //  *    ),
-    //  *    @SWG\Response(
-    //  *      response = 403,
-    //  *      description = "Ошибка авторизации",
-    //  *      @SWG\Schema(ref = "#/definitions/Result")
-    //  *    ),
-    //  *)
-    //  * @throws HttpException
-    //  */
+   
     // public function actionGetJwtToken() {
         
     //     Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
