@@ -348,17 +348,26 @@ class PaymentController extends BaseController
         
         ->send();
         
-        if(!$history->save()) {
-        Yii::$app->response->statusCode = 400;
-        return ["success" => false, "message" => "Ошибка создания запроса", $history];
+        $result = json_decode($response->getContent(), true);
+
+        if ($result["detail"]["code"] == "SUCCESS") {
+            if(!$history->save()) {
+                Yii::$app->response->statusCode = 400;
+                return ["success" => false, "message" => "Ошибка создания запроса", $history];
+                }
+        
+            if(!$wallet->save()) {
+                Yii::$app->response->statusCode = 400;
+                return ["success" => false, "message" => "Ошибка сохранения счета"];
+            }
+
+            return ["success" => true, "message" => "Запрос отправлен в обработку", $result];
+            
+        } else {
+            return ["success" => false, "message" => "Ошибка: ", $result["detail"]["code"]];
         }
 
-        if(!$wallet->save()) {
-            Yii::$app->response->statusCode = 400;
-            return ["success" => false, "message" => "Ошибка сохранения счета"];
-        }
         
-        return ["success" => true, "message" => "Запрос отправлен в обработку", $data, json_decode($response->getContent())];
 
 
         // $client = new Client();
