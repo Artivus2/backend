@@ -293,40 +293,6 @@ class PaymentController extends BaseController
         }
 
         $history->end_price = $history->start_price;
-
-
-        
-
-        // $curl = curl_init();
-        
-        // curl_setopt_array($curl, array(
-        //     CURLOPT_URL => 'http://127.0.0.1:8001/create_payout',
-        //     CURLOPT_RETURNTRANSFER => true,
-        //     CURLOPT_ENCODING => '',
-        //     CURLOPT_MAXREDIRS => 10,
-        //     CURLOPT_TIMEOUT => 0,
-        //     CURLOPT_FOLLOWLOCATION => true,
-        //     CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-        //     CURLOPT_CUSTOMREQUEST => 'POST',
-        //     CURLOPT_POSTFIELDS =>'{
-        //         "address": '.Yii::$app->request->post("address").',
-        //         "amount": '.Yii::$app->request->post("amount", 1).',
-        //         "currency": '.$chain->symbol.',
-        //         "ipn_callback_url": "https://greenavi.com/api/payout/notice-ipn",
-        //       }
-              
-        //       ',
-        //     CURLOPT_HTTPHEADER => array(
-        //       'Content-Type: application/json'
-        //     ),
-        //   ));
-
-
-        //   $response = curl_exec($curl);
-
-        //   curl_close($curl);
-
-        //   $data = json_decode($response, true);
         
         $data = [
             "address" => Yii::$app->request->post("address"),
@@ -364,25 +330,10 @@ class PaymentController extends BaseController
             return ["success" => true, "message" => "Запрос отправлен в обработку", $result];
             
         } else {
-            return ["success" => false, "message" => "Ошибка: ", $result["detail"]["code"]];
+            return ["success" => false, "message" => "Ошибка ", $result];
         }
 
-        
-
-
-        // $client = new Client();
-        // $data = [
-        //     "address" => Yii::$app->request->post("address",'sdfgsdg'),
-        //     "amount" => Yii::$app->request->post("amount",'100'),
-        //     "currency" => Yii::$app->request->post("currency",'usd'),
-        //     "ipn_callback_url" => Yii::$app->request->post("ipn_callback_url",'https://greenavi.com')
-        // ];
-        // $response = $client->createRequest()
-        // ->setMethod('POST')
-        // ->setUrl('http://127.0.0.1:8001/create_payout')
-        // ->setHeaders(['content-type' => 'application/json'])
-        // ->setData(json_encode($data))
-        // ->send();
+    
        
 
     }
@@ -518,7 +469,70 @@ class PaymentController extends BaseController
         return $result->getContent();
     }
 
-/**
+
+    /**
+     * @SWG\Get(
+     *    path = "/payment/get-payout-status",
+     *    tags = {"Payment"},
+     *    summary = "get_payout_status",
+     *    security={{"access_token":{}}},
+     *    @SWG\Parameter(
+     *      name="type",
+     *      in="path",
+     *      type="integer",
+     *      description="payment_id",
+     *      @SWG\Schema(type="integer")
+     *     ),
+     *	  @SWG\Response(
+     *      response = 200,
+     *      description = "get_payout_status",
+     *      @SWG\Schema(
+     *          type="array",
+     *          @SWG\Items(ref="#/definitions/Result")
+     *      ),
+     *    ),
+     *    @SWG\Response(
+     *      response = 400,
+     *      description = "Ошибка запроса",
+     *      @SWG\Schema(ref = "#/definitions/Result")
+     *    ),
+     *    @SWG\Response(
+     *      response = 403,
+     *      description = "Ошибка авторизации",
+     *      @SWG\Schema(ref = "#/definitions/Result")
+     *    ),
+     *)
+     * @throws HttpException
+     */
+    public function actionGetPayoutStatus() {
+        
+        //Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+
+
+        
+        $client = new Client([
+        'baseUrl' => 'http://127.0.0.1:8001/',
+        'requestConfig' => [
+            'format' => Client::FORMAT_JSON
+        ],
+        'responseConfig' => [
+            'format' => Client::FORMAT_JSON
+        ],]);
+        $payment_id = Yii::$app->request->get("payment_id");
+        $response = $client->get('get_payout_status/'.$payment_id)->send();
+        // $client->createRequest()
+        // ->setMethod('POST')
+        // ->setUrl('http://127.0.0.1:8001/get_payment_status')
+        // ->setData(["payment_id" => 5508279060])
+        // ->send();
+
+        $result=$response;
+        return $result->getContent();
+    }
+
+
+
+    /**
      * @SWG\Get(
      *    path = "/payment/list_currencies",
      *    tags = {"Payment"},
