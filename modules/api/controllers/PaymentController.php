@@ -331,7 +331,7 @@ class PaymentController extends BaseController
         $data = [
             "address" => Yii::$app->request->post("address"),
             "amount" => Yii::$app->request->post("amount"),
-            "currrency" => Yii::$app->request->post("currency")
+            "currency" => $chain->symbol
         ];
         $client = new Client([
             'baseUrl' => 'http://127.0.0.1:8001/',
