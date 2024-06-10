@@ -209,7 +209,7 @@ class PaymentController extends BaseController
      *    @SWG\Parameter(
      *      name="currency",
      *      in="body",
-     *      description="currency",
+     *      description="currency (id 56 - trx)",
      *      @SWG\Schema(type="integer")
      *     ),
      *    @SWG\Parameter(
@@ -239,7 +239,7 @@ class PaymentController extends BaseController
     public function actionCreatePayout() {
         
         //status 0 в обработке, 1 - выполнено, 2 - отменено
-        //Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
 
         if(!$this->user) {
             Yii::$app->response->statusCode = 401;
@@ -358,7 +358,7 @@ class PaymentController extends BaseController
             return ["success" => false, "message" => "Ошибка сохранения счета"];
         }
         
-        return ["success" => true, "message" => "Запрос отправлен в обработку", $data, $response->getContent()];
+        return ["success" => true, "message" => "Запрос отправлен в обработку", $data, json_decode($response->getContent())];
 
 
         // $client = new Client();
