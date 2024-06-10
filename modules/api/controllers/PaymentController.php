@@ -118,64 +118,64 @@ class PaymentController extends BaseController
      */
     public function actionCreatePayment() {
         
-        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+        //Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
 
-        // $data[] = [
-        //     "amount" => Yii::$app->request->post("amount",100),
-        //     "currency" => Yii::$app->request->post("currency","usdttrc20"),
-        //     "order_id" => Yii::$app->request->post("order_id","1"),
-        //     "pay_currency" => Yii::$app->request->post("pay_currency","btc")
-        // ];
-        // $client = new Client([
-        //     'baseUrl' => 'http://127.0.0.1:8001/',
-        //     'requestConfig' => [
-        //         'format' => Client::FORMAT_JSON
-        //     ],
-        //     'responseConfig' => [
-        //         'format' => Client::FORMAT_JSON
-        //     ],
-        // ]);
+        $data = [
+            "amount" => Yii::$app->request->post("amount",100),
+            "currency" => Yii::$app->request->post("currency","usdttrc20"),
+            "order_id" => Yii::$app->request->post("order_id","1"),
+            "pay_currency" => Yii::$app->request->post("pay_currency","btc")
+        ];
+        $client = new Client([
+            'baseUrl' => 'http://127.0.0.1:8001/',
+            'requestConfig' => [
+                'format' => Client::FORMAT_JSON
+            ],
+            'responseConfig' => [
+                'format' => Client::FORMAT_JSON
+            ],
+        ]);
         
-        // $response = $client
-        // ->post('create_payment', $data)
+        $response = $client
+        ->post('create_payment', $data)
         
-        // ->send();
+        ->send();
         
-        // return $response->getContent();
+        return $response->getContent();
 
-            $curl = curl_init();
-            curl_setopt_array($curl, array(
-            CURLOPT_URL => 'http://127.0.0.1:8001/create_payment',
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_ENCODING => '',
-            CURLOPT_MAXREDIRS => 10,
-            CURLOPT_TIMEOUT => 0,
-            CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-            CURLOPT_CUSTOMREQUEST => 'POST',
-            CURLOPT_POSTFIELDS =>'{
-                "amount": "'.Yii::$app->request->post("amount", 101).'",
-                "currency": "'.Yii::$app->request->post("currency", "usdttrc20").'",
-                "order_id": "'.Yii::$app->request->post("order_id", 1).'",
-                "pay_currency": "'.Yii::$app->request->post("pay_currency", "btc").'"
+        //     $curl = curl_init();
+        //     curl_setopt_array($curl, array(
+        //     CURLOPT_URL => 'http://127.0.0.1:8001/create_payment',
+        //     CURLOPT_RETURNTRANSFER => true,
+        //     CURLOPT_ENCODING => '',
+        //     CURLOPT_MAXREDIRS => 10,
+        //     CURLOPT_TIMEOUT => 0,
+        //     CURLOPT_FOLLOWLOCATION => true,
+        //     CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+        //     CURLOPT_CUSTOMREQUEST => 'POST',
+        //     CURLOPT_POSTFIELDS =>'{
+        //         "amount": "'.Yii::$app->request->post("amount", 101).'",
+        //         "currency": "'.Yii::$app->request->post("currency", "usdttrc20").'",
+        //         "order_id": "'.Yii::$app->request->post("order_id", 1).'",
+        //         "pay_currency": "'.Yii::$app->request->post("pay_currency", "btc").'"
 
-                }
+        //         }
                 
-                '
-            ,
-            CURLOPT_HTTPHEADER => array(
-                'Content-Type: application/json',
-              ),
-        ));
+        //         '
+        //     ,
+        //     CURLOPT_HTTPHEADER => array(
+        //         'Content-Type: application/json',
+        //       ),
+        // ));
 
 
-            $response = curl_exec($curl);
+        //     $response = curl_exec($curl);
 
-            curl_close($curl);
+        //     curl_close($curl);
 
-            $data = json_decode($response, true);
+        //     $data = json_decode($response, true);
 
-            return $data;
+        //     return $data;
         
     }
 
@@ -476,8 +476,8 @@ class PaymentController extends BaseController
         'responseConfig' => [
             'format' => Client::FORMAT_JSON
         ],]);
-        $payment_id = Yii::$app->request->get("payment_id","4817895924");
-        $response = $client->get('get_payment_status', ['payment_id' => $payment_id])->send();
+        $payment_id = Yii::$app->request->get("payment_id");
+        $response = $client->get('get_payment_status/'.$payment_id)->send();
         // $client->createRequest()
         // ->setMethod('POST')
         // ->setUrl('http://127.0.0.1:8001/get_payment_status')
