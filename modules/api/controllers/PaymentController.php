@@ -7,6 +7,7 @@ use yii\helpers\Url;
 use yii\web\Controller;
 use yii\httpclient\Client;
 use app\models\Chart;
+use app\models\ChartChain;
 use app\models\User;
 use app\models\Wallet;
 use app\models\History;
@@ -294,15 +295,7 @@ class PaymentController extends BaseController
         $history->end_price = $history->start_price;
 
 
-        if(!$history->save()) {
-            Yii::$app->response->statusCode = 400;
-            return ["success" => false, "message" => "Ошибка создания запроса", $history];
-        }
-
-        if(!$wallet->save()) {
-            Yii::$app->response->statusCode = 400;
-            return ["success" => false, "message" => "Ошибка сохранения счета"];
-        }
+        
 
         $curl = curl_init();
         
@@ -316,9 +309,9 @@ class PaymentController extends BaseController
             CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
             CURLOPT_CUSTOMREQUEST => 'POST',
             CURLOPT_POSTFIELDS =>'{
-                "address": "'.Yii::$app->request->post("address").'",
-                "amount": "'.Yii::$app->request->post("amount", 1).'",
-                "currency": "'.$chain->symbol.'",
+                "address": '.Yii::$app->request->post("address").',
+                "amount": '.Yii::$app->request->post("amount", 1).',
+                "currency": '.$chain->symbol.',
                 "ipn_callback_url": "https://greenavi.com/api/payout/notice-ipn",
               }
               
@@ -335,7 +328,15 @@ class PaymentController extends BaseController
 
           $data = json_decode($response, true);
 
+          if(!$history->save()) {
+            Yii::$app->response->statusCode = 400;
+            return ["success" => false, "message" => "Ошибка создания запроса", $history];
+            }
 
+            if(!$wallet->save()) {
+                Yii::$app->response->statusCode = 400;
+                return ["success" => false, "message" => "Ошибка сохранения счета"];
+            }
         return ["success" => true, "message" => "Запрос отправлен в обработку", $data];
 
 
@@ -409,8 +410,8 @@ class PaymentController extends BaseController
             CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
             CURLOPT_CUSTOMREQUEST => 'POST',
             CURLOPT_POSTFIELDS =>'{
-              "email": "artivus2@gmail.com",
-              "password": "Adm142!@"
+              "email": "",
+              "password": ""
           }',
             CURLOPT_HTTPHEADER => array(
               'Content-Type: application/json'
