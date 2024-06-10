@@ -338,75 +338,75 @@ class PaymentController extends BaseController
 
     }
 
-     /**
-     * @SWG\Post(
-     *    path = "/payment/get-jwt-token",
-     *    tags = {"Payment"},
-     *    summary = "get-jwt-token",
-     *    security={{"access_token":{}}},
-     *    @SWG\Parameter(
-     *      name="email",
-     *      in="body",
-     *      description="email",
-     *      required=true,
-     *      @SWG\Schema(type="integer")
-     *     ),
-     *    @SWG\Parameter(
-     *      name="password",
-     *      in="body",
-     *      description="password",
-     *      @SWG\Schema(type="integer")
-     *     ),
-     *	  @SWG\Response(
-     *      response = 200,
-     *      description = "Успешно сохранено",
-     *      @SWG\Schema(ref = "#/definitions/Result")
-     *    ),
-     *    @SWG\Response(
-     *      response = 400,
-     *      description = "Ошибка запроса",
-     *      @SWG\Schema(ref = "#/definitions/Result")
-     *    ),
-     *    @SWG\Response(
-     *      response = 403,
-     *      description = "Ошибка авторизации",
-     *      @SWG\Schema(ref = "#/definitions/Result")
-     *    ),
-     *)
-     * @throws HttpException
-     */
-    public function actionGetJwtToken() {
+    //  /**
+    //  * @SWG\Post(
+    //  *    path = "/payment/get-jwt-token",
+    //  *    tags = {"Payment"},
+    //  *    summary = "get-jwt-token",
+    //  *    security={{"access_token":{}}},
+    //  *    @SWG\Parameter(
+    //  *      name="email",
+    //  *      in="body",
+    //  *      description="email",
+    //  *      required=true,
+    //  *      @SWG\Schema(type="integer")
+    //  *     ),
+    //  *    @SWG\Parameter(
+    //  *      name="password",
+    //  *      in="body",
+    //  *      description="password",
+    //  *      @SWG\Schema(type="integer")
+    //  *     ),
+    //  *	  @SWG\Response(
+    //  *      response = 200,
+    //  *      description = "Успешно сохранено",
+    //  *      @SWG\Schema(ref = "#/definitions/Result")
+    //  *    ),
+    //  *    @SWG\Response(
+    //  *      response = 400,
+    //  *      description = "Ошибка запроса",
+    //  *      @SWG\Schema(ref = "#/definitions/Result")
+    //  *    ),
+    //  *    @SWG\Response(
+    //  *      response = 403,
+    //  *      description = "Ошибка авторизации",
+    //  *      @SWG\Schema(ref = "#/definitions/Result")
+    //  *    ),
+    //  *)
+    //  * @throws HttpException
+    //  */
+    // public function actionGetJwtToken() {
         
-        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+    //     Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
 
-        $curl = curl_init();
-        // https://api.nowpayments.io/v1/auth
-        curl_setopt_array($curl, array(
-            CURLOPT_URL => 'http://127.0.0.1:8001/get_jwt_token',
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_ENCODING => '',
-            CURLOPT_MAXREDIRS => 10,
-            CURLOPT_TIMEOUT => 0,
-            CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-            CURLOPT_CUSTOMREQUEST => 'POST',
-            CURLOPT_POSTFIELDS =>'{
-              "email": "",
-              "password": ""
-          }',
-            CURLOPT_HTTPHEADER => array(
-              'Content-Type: application/json'
-            ),
-          ));
+    //     $curl = curl_init();
+    //     // https://api.nowpayments.io/v1/auth
+    //     curl_setopt_array($curl, array(
+    //         CURLOPT_URL => 'http://127.0.0.1:8001/get_jwt_token',
+    //         CURLOPT_RETURNTRANSFER => true,
+    //         CURLOPT_ENCODING => '',
+    //         CURLOPT_MAXREDIRS => 10,
+    //         CURLOPT_TIMEOUT => 0,
+    //         CURLOPT_FOLLOWLOCATION => true,
+    //         CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+    //         CURLOPT_CUSTOMREQUEST => 'POST',
+    //         CURLOPT_POSTFIELDS =>'{
+    //           "email": "",
+    //           "password": ""
+    //       }',
+    //         CURLOPT_HTTPHEADER => array(
+    //           'Content-Type: application/json'
+    //         ),
+    //       ));
           
-          $response = curl_exec($curl);
+    //       $response = curl_exec($curl);
 
-            curl_close($curl);
+    //         curl_close($curl);
 
-            $data = json_decode($response, true);
+    //         $data = json_decode($response, true);
 
-            return $data;
-    }
+    //         return $data;
+    // }
 
 
 /**
@@ -459,12 +459,6 @@ class PaymentController extends BaseController
         ],]);
         $payment_id = Yii::$app->request->get("payment_id");
         $response = $client->get('get_payment_status/'.$payment_id)->send();
-        // $client->createRequest()
-        // ->setMethod('POST')
-        // ->setUrl('http://127.0.0.1:8001/get_payment_status')
-        // ->setData(["payment_id" => 5508279060])
-        // ->send();
-
         $result=$response;
         return $result->getContent();
     }
@@ -520,16 +514,9 @@ class PaymentController extends BaseController
         ],]);
         $payment_id = Yii::$app->request->get("payment_id");
         $response = $client->get('get_payout_status/'.$payment_id)->send();
-        // $client->createRequest()
-        // ->setMethod('POST')
-        // ->setUrl('http://127.0.0.1:8001/get_payment_status')
-        // ->setData(["payment_id" => 5508279060])
-        // ->send();
-
         $result=$response;
         return $result->getContent();
     }
-
 
 
     /**
