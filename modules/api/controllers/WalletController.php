@@ -10,13 +10,13 @@ use app\models\Currency;
 use app\models\Chain;
 use app\models\Wallet;
 use app\models\WalletType;
-use app\models\WalletAddress;
 use app\models\PaymentUser;
 use app\models\PaymentStatus;
 use app\models\B2bPayment;
 use app\models\User;
 use app\models\History;
 use app\models\ChartChain;
+use app\models\WalletAddress;
 use Endroid\QrCode\Color\Color;
 use Endroid\QrCode\Encoding\Encoding;
 use Endroid\QrCode\ErrorCorrectionLevel\ErrorCorrectionLevelLow;
@@ -196,110 +196,7 @@ class WalletController extends BaseController
      * @throws HttpException
      */
 
-    public function actionGetApiStatus(){
-        $curl = curl_init();
-
-        curl_setopt_array($curl, array(
-        CURLOPT_URL => 'https://api.nowpayments.io/v1/status',
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_ENCODING => '',
-        CURLOPT_MAXREDIRS => 10,
-        CURLOPT_TIMEOUT => 0,
-        CURLOPT_FOLLOWLOCATION => true,
-        CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-        CURLOPT_CUSTOMREQUEST => 'GET',
-        ));
-
-        $response = curl_exec($curl);
-
-        curl_close($curl);
-        echo $response;
-    }
-
      public function actionInput()
-     {
-        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
-        if(!$this->user) {
-            Yii::$app->response->statusCode = 401;
-            return ["success" => false, "message" => "Token не найден"];
-        }
-        $history = History::find()->where(["user_id" => $this->user->id, "type" => 0, 'wallet_direct_id' => 12, 'status' => 0])->all();
-        if ($history) {
-            // Yii::$app->response->statusCode = 400;
-            // return ["success" => false, "message" => "Завершите предыдущие заявки на пополнение или обратитесь к технической поддержке"];
-            $history = new History(["date" => time(), "user_id" => $this->user->id, "type" => 0, 'wallet_direct_id' => 12, 'status' => 0]);
-        } else {
-            $history = new History(["date" => time(), "user_id" => $this->user->id, "type" => 0, 'wallet_direct_id' => 12, 'status' => 0]);
-        }
-
-        
-        $chart_id = Yii::$app->request->post("chart_id");
-        $history->end_chart_id = $chart_id;
-        $currency_id = Yii::$app->request->post("currency_id", 1);
-        $chain_id = Yii::$app->request->post("chain_id");
-        $history->start_chart_id = $history->end_chart_id;
-        
-        $history->start_price = (float)Yii::$app->request->post("price");
-
-        $chart = Chart::findOne($chart_id);
-        $currency = Currency::findOne($currency_id);
-        $chain = ChartChain::findOne($chain_id);
-        $history->end_price = 0;
-        if (!$chart) {
-            Yii::$app->response->statusCode = 400;
-            return ["success" => false, "message" => "Валюта не найдена"];
-        }
-        // $ipn_key = 'xk8OoaVpKYOWI7mPoeXwl9azuBd+dL4A';
-        $api_key = 'THBJKRT-Y5EMJSM-H95YDKQ-1RFRWS8';
-        // $tid = '477bf661-8cfb-428a-9ba9-1aba92dece9a';
-        
-        
-        $curl = curl_init();
-        
-        $order_id = rand(100000000,999999999);
-        curl_setopt_array($curl, array(
-            CURLOPT_URL => 'https://api.nowpayments.io/v1/invoice',
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_ENCODING => '',
-            CURLOPT_MAXREDIRS => 10,
-            CURLOPT_TIMEOUT => 0,
-            CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-            CURLOPT_CUSTOMREQUEST => 'POST',
-            CURLOPT_POSTFIELDS =>'{
-                "price_amount": '.$history->start_price.',
-                "price_currency": "usd",
-                "order_id": '.$order_id.',
-                "order_description": "GREENAVI PAYMENT",
-                "ipn_callback_url": "https://greenavi.com/api/payment/notice-ipn"
-              }
-              
-              ',
-            CURLOPT_HTTPHEADER => array(
-              'x-api-key: '.$api_key,
-              'Content-Type: application/json'
-            ),
-          ));
-
-
-        $response = curl_exec($curl);
-        
-        curl_close($curl);
-        
-        $data = json_decode($response, true);
-
-        $history->ipn_id = $data["id"];
-        
-        if(!$history->save()) {
-            Yii::$app->response->statusCode = 400;
-            return ["success" => false, "message" => "Ошибка создания ссылки"];
-        }
-
-        return $data;
-     }
-
-
-     public function actionInput_old4()
      {
         Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
         if(!$this->user) {
@@ -598,7 +495,7 @@ class WalletController extends BaseController
      * @SWG\Post(
      *    path = "/wallet/sell",
      *    tags = {"Wallet"},
-     *    summary = "Вывести криптовалюту",
+     *    summary = "Вывод криптовалюты",
      *    security={{"access_token":{}}},
      *    @SWG\Parameter(
      *      name="chart_id",
@@ -610,7 +507,7 @@ class WalletController extends BaseController
      *    @SWG\Parameter(
      *      name="price",
      *      in="body",
-     *      description="Сумма вывода",
+     *      description="Сумма продажи/вывода",
      *      required=true,
      *      @SWG\Schema(type="number")
      *     ),
@@ -664,30 +561,26 @@ class WalletController extends BaseController
         $history = new History(["date" => time(), "user_id" => $this->user->id, "type" => 0, 'wallet_direct_id' => 10]);
 
         $history->start_chart_id = (int)Yii::$app->request->post("chart_id");
-        $address = trim((int)Yii::$app->request->post("address"));
-        $history->ipn_id = $address;
-        if (!$address) {
-            Yii::$app->response->statusCode = 400;
-            return ["success" => false, "message" => "Укажите валидный адрес USDT"];
-        }
-
-
         $history->end_chart_id = 0;
         $history->start_price = (float)Yii::$app->request->post("price");
-
+        $history->ipn = trim(Yii::$app->request->post("address"));
+        if (!Yii::$app->request->post("address")) {
+            Yii::$app->response->statusCode = 400;
+            return ["success" => false, "message" => "Некорректный адрес"];
+        }
         $chart = Chart::findOne(['id' => $history->start_chart_id]);
         if (!$chart) {
             Yii::$app->response->statusCode = 400;
             return ["success" => false, "message" => "Валюта не найдена"];
         }
 
-        // $id = (int)Yii::$app->request->post("id");
-        // $payments = PaymentUser::find()->where(['user_id'=>$this->user->id, 'id' => $id])->all();
+        // $payment_id = (int)Yii::$app->request->post("payment_id");
+        // $payments = PaymentUser::find()->where(['user_id'=>$this->user->id, 'payment_id' => $payment_id])->all();
         // if (!$payments) {
         //     Yii::$app->response->statusCode = 400;
         //     return ["success" => false, "message" => "Указан не существующий метод вывода/продажи"];
         // }
-        // $history->payment_id = $id;
+        // $history->payment_id = $payment_id;
         
         $history->status = 0;
 
@@ -709,11 +602,13 @@ class WalletController extends BaseController
         // } else {
         // $history->end_price = (float)$this->price($chart->symbol, "RUB") * $history->start_price / 1;
         // }
+
         $history->end_price = $history->start_price;
+
 
         if(!$history->save()) {
             Yii::$app->response->statusCode = 400;
-            return ["success" => false, "message" => "Ошибка создания запроса"];
+            return ["success" => false, "message" => "Ошибка создания запроса", $history];
         }
 
         if(!$wallet->save()) {
@@ -748,13 +643,6 @@ class WalletController extends BaseController
      *      name="b2bpayments_ids",
      *      in="body",
      *      description="ИД карты продажи/вывода или курьер",
-     *      required=true,
-     *      @SWG\Schema(type="number")
-     *     ),
-     *    @SWG\Parameter(
-     *      name="type_id",
-     *      in="body",
-     *      description="курьер / карта (0-1)",
      *      required=true,
      *      @SWG\Schema(type="number")
      *     ),
@@ -814,7 +702,7 @@ class WalletController extends BaseController
         
         $b2bpayments = (array)Yii::$app->request->post("b2b_payments_ids");
 
-        $history->payment_id = (int)Yii::$app->request->post("type_id", 0);
+        $history->payment_id = 2000;
         $history->ipn_id = implode(",", $b2bpayments);
         
         $history->status = 0;
@@ -854,70 +742,7 @@ class WalletController extends BaseController
         return ["success" => true, "message" => "Запрос отправлен в обработку"];
     }
 
-/**
-     * @SWG\Post(
-     *    path = "/wallet/update-summa",
-     *    tags = {"Wallet"},
-     *    summary = "b2b обновление суммы карт",
-     *    security={{"access_token":{}}},
-     *    @SWG\Parameter(
-     *      name="id",
-     *      in="body",
-     *      description="ID карты",
-     *      required=true,
-     *      @SWG\Schema(type="integer")
-     *     ),
-     *    @SWG\Parameter(
-     *      name="summa",
-     *      in="body",
-     *      description="Сумма на карте",
-     *      required=true,
-     *      @SWG\Schema(type="number")
-     *     ),
-     *	  @SWG\Response(
-     *      response = 200,
-     *      description = "Заявка успешно создана",
-     *      @SWG\Schema(ref = "#/definitions/Result")
-     *    ),
-     *    @SWG\Response(
-     *      response = 400,
-     *      description = "Ошибка запроса",
-     *      @SWG\Schema(ref = "#/definitions/Result")
-     *    ),
-     *    @SWG\Response(
-     *      response = 403,
-     *      description = "Ошибка авторизации",
-     *      @SWG\Schema(ref = "#/definitions/Result")
-     *    ),
-     *)
-     * @throws HttpException
-     */
-    public function actionUpdateSumma()
-    {
-        //status 0 в обработке, 1 - выполнено, 2 - отменено
-        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
 
-        if(!$this->user) {
-            Yii::$app->response->statusCode = 401;
-            return ["success" => false, "message" => "Token не найден"];
-        }
-        
-        if (!in_array($this->user->verify_status, self::VERIFY_STATUS))
-        {
-            Yii::$app->response->statusCode = 401;
-            return ["success" => false, "message" => "Вам необходимо пройти полную верификацию для осуществления данной операции"];
-        }
-        $id = Yii::$app->request->post("id");
-        $summa = Yii::$app->request->post("summa");
-        $b2bpayments = B2bPayment::find()->where(['company_id' => $this->user->id,'id' => $id])->one();
-        $b2bpayments->summa = $summa;
-        if(!$b2bpayments->save()) {
-            Yii::$app->response->statusCode = 400;
-            return ["success" => false, "message" => "Ошибка сохранения суммы"];
-        }
-
-        return ["success" => true, "message" => "сумма обновлена"];
-    }
     
 
     /**
@@ -1538,12 +1363,12 @@ class WalletController extends BaseController
     
      protected function price($chart1, $chart2){
         
-        if ($chart1 == "CLV") {
+        if ($chart1 == "TCN") {
             $chart1 = "USDT";
         }
-        // if ($chart2 == "") {
-        //     $chart2 = "USDT";
-        // }
+        if ($chart2 == "TCN") {
+            $chart2 = "USDT";
+        }
 
         $curl = curl_init();
     
