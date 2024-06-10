@@ -260,7 +260,7 @@ class PaymentController extends BaseController
         $history = new History(["date" => time(), "user_id" => $this->user->id, "type" => 0, 'wallet_direct_id' => 10]);
 
         $history->start_chart_id = (int)Yii::$app->request->post("chart_id");
-        $chain_id = (int)Yii::$app->request->post("chain_id");
+        $chain_id = (int)Yii::$app->request->post("currency");
         $history->end_chart_id = 0;
         $history->start_price = (float)Yii::$app->request->post("amount");
         $history->ipn_id = trim(Yii::$app->request->post("address"));
