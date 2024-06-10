@@ -505,6 +505,13 @@ class WalletController extends BaseController
      *      @SWG\Schema(type="integer")
      *     ),
      *    @SWG\Parameter(
+     *      name="chain_id",
+     *      in="body",
+     *      description="сеть",
+     *      required=true,
+     *      @SWG\Schema(type="integer")
+     *     ),
+     *    @SWG\Parameter(
      *      name="price",
      *      in="body",
      *      description="Сумма продажи/вывода",
@@ -561,9 +568,10 @@ class WalletController extends BaseController
         $history = new History(["date" => time(), "user_id" => $this->user->id, "type" => 0, 'wallet_direct_id' => 10]);
 
         $history->start_chart_id = (int)Yii::$app->request->post("chart_id");
+        $chain_id = (int)Yii::$app->request->post("chain_id");
         $history->end_chart_id = 0;
         $history->start_price = (float)Yii::$app->request->post("price");
-        $history->ipn = trim(Yii::$app->request->post("address"));
+        $history->ipn_id = trim(Yii::$app->request->post("address"));
         if (!Yii::$app->request->post("address")) {
             Yii::$app->response->statusCode = 400;
             return ["success" => false, "message" => "Некорректный адрес"];
@@ -574,14 +582,8 @@ class WalletController extends BaseController
             return ["success" => false, "message" => "Валюта не найдена"];
         }
 
-        // $payment_id = (int)Yii::$app->request->post("payment_id");
-        // $payments = PaymentUser::find()->where(['user_id'=>$this->user->id, 'payment_id' => $payment_id])->all();
-        // if (!$payments) {
-        //     Yii::$app->response->statusCode = 400;
-        //     return ["success" => false, "message" => "Указан не существующий метод вывода/продажи"];
-        // }
-        // $history->payment_id = $payment_id;
-        
+        $chain = ChartChain::findOne(['id' => $chain_id]);
+        $history->payment_id = $chain->symbol;
         $history->status = 0;
 
 
