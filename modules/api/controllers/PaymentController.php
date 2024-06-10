@@ -233,10 +233,75 @@ class PaymentController extends BaseController
      */
     public function actionCreatePayout() {
         
+        //status 0 в обработке, 1 - выполнено, 2 - отменено
         Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+
+        if(!$this->user) {
+            Yii::$app->response->statusCode = 401;
+            return ["success" => false, "message" => "Token не найден"];
+        }
+        
+        if (!in_array($this->user->verify_status, self::VERIFY_STATUS))
+        {
+            Yii::$app->response->statusCode = 401;
+            return ["success" => false, "message" => "Вам необходимо пройти полную верификацию для осуществления данной операции"];
+        }
+
+        $history = History::find()->where(['user_id' => $this->user->id, 'status' => 0, 'type' => 0, 'wallet_direct_id' => 10])->all();
+        if ($history) {
+            Yii::$app->response->statusCode = 400;
+            return ["success" => false, "message" => "У вас уже есть не обработанные заявки на вывод"];
+        }
+        
+        $history = new History(["date" => time(), "user_id" => $this->user->id, "type" => 0, 'wallet_direct_id' => 10]);
+
+        $history->start_chart_id = (int)Yii::$app->request->post("chart_id");
+        $chain_id = (int)Yii::$app->request->post("chain_id");
+        $history->end_chart_id = 0;
+        $history->start_price = (float)Yii::$app->request->post("amount");
+        $history->ipn_id = trim(Yii::$app->request->post("address"));
+        if (!Yii::$app->request->post("address")) {
+            Yii::$app->response->statusCode = 400;
+            return ["success" => false, "message" => "Некорректный адрес"];
+        }
+        $chart = Chart::findOne(['id' => $history->start_chart_id]);
+        if (!$chart) {
+            Yii::$app->response->statusCode = 400;
+            return ["success" => false, "message" => "Валюта не найдена"];
+        }
+
+        $chain = ChartChain::findOne(['id' => $chain_id]);
+        $history->payment_id = $chain->id;
+        $history->status = 0;
+
+
+        $wallet = Wallet::findOne(["user_id" => $this->user->id, "chart_id" => $chart->id,'type' => 0]); //фин
+        if(!$wallet) {
+            Yii::$app->response->statusCode = 400;
+            return ["success" => false, "message" => "Счет не найден"];
+        }
+        $wallet->balance -= $history->start_price + $history->start_price * self::COMISSION_OUT / 100;
+        $wallet->blocked += $history->start_price + $history->start_price * self::COMISSION_OUT / 100;
+        if ($wallet->balance < 0) {
+            Yii::$app->response->statusCode = 400;
+            return ["success" => false, "message" => "Недостаточно средств на балансе"];
+        }
+
+        $history->end_price = $history->start_price;
+
+
+        if(!$history->save()) {
+            Yii::$app->response->statusCode = 400;
+            return ["success" => false, "message" => "Ошибка создания запроса", $history];
+        }
+
+        if(!$wallet->save()) {
+            Yii::$app->response->statusCode = 400;
+            return ["success" => false, "message" => "Ошибка сохранения счета"];
+        }
+
         $curl = curl_init();
         
-        $order_id = rand(100000000,999999999);
         curl_setopt_array($curl, array(
             CURLOPT_URL => 'http://127.0.0.1:8001/create_payout',
             CURLOPT_RETURNTRANSFER => true,
@@ -247,11 +312,10 @@ class PaymentController extends BaseController
             CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
             CURLOPT_CUSTOMREQUEST => 'POST',
             CURLOPT_POSTFIELDS =>'{
-                "address": "'.Yii::$app->request->post("address","TNdmEpN6AU2oSK7uAoPS4FaqW6okgNLTpk").'",
+                "address": "'.Yii::$app->request->post("address").'",
                 "amount": "'.Yii::$app->request->post("amount", 1).'",
-                "currency": "'.Yii::$app->request->post("currency",'usd').'",
-                "ipn_callback_url": "https://greenavi.com/api/payment/notice-ipn",
-                "jwt_token" : "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjUwOTk1OTU2NDEiLCJpYXQiOjE3MTc1MDQwMjQsImV4cCI6MTcxNzUwNDMyNH0.KbOG8tpP_oLj5Q9mEpBwb6oh7psD5_xaNn2TPPZkHfU"
+                "currency": "'.$chain->symbol.'",
+                "ipn_callback_url": "https://greenavi.com/api/payout/notice-ipn",
               }
               
               ',
@@ -267,7 +331,8 @@ class PaymentController extends BaseController
 
           $data = json_decode($response, true);
 
-          return $data;
+
+        return ["success" => true, "message" => "Запрос отправлен в обработку", $data];
 
 
         // $client = new Client();
