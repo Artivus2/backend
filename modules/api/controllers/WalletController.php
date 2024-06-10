@@ -225,6 +225,91 @@ class WalletController extends BaseController
         $currency = Currency::findOne($currency_id);
         $chain = ChartChain::findOne($chain_id);
         $history->end_price = 0;
+        if (!$chart) {
+            Yii::$app->response->statusCode = 400;
+            return ["success" => false, "message" => "Валюта не найдена"];
+        }
+        // $ipn_key = 'xk8OoaVpKYOWI7mPoeXwl9azuBd+dL4A';
+        // $api_key = 'THBJKRT-Y5EMJSM-H95YDKQ-1RFRWS8';
+        // $tid = '477bf661-8cfb-428a-9ba9-1aba92dece9a';
+        // $ipn_key = 'IPNHlwPz1ZKDqPscYIc3RnlpqrJvbqyJ';
+        $api_key = '2WMC682-ATF4WCE-NW0HZNC-5E7S427';
+        
+        $curl = curl_init();
+        
+        $order_id = rand(100000000,999999999);
+        curl_setopt_array($curl, array(
+            CURLOPT_URL => 'https://api.nowpayments.io/v1/invoice',
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => '',
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 0,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => 'POST',
+            CURLOPT_POSTFIELDS =>'{
+                "price_amount": '.$history->start_price.',
+                "price_currency": "usd",
+                "order_id": '.$order_id.',
+                "order_description": "GREENAVI PAYMENT",
+                "ipn_callback_url": "https://greenavi.com/api/payment/notice-ipn"
+              }
+              
+              ',
+            CURLOPT_HTTPHEADER => array(
+              'x-api-key: '.$api_key,
+              'Content-Type: application/json'
+            ),
+          ));
+
+
+        $response = curl_exec($curl);
+        
+        curl_close($curl);
+        
+        $data = json_decode($response, true);
+
+        $history->ipn_id = $data["id"];
+        
+        if(!$history->save()) {
+            Yii::$app->response->statusCode = 400;
+            return ["success" => false, "message" => "Ошибка создания ссылки"];
+        }
+
+        return $data;
+     }
+
+
+     
+     public function actionInput_old4()
+     {
+        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+        if(!$this->user) {
+            Yii::$app->response->statusCode = 401;
+            return ["success" => false, "message" => "Token не найден"];
+        }
+        $history = History::find()->where(["user_id" => $this->user->id, "type" => 0, 'wallet_direct_id' => 12, 'status' => 0])->all();
+        if ($history) {
+            // Yii::$app->response->statusCode = 400;
+            // return ["success" => false, "message" => "Завершите предыдущие заявки на пополнение или обратитесь к технической поддержке"];
+            $history = new History(["date" => time(), "user_id" => $this->user->id, "type" => 0, 'wallet_direct_id' => 12, 'status' => 0]);
+        } else {
+            $history = new History(["date" => time(), "user_id" => $this->user->id, "type" => 0, 'wallet_direct_id' => 12, 'status' => 0]);
+        }
+
+        
+        $chart_id = Yii::$app->request->post("chart_id");
+        $history->end_chart_id = $chart_id;
+        $currency_id = Yii::$app->request->post("currency_id", 1);
+        $chain_id = Yii::$app->request->post("chain_id");
+        $history->start_chart_id = $history->end_chart_id;
+        
+        $history->start_price = (float)Yii::$app->request->post("price");
+
+        $chart = Chart::findOne($chart_id);
+        $currency = Currency::findOne($currency_id);
+        $chain = ChartChain::findOne($chain_id);
+        $history->end_price = 0;
         // if (!$chart) {
         //     Yii::$app->response->statusCode = 400;
         //     return ["success" => false, "message" => "Валюта не найдена"];
