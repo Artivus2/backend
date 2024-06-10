@@ -35,6 +35,10 @@ use Web3\Providers\HttpProvider;
  */
 class PaymentController extends BaseController
 {
+    const VERIFY_STATUS = [0,1,2];
+    const COMISSION_IN = 0; //0% КОМИССИЯ
+    const COMISSION_OUT = 0.1; //0.1% КОМИССИЯ
+
     
     public function actionTest() {
 
