@@ -11,7 +11,7 @@ use yii\console\Controller;
 use yii\console\ExitCode;
 use app\models\Wallet;
 use app\models\History;
-use CoinRemitter\CoinRemitter;
+use app\models\ChartChain;
 
 class WalletController extends BaseController
 {
@@ -41,7 +41,7 @@ class WalletController extends BaseController
             CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
             CURLOPT_CUSTOMREQUEST => 'POST',
             CURLOPT_POSTFIELDS =>'{
-              "email": "Test.greenavi@mail.ru",
+              "email": "test.greenavi@mail.ru",
               "password": "M354at790!" 
           }',
             CURLOPT_HTTPHEADER => array(
@@ -172,8 +172,8 @@ class WalletController extends BaseController
 
         //create payout
 
-        foreach ($input_offers as $item) {
-
+        foreach ($output_offers as $item) {
+            $currency = ChartChain::findOne(['id' => $item->payment_id]);
             $curl = curl_init();
             curl_setopt_array($curl, array(
                 CURLOPT_URL => 'https://api.nowpayments.io/v1/payout',
@@ -185,13 +185,13 @@ class WalletController extends BaseController
                 CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
                 CURLOPT_CUSTOMREQUEST => 'POST',
                 CURLOPT_POSTFIELDS =>'{
-                  "ipn_callback_url": "https://greenavi.com/api/payment/notice-ipn",
+                  "ipn_callback_url": "https://greenavi.com/api/payout/notice-ipn",
                   "withdrawals": [
                       {
                           "address": "'.$item->ipn_id.'",
-                          "currency": "usdttrc20",
+                          "currency": "'.$currency->symbol.'",
                           "amount": '.$item->start_price.',
-                          "ipn_callback_url": "https://greenavi.com/api/payment/notice-ipn"
+                          "ipn_callback_url": "https://greenavi.com/api/payout/notice-ipn"
                       },
                   ]
               }',
@@ -203,8 +203,8 @@ class WalletController extends BaseController
               ));
               $response = curl_exec($curl);
               curl_close($curl);
+              var_dump($response);
               $data = json_decode($response, true);
-              
               //verify
 
 
