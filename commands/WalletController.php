@@ -59,7 +59,7 @@ class WalletController extends BaseController
         foreach ($input_offers as $item) {
             $curl = curl_init();
             curl_setopt_array($curl, array(
-                CURLOPT_URL => 'https://api.nowpayments.io/v1/payment/?invoiceId='.$item->ipn_id,
+                CURLOPT_URL => 'https://api.nowpayments.io/v1/payment/?invoiceId='.(int)$item->ipn_id,
                 CURLOPT_RETURNTRANSFER => true,
                 CURLOPT_ENCODING => '',
                 CURLOPT_MAXREDIRS => 10,
@@ -76,7 +76,7 @@ class WalletController extends BaseController
             $response = curl_exec($curl);
             curl_close($curl);
             $data = json_decode($response, true);
-            if (count($data["data"]) > 0) {
+            if ($data["data"]) {
                 $paid_amount = $data["data"][0]["actually_paid"] ?? 0;
                 $total_amount = $item->start_price;
                 $payment_id = $data["data"][0]["payment_id"];
@@ -164,7 +164,7 @@ class WalletController extends BaseController
 
 
         $output_offers = History::find()->where(['wallet_direct_id' => 10])->andWhere(['>=','status',0])->all();
-
+        $output_offers = [];
         if ($output_offers) {
             //to do validate adress
 
@@ -175,36 +175,43 @@ class WalletController extends BaseController
         foreach ($output_offers as $item) {
             $currency = ChartChain::findOne(['id' => $item->payment_id]);
             $curl = curl_init();
+            $curl = curl_init();
             curl_setopt_array($curl, array(
-                CURLOPT_URL => 'https://api.nowpayments.io/v1/payout',
-                CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_ENCODING => '',
-                CURLOPT_MAXREDIRS => 10,
-                CURLOPT_TIMEOUT => 0,
-                CURLOPT_FOLLOWLOCATION => true,
-                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-                CURLOPT_CUSTOMREQUEST => 'POST',
-                CURLOPT_POSTFIELDS =>'{
-                  "ipn_callback_url": "https://greenavi.com/api/payout/notice-ipn",
-                  "withdrawals": [
-                      {
-                          "address": "'.$item->ipn_id.'",
-                          "currency": "'.$currency->symbol.'",
-                          "amount": '.$item->start_price.',
-                          "ipn_callback_url": "https://greenavi.com/api/payout/notice-ipn"
-                      },
-                  ]
-              }',
-                CURLOPT_HTTPHEADER => array(
-                  'Authorization: Bearer '.$token,
-                  'x-api-key: '.$api_key,
-                  'Content-Type: application/json'
-                ),
-              ));
-              $response = curl_exec($curl);
-              curl_close($curl);
-              var_dump($response);
-              $data = json_decode($response, true);
+            CURLOPT_URL => 'https://api.nowpayments.io/v1/payout/'.$item->ipn_id,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => '',
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 0,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => 'GET',
+            CURLOPT_HTTPHEADER => array(
+              'x-api-key: '.$api_key
+            ),
+          ));
+          $response = curl_exec($curl);
+
+            curl_close($curl);
+
+            $data = json_decode($response, true);
+                
+                
+            var_dump($data);
+            $status = $data["data"]["withdrawals"][0]["status"];
+            $amount = $data["data"]["withdrawals"][0]["amount"];
+
+            if ($status == "FINISHED") {
+                
+            $item->status = -1;
+            $wallet = Wallet::findOne(["user_id" => $item->user_id, "chart_id" => $item->start_chart_id, "type" => 0]);
+            if(!$wallet) {
+                $wallet = new Wallet(["user_id" => $item->user_id, "chart_id" => $item->start_chart_id, "type" => 0]);
+            }
+            $wallet->blocked -= $amount;
+            $wallet->save();
+            $item->save();
+            }
+
               //verify
 
 

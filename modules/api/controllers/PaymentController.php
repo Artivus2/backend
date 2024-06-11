@@ -264,7 +264,7 @@ class PaymentController extends BaseController
         $chain_id = (int)Yii::$app->request->post("currency");
         $history->end_chart_id = 0;
         $history->start_price = (float)Yii::$app->request->post("amount");
-        $history->ipn_id = trim(Yii::$app->request->post("address"));
+        
         if (!Yii::$app->request->post("address")) {
             Yii::$app->response->statusCode = 400;
             return ["success" => false, "message" => "Некорректный адрес"];
@@ -317,6 +317,7 @@ class PaymentController extends BaseController
         $result = json_decode($response->getContent(), true);
 
         if (isset($result["id"])) {
+            $history->ipn_id = $result["id"];
             if(!$history->save()) {
                 Yii::$app->response->statusCode = 400;
                 return ["success" => false, "message" => "Ошибка создания запроса", $history];
