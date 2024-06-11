@@ -54,8 +54,8 @@ class WalletController extends BaseController
           $token = $auth["token"];
           curl_close($curl);
 
-  
-        $input_offers = History::find()->where(['wallet_direct_id' => 12])->andWhere(['>=','status',0])->all();
+          //проверка payment по ид
+        $input_offers = History::find()->where(['wallet_direct_id' => 12])->andWhere(['status' => 0])->all();
         foreach ($input_offers as $item) {
             $curl = curl_init();
             curl_setopt_array($curl, array(
@@ -89,7 +89,7 @@ class WalletController extends BaseController
             
 
                 if ($status == "failed") {
-                    $item->status = -4;
+                    $item->status = 5;
                     $wallet = Wallet::findOne(["user_id" => $item->user_id, "chart_id" => $item->start_chart_id, "type" => 0]);
                         if(!$wallet) {
                             $wallet = new Wallet(["user_id" => $item->user_id, "chart_id" => $item->start_chart_id, "balance" => 0, "type" => 0,  'balance' => $paid_amount]);
@@ -100,7 +100,7 @@ class WalletController extends BaseController
                 }
 
                 if ($status == "expired") {
-                    $item->status = -1;
+                    $item->status = 4;
                     $item->save();
                 }
                 
@@ -119,7 +119,7 @@ class WalletController extends BaseController
                 if ($status == "partially_paid") {
                     //недоплачен ждем просрочки
                     
-                    $item->status = -1;
+                    $item->status = 1;
                     //потом 1
                     
                     $wallet = Wallet::findOne(["user_id" => $item->user_id, "chart_id" => $item->start_chart_id, "type" => 0]);
@@ -135,7 +135,7 @@ class WalletController extends BaseController
 
                 if ($status == "overpaid") {
                     //добавляем но надо смотреть
-                    $item->status = -1;
+                    $item->status = 3;
                     
                     $wallet = Wallet::findOne(["user_id" => $item->user_id, "chart_id" => $item->start_chart_id, "type" => 0]);
                     if(!$wallet) {
@@ -168,13 +168,12 @@ class WalletController extends BaseController
         if ($output_offers) {
             //to do validate adress
 
-        //check balance
-
         //create payout
 
+
+        //проверка payout
         foreach ($output_offers as $item) {
             $currency = ChartChain::findOne(['id' => $item->payment_id]);
-            $curl = curl_init();
             $curl = curl_init();
             curl_setopt_array($curl, array(
             CURLOPT_URL => 'https://api.nowpayments.io/v1/payout/'.$item->ipn_id,
@@ -195,27 +194,24 @@ class WalletController extends BaseController
 
             $data = json_decode($response, true);
                 
-                
-            var_dump($data);
-            $status = $data["data"]["withdrawals"][0]["status"];
-            $amount = $data["data"]["withdrawals"][0]["amount"];
+            $status = $data["withdrawals"][0]["status"];
+            $amount = $data["withdrawals"][0]["amount"];
 
             if ($status == "FINISHED") {
                 
-            $item->status = -1;
+            $item->status = 1;
             $wallet = Wallet::findOne(["user_id" => $item->user_id, "chart_id" => $item->start_chart_id, "type" => 0]);
-            if(!$wallet) {
-                $wallet = new Wallet(["user_id" => $item->user_id, "chart_id" => $item->start_chart_id, "type" => 0]);
+            if ($wallet->balance < $wallet->blocked) {
+                $item->status = 2;
+            } else {
+                $wallet->blocked -= $amount;
             }
-            $wallet->blocked -= $amount;
+            
             $wallet->save();
             $item->save();
             }
 
-              //verify
-
-
-        
+      
         
             }
         

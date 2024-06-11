@@ -264,7 +264,7 @@ class PaymentController extends BaseController
         $chain_id = (int)Yii::$app->request->post("currency");
         $history->end_chart_id = 0;
         $history->start_price = (float)Yii::$app->request->post("amount");
-        
+        $history->ipn_id = trim(Yii::$app->request->post("address"));
         if (!Yii::$app->request->post("address")) {
             Yii::$app->response->statusCode = 400;
             return ["success" => false, "message" => "Некорректный адрес"];
@@ -316,8 +316,7 @@ class PaymentController extends BaseController
         
         $result = json_decode($response->getContent(), true);
 
-        if (isset($result["id"])) {
-            $history->ipn_id = $result["id"];
+        if ($result["detail"]["code"] == "SUCCESS") {
             if(!$history->save()) {
                 Yii::$app->response->statusCode = 400;
                 return ["success" => false, "message" => "Ошибка создания запроса", $history];
@@ -339,63 +338,39 @@ class PaymentController extends BaseController
 
     }
 
-    
-    public function actionGetAdminBalance() {
-        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
-        $api_key = '2WMC682-ATF4WCE-NW0HZNC-5E7S427';
-        $curl = curl_init();
-
-        curl_setopt_array($curl, array(
-        CURLOPT_URL => 'https://api.nowpayments.io/v1/balance',
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_ENCODING => '',
-        CURLOPT_MAXREDIRS => 10,
-        CURLOPT_TIMEOUT => 0,
-        CURLOPT_FOLLOWLOCATION => true,
-        CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-        CURLOPT_CUSTOMREQUEST => 'GET',
-        CURLOPT_HTTPHEADER => array(
-            'x-api-key: '.$api_key
-        ),
-        ));
-
-        $response = curl_exec($curl);
-        curl_close($curl);
-
-        $data = json_decode($response, true);
-
-        return $data;
+   
+    // public function actionGetJwtToken() {
         
-    }
+    //     Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
 
+    //     $curl = curl_init();
+    //     // https://api.nowpayments.io/v1/auth
+    //     curl_setopt_array($curl, array(
+    //         CURLOPT_URL => 'http://127.0.0.1:8001/get_jwt_token',
+    //         CURLOPT_RETURNTRANSFER => true,
+    //         CURLOPT_ENCODING => '',
+    //         CURLOPT_MAXREDIRS => 10,
+    //         CURLOPT_TIMEOUT => 0,
+    //         CURLOPT_FOLLOWLOCATION => true,
+    //         CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+    //         CURLOPT_CUSTOMREQUEST => 'POST',
+    //         CURLOPT_POSTFIELDS =>'{
+    //           "email": "",
+    //           "password": ""
+    //       }',
+    //         CURLOPT_HTTPHEADER => array(
+    //           'Content-Type: application/json'
+    //         ),
+    //       ));
+          
+    //       $response = curl_exec($curl);
 
-    public function actionGetPayout() {
-        
-        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
-        $api_key = '2WMC682-ATF4WCE-NW0HZNC-5E7S427';
-        //$payout_id = "5000885884";
-        $curl = curl_init();
-        curl_setopt_array($curl, array(
-            CURLOPT_URL => 'https://api.nowpayments.io/v1/payout/'.Yii::$app->request->get("payout_id"),
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_ENCODING => '',
-            CURLOPT_MAXREDIRS => 10,
-            CURLOPT_TIMEOUT => 0,
-            CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-            CURLOPT_CUSTOMREQUEST => 'GET',
-            CURLOPT_HTTPHEADER => array(
-              'x-api-key: '.$api_key
-            ),
-          ));
-          $response = curl_exec($curl);
+    //         curl_close($curl);
 
-            curl_close($curl);
+    //         $data = json_decode($response, true);
 
-            $data = json_decode($response, true);
-
-            return $data;
-    }
+    //         return $data;
+    // }
 
 
 /**
@@ -487,7 +462,7 @@ class PaymentController extends BaseController
      *)
      * @throws HttpException
      */
-    public function actionGetPayoutStatus_new() {
+    public function actionGetPayoutStatus() {
         
         //Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
 
@@ -501,13 +476,10 @@ class PaymentController extends BaseController
         'responseConfig' => [
             'format' => Client::FORMAT_JSON
         ],]);
-        $payout_id = Yii::$app->request->get("payout_id");
-        $response = $client->get('get_payout_status/'.$payout_id)->send();
+        $payment_id = Yii::$app->request->get("payment_id");
+        $response = $client->get('get_payout_status/'.$payment_id)->send();
         $result=$response;
         return $result->getContent();
-    
-
-    
     }
 
 
