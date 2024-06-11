@@ -316,7 +316,7 @@ class PaymentController extends BaseController
         
         $result = json_decode($response->getContent(), true);
 
-        if ($result["detail"]["code"] == "SUCCESS") {
+        if (isset($result["id"])) {
             if(!$history->save()) {
                 Yii::$app->response->statusCode = 400;
                 return ["success" => false, "message" => "Ошибка создания запроса", $history];
@@ -339,38 +339,32 @@ class PaymentController extends BaseController
     }
 
    
-    // public function actionGetJwtToken() {
+    public function actionGetPayout() {
         
-    //     Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+        $api_key = '2WMC682-ATF4WCE-NW0HZNC-5E7S427';
+        //$payout_id = "5000885884";
+        curl_setopt_array($curl, array(
+            CURLOPT_URL => 'https://api.nowpayments.io/v1/payout/'.Yii::$app->request->get("payout_id"),
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => '',
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 0,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => 'GET',
+            CURLOPT_HTTPHEADER => array(
+              'x-api-key: '.$api_key
+            ),
+          ));
+          $response = curl_exec($curl);
 
-    //     $curl = curl_init();
-    //     // https://api.nowpayments.io/v1/auth
-    //     curl_setopt_array($curl, array(
-    //         CURLOPT_URL => 'http://127.0.0.1:8001/get_jwt_token',
-    //         CURLOPT_RETURNTRANSFER => true,
-    //         CURLOPT_ENCODING => '',
-    //         CURLOPT_MAXREDIRS => 10,
-    //         CURLOPT_TIMEOUT => 0,
-    //         CURLOPT_FOLLOWLOCATION => true,
-    //         CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-    //         CURLOPT_CUSTOMREQUEST => 'POST',
-    //         CURLOPT_POSTFIELDS =>'{
-    //           "email": "",
-    //           "password": ""
-    //       }',
-    //         CURLOPT_HTTPHEADER => array(
-    //           'Content-Type: application/json'
-    //         ),
-    //       ));
-          
-    //       $response = curl_exec($curl);
+            curl_close($curl);
 
-    //         curl_close($curl);
+            $data = json_decode($response, true);
 
-    //         $data = json_decode($response, true);
-
-    //         return $data;
-    // }
+            return $data;
+    }
 
 
 /**
@@ -462,7 +456,7 @@ class PaymentController extends BaseController
      *)
      * @throws HttpException
      */
-    public function actionGetPayoutStatus() {
+    public function actionGetPayoutStatus_new() {
         
         //Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
 
@@ -476,10 +470,13 @@ class PaymentController extends BaseController
         'responseConfig' => [
             'format' => Client::FORMAT_JSON
         ],]);
-        $payment_id = Yii::$app->request->get("payment_id");
-        $response = $client->get('get_payout_status/'.$payment_id)->send();
+        $payout_id = Yii::$app->request->get("payout_id");
+        $response = $client->get('get_payout_status/'.$payout_id)->send();
         $result=$response;
         return $result->getContent();
+    
+
+    
     }
 
 
