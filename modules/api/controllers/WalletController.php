@@ -1245,8 +1245,8 @@ class WalletController extends BaseController
                 "name" => $wallet->chart->name,
                 "symbol" => $wallet->chart->symbol,
                 "price" => (float)$this->price($wallet->chart->symbol, "USD"),
-                "balance" => $balance * (float)$this->price($wallet->chart->symbol, "USD"),
-                "blocked" => $blocked,
+                "balance" => number_format($balance * (float)$this->price($wallet->chart->symbol, "USD"), 2,'.',''),
+                "blocked" => (float)$blocked,
                 "type" => $wallet->walletType->title,
                 "icon" => Url::to(["/images/icons/" . $wallet->chart->symbol . ".png"], "https"),
             ];
