@@ -1206,7 +1206,7 @@ class WalletController extends BaseController
         
         $wallet_query_fin = Wallet::find()->joinWith("chart")
         ->where(['wallet.user_id' => $this->user->id])
-        ->andWhere([">", "wallet.balance", 0])
+        ->andWhere([">=", "wallet.balance", 0])
         ->andWhere(["type" => $wallettype])
         ->all();
         
@@ -1245,7 +1245,7 @@ class WalletController extends BaseController
                 "name" => $wallet->chart->name,
                 "symbol" => $wallet->chart->symbol,
                 "price" => (float)$this->price($wallet->chart->symbol, "USD"),
-                "balance" => $balance,
+                "balance" => $balance * (float)$this->price($wallet->chart->symbol, "USD"),
                 "blocked" => $blocked,
                 "type" => $wallet->walletType->title,
                 "icon" => Url::to(["/images/icons/" . $wallet->chart->symbol . ".png"], "https"),
