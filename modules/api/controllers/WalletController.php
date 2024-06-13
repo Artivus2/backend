@@ -1225,28 +1225,28 @@ class WalletController extends BaseController
 
         foreach ($wallet_query_fin as $wallet) {
             $balance = $wallet->balance;
-            if ((float)$balance > 1) {
-                $result = number_format($balance, 2,'.','');
-            }
-            else {
-                $result = number_format($balance, 10,'.','');
-            }
+            // if ((float)$balance > 1) {
+            //     $result = number_format($balance, 2,'.','');
+            // }
+            // else {
+            //     $result = number_format($balance, 10,'.','');
+            // }
 
             $blocked = $wallet->blocked;
-            if ((float)$blocked > 1) {
-                $result_2 = number_format($blocked, 2,'.','');
-            }
-            else {
-                $result_2 = number_format($blocked, 10,'.','');
-            }
+            // if ((float)$blocked > 1) {
+            //     $result_2 = number_format($blocked, 2,'.','');
+            // }
+            // else {
+            //     $result_2 = number_format($blocked, 10,'.','');
+            // }
 
             $data[] = [
                 "id" => $wallet->chart_id,
                 "name" => $wallet->chart->name,
                 "symbol" => $wallet->chart->symbol,
                 "price" => (float)$this->price($wallet->chart->symbol, "USD"),
-                "balance" => $result,
-                "blocked" => $result_2,
+                "balance" => $balance,
+                "blocked" => $blocked,
                 "type" => $wallet->walletType->title,
                 "icon" => Url::to(["/images/icons/" . $wallet->chart->symbol . ".png"], "https"),
             ];
