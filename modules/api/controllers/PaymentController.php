@@ -38,7 +38,7 @@ class PaymentController extends BaseController
 {
     const VERIFY_STATUS = [0,1,2];
     const COMISSION_IN = 0; //0% КОМИССИЯ
-    const COMISSION_OUT = 0.1; //0.1% КОМИССИЯ
+    const COMISSION_OUT = 0; //0.1% КОМИССИЯ
 
     
     public function actionTest() {
@@ -143,40 +143,7 @@ class PaymentController extends BaseController
         
         return $response->getContent();
 
-        //     $curl = curl_init();
-        //     curl_setopt_array($curl, array(
-        //     CURLOPT_URL => 'http://127.0.0.1:8001/create_payment',
-        //     CURLOPT_RETURNTRANSFER => true,
-        //     CURLOPT_ENCODING => '',
-        //     CURLOPT_MAXREDIRS => 10,
-        //     CURLOPT_TIMEOUT => 0,
-        //     CURLOPT_FOLLOWLOCATION => true,
-        //     CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-        //     CURLOPT_CUSTOMREQUEST => 'POST',
-        //     CURLOPT_POSTFIELDS =>'{
-        //         "amount": "'.Yii::$app->request->post("amount", 101).'",
-        //         "currency": "'.Yii::$app->request->post("currency", "usdttrc20").'",
-        //         "order_id": "'.Yii::$app->request->post("order_id", 1).'",
-        //         "pay_currency": "'.Yii::$app->request->post("pay_currency", "btc").'"
-
-        //         }
                 
-        //         '
-        //     ,
-        //     CURLOPT_HTTPHEADER => array(
-        //         'Content-Type: application/json',
-        //       ),
-        // ));
-
-
-        //     $response = curl_exec($curl);
-
-        //     curl_close($curl);
-
-        //     $data = json_decode($response, true);
-
-        //     return $data;
-        
     }
 
 
@@ -252,11 +219,11 @@ class PaymentController extends BaseController
             return ["success" => false, "message" => "Вам необходимо пройти полную верификацию для осуществления данной операции"];
         }
 
-        $history = History::find()->where(['user_id' => $this->user->id, 'status' => 0, 'type' => 0, 'wallet_direct_id' => 10])->all();
-        if ($history) {
-            Yii::$app->response->statusCode = 400;
-            return ["success" => false, "message" => "У вас уже есть не обработанные заявки на вывод"];
-        }
+        //$history = History::find()->where(['user_id' => $this->user->id, 'status' => 0, 'type' => 0, 'wallet_direct_id' => 10])->all();
+        // if ($history) {
+        //     Yii::$app->response->statusCode = 400;
+        //     return ["success" => false, "message" => "У вас уже есть не обработанные заявки на вывод"];
+        // }
         
         $history = new History(["date" => time(), "user_id" => $this->user->id, "type" => 0, 'wallet_direct_id' => 10]);
 
@@ -317,8 +284,9 @@ class PaymentController extends BaseController
         $result = json_decode($response->getContent(), true);
 
         if (isset($result["id"])) {
-            if(!$history->save()) {
                 $history->ipn_id = $result["id"];
+            if(!$history->save()) {
+
                 Yii::$app->response->statusCode = 400;
                 return ["success" => false, "message" => "Ошибка создания запроса", $history];
                 }
@@ -340,38 +308,7 @@ class PaymentController extends BaseController
     }
 
    
-    // public function actionGetJwtToken() {
-        
-    //     Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
-
-    //     $curl = curl_init();
-    //     // https://api.nowpayments.io/v1/auth
-    //     curl_setopt_array($curl, array(
-    //         CURLOPT_URL => 'http://127.0.0.1:8001/get_jwt_token',
-    //         CURLOPT_RETURNTRANSFER => true,
-    //         CURLOPT_ENCODING => '',
-    //         CURLOPT_MAXREDIRS => 10,
-    //         CURLOPT_TIMEOUT => 0,
-    //         CURLOPT_FOLLOWLOCATION => true,
-    //         CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-    //         CURLOPT_CUSTOMREQUEST => 'POST',
-    //         CURLOPT_POSTFIELDS =>'{
-    //           "email": "",
-    //           "password": ""
-    //       }',
-    //         CURLOPT_HTTPHEADER => array(
-    //           'Content-Type: application/json'
-    //         ),
-    //       ));
-          
-    //       $response = curl_exec($curl);
-
-    //         curl_close($curl);
-
-    //         $data = json_decode($response, true);
-
-    //         return $data;
-    // }
+    
 
 
 /**
@@ -523,7 +460,147 @@ class PaymentController extends BaseController
        
     }
 
+    /**
+    * @SWG\Get(
+    *    path = "/payment/get-min-withdrawal-amount",
+    *    tags = {"Payment"},
+    *    summary = "get-min-withdrawal-amount",
+    *    security={{"access_token":{}}},
+    *    @SWG\Parameter(
+    *      name="type",
+    *      in="path",
+    *      type="string",
+    *      description="coin",
+    *      @SWG\Schema(type="string")
+    *     ),
+    *	  @SWG\Response(
+    *      response = 200,
+    *      description = "min_amount",
+    *      @SWG\Schema(
+    *          type="array",
+    *          @SWG\Items(ref="#/definitions/Result")
+    *      ),
+    *    ),
+    *    @SWG\Response(
+    *      response = 400,
+    *      description = "Ошибка запроса",
+    *      @SWG\Schema(ref = "#/definitions/Result")
+    *    ),
+    *    @SWG\Response(
+    *      response = 403,
+    *      description = "Ошибка авторизации",
+    *      @SWG\Schema(ref = "#/definitions/Result")
+    *    ),
+    *)
+    * @throws HttpException
+    */
+   public function actionGetMinWithdrawalAmount() {
+       
+       //Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+       
+        $curl = curl_init();
 
+        $coin = Yii::$app->request->get("coin",'usd');
+        $api_key = '2WMC682-ATF4WCE-NW0HZNC-5E7S427';
+       
+        $curl = curl_init();
+
+        curl_setopt_array($curl, array(
+            CURLOPT_URL => 'https://api.nowpayments.io/v1/payout-withdrawal/min-amount/'.$coin,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => '',
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 0,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => 'GET',
+            CURLOPT_HTTPHEADER => array(
+              'x-api-key: '.$api_key
+            ),
+          ));
+
+        
+        $response = curl_exec($curl);
+        curl_close($curl);
+        $data = json_decode($response, true); 
+        return $data;
+       
+      
+   }
+
+
+   /**
+    * @SWG\Get(
+    *    path = "/payment/get-min-payout-fee",
+    *    tags = {"Payment"},
+    *    summary = "get-min-payout-fee",
+    *    security={{"access_token":{}}},
+    *    @SWG\Parameter(
+    *      name="type",
+    *      in="path",
+    *      type="string",
+    *      description="currency",
+    *      @SWG\Schema(type="string")
+    *     ),
+    *    @SWG\Parameter(
+    *      name="type",
+    *      in="path",
+    *      type="integer",
+    *      description="amount",
+    *      @SWG\Schema(type="integer")
+    *     ),
+    *	  @SWG\Response(
+    *      response = 200,
+    *      description = "min_amount",
+    *      @SWG\Schema(
+    *          type="array",
+    *          @SWG\Items(ref="#/definitions/Result")
+    *      ),
+    *    ),
+    *    @SWG\Response(
+    *      response = 400,
+    *      description = "Ошибка запроса",
+    *      @SWG\Schema(ref = "#/definitions/Result")
+    *    ),
+    *    @SWG\Response(
+    *      response = 403,
+    *      description = "Ошибка авторизации",
+    *      @SWG\Schema(ref = "#/definitions/Result")
+    *    ),
+    *)
+    * @throws HttpException
+    */
+    public function actionGetPayoutFee() {
+       
+        //Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+        
+        $currency = Yii::$app->request->get("currency",'usdttrc20');
+        $amount = Yii::$app->request->get("amount",'100');
+        $curl = curl_init();
+        $api_key = '2WMC682-ATF4WCE-NW0HZNC-5E7S427';
+ 
+        curl_setopt_array($curl, array(
+           CURLOPT_URL => 'https://api.nowpayments.io/v1/payout/fee?currency='.$currency.'&amount='.$amount,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => '',
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 0,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => 'GET',
+            CURLOPT_HTTPHEADER => array(
+              'x-api-key: '.$api_key
+            ),
+        ));
+ 
+        $response = curl_exec($curl);
+        curl_close($curl);
+        $data = json_decode($response, true); 
+        return $data;
+        
+       
+    }
+   
 
 
     public function actionReadContract() {
