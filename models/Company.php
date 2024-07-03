@@ -40,7 +40,7 @@ class Company extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['user_id', 'inn', 'ogrn', 'name', 'address','phone','kpp','bank','bik','rs','ks','fio'], 'required'],
+            [['user_id', 'inn', 'ogrn', 'name', 'address','phone','kpp','bank','bik','ks','fio'], 'required'],
             [['user_id','main_okved','bank'], 'integer'],
             [['inn','phone'], 'string', 'min' => 10],
             [['ogrn'], 'string', 'min' => 13],

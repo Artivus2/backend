@@ -308,7 +308,7 @@ class CompanyController extends BaseController
         $rs = Yii::$app->request->post("rs");
         $ks = Yii::$app->request->post("ks");
 
-        if (!$inn || !$name || !$ogrn || !$address || !$kpp || !$fio || !$bank || !$bik || !$rs || !$ks) {
+        if (!$inn || !$name || !$ogrn || !$address || !$kpp || !$fio || !$bank || !$bik || !$ks) {
             Yii::$app->response->statusCode = 401;
             return ["success" => false, "message" => "Не все обязательные реквизиты заполнены"];
         }
@@ -328,7 +328,7 @@ class CompanyController extends BaseController
             $company->main_okved = $base_okved->id;
             $company->bank = Yii::$app->request->post("bank");
             $company->bik = Yii::$app->request->post("bik");
-            $company->rs = Yii::$app->request->post("rs");
+            $company->rs = Yii::$app->request->post("rs",'null');
             $company->ks = Yii::$app->request->post("ks");
             if(!$company->save()) {
                 Yii::$app->response->statusCode = 400;
