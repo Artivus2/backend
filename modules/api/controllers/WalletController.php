@@ -271,6 +271,8 @@ class WalletController extends BaseController
 
         $history->ipn_id = $data["id"];
         
+        $history->uuid = vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex(random_bytes(16)), 4));
+        
         if(!$history->save()) {
             Yii::$app->response->statusCode = 400;
             return ["success" => false, "message" => "Ошибка создания ссылки"];
@@ -1137,6 +1139,8 @@ class WalletController extends BaseController
             $status = PaymentStatus::findOne(['type' => $history->wallet_direct_id,'status_id' => $history->status]);
             $data[] = [
                 "id" => $history->id,
+                // "uuid" => vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex(random_bytes(16)), 4)),
+                "uuid" => $history->uuid,
                 "type" => $history->walletType->title,
                 "status" => $status->title,
                 "date" => date("Y-m-d H:i:s", $history->date),
@@ -1245,7 +1249,7 @@ class WalletController extends BaseController
                 "name" => $wallet->chart->name,
                 "symbol" => $wallet->chart->symbol,
                 "price" => (float)$this->price($wallet->chart->symbol, "USD"),
-                "balance" => number_format($balance * (float)$this->price($wallet->chart->symbol, "USD"), 2,'.',''),
+                "balance" => (float)number_format($balance * (float)$this->price($wallet->chart->symbol, "USD"), 2,'.',''),
                 "blocked" => (float)$blocked,
                 "type" => $wallet->walletType->title,
                 "icon" => Url::to(["/images/icons/" . $wallet->chart->symbol . ".png"], "https"),
