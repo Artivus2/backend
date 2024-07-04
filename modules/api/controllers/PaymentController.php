@@ -50,7 +50,7 @@ class PaymentController extends BaseController
      *    summary = "create-payment",
      *    security={{"access_token":{}}},
      *    @SWG\Parameter(
-     *      name="price_amount",
+     *      name="amount",
      *      in="body",
      *      description="amount",
      *      @SWG\Schema(type="integer")
@@ -62,9 +62,9 @@ class PaymentController extends BaseController
      *      @SWG\Schema(type="integer")
      *     ),
      *    @SWG\Parameter(
-     *      name="chart_id",
+     *      name="currency_id",
      *      in="body",
-     *      description="chart_id",
+     *      description="currency_id",
      *      @SWG\Schema(type="integer")
      *     ),
      *	  @SWG\Response(
@@ -109,16 +109,12 @@ class PaymentController extends BaseController
         $history->end_chart_id = $chart_id;
         $history->end_price = 0;
         $currency = Currency::findOne($currency_id);
-        if (!$chart) {
+        if (!$currency) {
             Yii::$app->response->statusCode = 400;
             return ["success" => false, "message" => "Валюта не найдена"];
         }
-        
+       
         $history->start_chart_id = $history->end_chart_id;
-        
-        
-        
-        //$currency = Currency::findOne($currency_id);
         $chain = ChartChain::findOne($chain_id);
         $data = [
             "amount" => $history->start_price, //сумма
@@ -127,11 +123,6 @@ class PaymentController extends BaseController
             "pay_currency" => $chain->symbol //usdttrc20 (id 56)
         ];
         $history->end_price = 0;
-        if (!$chart) {
-            Yii::$app->response->statusCode = 400;
-            return ["success" => false, "message" => "Валюта не найдена"];
-        }
-        
         
         $client = new Client([
             'baseUrl' => 'http://127.0.0.1:8001/',
