@@ -142,10 +142,12 @@ class PaymentController extends BaseController
         $response = $client
         ->post('create_payment', $data)
         ->send();
-
         
+        $result = json_decode($response->getContent(), true);
+        
+        return $result;
         $history->uuid = vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex(random_bytes(16)), 4));
-        $history->ipn_id = $data["id"];
+        $history->ipn_id = $data["payment_id"];
         if(!$history->save()) {
             Yii::$app->response->statusCode = 400;
             return ["success" => false, "message" => "Ошибка создания ссылки"];
