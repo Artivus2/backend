@@ -7,7 +7,7 @@ use yii\helpers\Url;
 use yii\web\Controller;
 use yii\httpclient\Client;
 use app\models\Chart;
-use app\models\Currerncy;
+use app\models\Currency;
 use app\models\ChartChain;
 use app\models\User;
 use app\models\Wallet;
