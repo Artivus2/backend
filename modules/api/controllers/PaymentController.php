@@ -49,34 +49,21 @@ class PaymentController extends BaseController
      *    summary = "create-payment",
      *    security={{"access_token":{}}},
      *    @SWG\Parameter(
-     *      name="payment_id",
-     *      in="body",
-     *      description="create-payment",
-     *      required=true,
-     *      @SWG\Schema(type="integer")
-     *     ),
-     *    @SWG\Parameter(
      *      name="price_amount",
      *      in="body",
-     *      description="price_amount",
+     *      description="amount",
      *      @SWG\Schema(type="integer")
      *     ),
      *    @SWG\Parameter(
-     *      name="price_currency",
+     *      name="chain_id",
      *      in="body",
-     *      description="price_amount",
+     *      description="chain_id",
      *      @SWG\Schema(type="integer")
      *     ),
      *    @SWG\Parameter(
-     *      name="order_id",
+     *      name="chart_id",
      *      in="body",
-     *      description="order_id",
-     *      @SWG\Schema(type="integer")
-     *     ),
-     *    @SWG\Parameter(
-     *      name="pay_currency",
-     *      in="body",
-     *      description="pay_currency",
+     *      description="chart_id",
      *      @SWG\Schema(type="integer")
      *     ),
      *	  @SWG\Response(
@@ -99,14 +86,53 @@ class PaymentController extends BaseController
      */
     public function actionCreatePayment() {
         
+        
         //Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
 
+        if(!$this->user) {
+            Yii::$app->response->statusCode = 401;
+            return ["success" => false, "message" => "Token не найден"];
+        }
+        
+        if (!in_array($this->user->verify_status, self::VERIFY_STATUS))
+        {
+            Yii::$app->response->statusCode = 401;
+            return ["success" => false, "message" => "Вам необходимо пройти полную верификацию для осуществления данной операции"];
+        }
+
+        
+        $history = new History(["date" => time(), "user_id" => $this->user->id, "type" => 0, 'wallet_direct_id' => 12, 'status' => 0]);
+        $chart_id = Yii::$app->request->post("chart_id"); //usdt (id 259)
+        $chain_id = Yii::$app->request->post("chain_id"); //usdttrc20 (id 56), usdterc20 (id 54)
+        $history->start_price = (float)Yii::$app->request->post("amount"); //сумма
+        $history->end_chart_id = $chart_id;
+        //$currency_id = Yii::$app->request->post("currency_id", 1);
+        $history->end_price = 0;
+        
+        if (!$chart) {
+            Yii::$app->response->statusCode = 400;
+            return ["success" => false, "message" => "Валюта не найдена"];
+        }
+        
+        $history->start_chart_id = $history->end_chart_id;
+        
+        
+        $chart = Chart::findOne($chart_id);
+        //$currency = Currency::findOne($currency_id);
+        $chain = ChartChain::findOne($chain_id);
         $data = [
-            "amount" => Yii::$app->request->post("amount",100),
-            "currency" => Yii::$app->request->post("currency","usdttrc20"),
-            "order_id" => Yii::$app->request->post("order_id","1"),
-            "pay_currency" => Yii::$app->request->post("pay_currency","btc")
+            "amount" => $history->start_price, //сумма
+            "currency" => $chain->symbol, //usdttrc20 (id 56)
+            "order_id" => rand(100000000,999999999),
+            "pay_currency" => $chart->symbol //usdt (id 259)
         ];
+        $history->end_price = 0;
+        if (!$chart) {
+            Yii::$app->response->statusCode = 400;
+            return ["success" => false, "message" => "Валюта не найдена"];
+        }
+        
+        
         $client = new Client([
             'baseUrl' => 'http://127.0.0.1:8001/',
             'requestConfig' => [
@@ -119,8 +145,15 @@ class PaymentController extends BaseController
         
         $response = $client
         ->post('create_payment', $data)
-        
         ->send();
+
+
+        $history->uuid = vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex(random_bytes(16)), 4));
+        $history->ipn_id = $data["id"];
+        if(!$history->save()) {
+            Yii::$app->response->statusCode = 400;
+            return ["success" => false, "message" => "Ошибка создания ссылки"];
+        }
         
         return $response->getContent();
 
