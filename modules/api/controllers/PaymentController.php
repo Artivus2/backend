@@ -106,7 +106,6 @@ class PaymentController extends BaseController
         $currency_id = Yii::$app->request->post("currency_id"); //usd (id 3)
         $chain_id = Yii::$app->request->post("chain_id"); //usdttrc20 (id 56), usdterc20 (id 54)
         $history->start_price = (float)Yii::$app->request->post("amount"); //сумма
-        $history->end_chart_id = $chart_id;
         $history->end_price = 0;
         $currency = Currency::findOne($currency_id);
         if (!$currency) {
@@ -114,8 +113,14 @@ class PaymentController extends BaseController
             return ["success" => false, "message" => "Валюта не найдена"];
         }
        
-        $history->start_chart_id = $history->end_chart_id;
         $chain = ChartChain::findOne($chain_id);
+        if (!$chain) {
+            Yii::$app->response->statusCode = 400;
+            return ["success" => false, "message" => "Сеть не найдена"];
+        }
+        $history->end_chart_id = $chain->chart_id;
+        $history->start_chart_id = $history->end_chart_id;
+        
         $data = [
             "amount" => $history->start_price, //сумма
             "currency" => $currency->symbol, //usd
