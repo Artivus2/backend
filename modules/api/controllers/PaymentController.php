@@ -7,6 +7,7 @@ use yii\helpers\Url;
 use yii\web\Controller;
 use yii\httpclient\Client;
 use app\models\Chart;
+use app\models\Currerncy;
 use app\models\ChartChain;
 use app\models\User;
 use app\models\Wallet;
@@ -102,14 +103,12 @@ class PaymentController extends BaseController
 
         
         $history = new History(["date" => time(), "user_id" => $this->user->id, "type" => 0, 'wallet_direct_id' => 12, 'status' => 0]);
-        $chart_id = Yii::$app->request->post("chart_id"); //usdt (id 259)
+        $currency_id = Yii::$app->request->post("currency_id"); //usd (id 3)
         $chain_id = Yii::$app->request->post("chain_id"); //usdttrc20 (id 56), usdterc20 (id 54)
         $history->start_price = (float)Yii::$app->request->post("amount"); //сумма
         $history->end_chart_id = $chart_id;
-        //$currency_id = Yii::$app->request->post("currency_id", 1);
         $history->end_price = 0;
-        
-        $chart = Chart::findOne($chart_id);
+        $currency = Currency::findOne($currency_id);
         if (!$chart) {
             Yii::$app->response->statusCode = 400;
             return ["success" => false, "message" => "Валюта не найдена"];
@@ -123,9 +122,9 @@ class PaymentController extends BaseController
         $chain = ChartChain::findOne($chain_id);
         $data = [
             "amount" => $history->start_price, //сумма
-            "currency" => $chain->symbol, //usdttrc20 (id 56)
-            "order_id" => rand(100000000,999999999),
-            "pay_currency" => $chart->symbol //usdt (id 259)
+            "currency" => $currency->symbol, //usd
+            "order_id" => (string)rand(100000000,999999999),
+            "pay_currency" => $chain->symbol //usdttrc20 (id 56)
         ];
         $history->end_price = 0;
         if (!$chart) {
@@ -148,7 +147,7 @@ class PaymentController extends BaseController
         ->post('create_payment', $data)
         ->send();
 
-
+        
         $history->uuid = vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex(random_bytes(16)), 4));
         $history->ipn_id = $data["id"];
         if(!$history->save()) {
