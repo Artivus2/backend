@@ -87,7 +87,7 @@ class PaymentController extends BaseController
     public function actionCreatePayment() {
         
         
-        //Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
 
         if(!$this->user) {
             Yii::$app->response->statusCode = 401;
@@ -109,6 +109,7 @@ class PaymentController extends BaseController
         //$currency_id = Yii::$app->request->post("currency_id", 1);
         $history->end_price = 0;
         
+        $chart = Chart::findOne($chart_id);
         if (!$chart) {
             Yii::$app->response->statusCode = 400;
             return ["success" => false, "message" => "Валюта не найдена"];
@@ -117,7 +118,7 @@ class PaymentController extends BaseController
         $history->start_chart_id = $history->end_chart_id;
         
         
-        $chart = Chart::findOne($chart_id);
+        
         //$currency = Currency::findOne($currency_id);
         $chain = ChartChain::findOne($chain_id);
         $data = [
