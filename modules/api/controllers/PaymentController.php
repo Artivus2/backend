@@ -145,12 +145,10 @@ class PaymentController extends BaseController
         
         $result = json_decode($response->getContent(), true);
         
-        return $result["payment_id"];
-        
         $history->uuid = vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex(random_bytes(16)), 4));
         
-        if (isset($result["payment_id"])) {
-            $history->ipn_id = $result["payment_id"];
+        if (isset($result["detail"]["payment_id"])) {
+            $history->ipn_id = $result["detail"]["payment_id"];
             if(!$history->save()) {
             Yii::$app->response->statusCode = 400;
             return ["success" => false, "message" => "Ошибка создания запроса"];
@@ -159,7 +157,7 @@ class PaymentController extends BaseController
             return ["success" => true, "message" => "Запрос отправлен в обработку", $result];
         
         } else {
-            return ["success" => false, "message" => "Ошибка ", $result];
+            return ["success" => false, "message" => "Ошибка", $result];
         }
 
                 
