@@ -12,6 +12,7 @@ use yii\console\ExitCode;
 use app\models\Wallet;
 use app\models\History;
 use app\models\ChartChain;
+use yii\httpclient\Client;
 
 class WalletController extends BaseController
 {
