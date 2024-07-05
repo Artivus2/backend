@@ -76,7 +76,7 @@ class WalletController extends BaseController
             
             // $response = curl_exec($curl);
             // curl_close($curl);
-            $data = GetPaymentStatus($item->ipn_id);
+            $data = $this->GetPaymentStatus($item->ipn_id);
             return $data;
             if ($data["data"]) {
                 $paid_amount = $data["data"][0]["actually_paid"] ?? 0;
