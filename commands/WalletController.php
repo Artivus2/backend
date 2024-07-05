@@ -16,6 +16,24 @@ use app\models\ChartChain;
 class WalletController extends BaseController
 {
 
+    protected function GetPaymentStatus($payment_id) {
+        
+                
+        $client = new Client([
+        'baseUrl' => 'http://127.0.0.1:8001/',
+        'requestConfig' => [
+            'format' => Client::FORMAT_JSON
+        ],
+        'responseConfig' => [
+            'format' => Client::FORMAT_JSON
+        ],]);
+        $response = $client->get('get_payment_status/'.$payment_id)->send();
+        $result=$response;
+        return $result->getContent();
+    }
+
+
+
     public function actionIndex()
     {
         set_time_limit(0);
@@ -54,37 +72,38 @@ class WalletController extends BaseController
           $token = $auth["token"];
           curl_close($curl);
 
-          //проверка payment по ид
-        $input_offers = History::find()->where(['wallet_direct_id' => 12])->andWhere(['status' => 0])->all();
+  
+        $input_offers = History::find()->where(['wallet_direct_id' => 12])->andWhere(['>=','status',0])->all();
         foreach ($input_offers as $item) {
-            $curl = curl_init();
-            curl_setopt_array($curl, array(
-                CURLOPT_URL => 'https://api.nowpayments.io/v1/payment/?invoiceId='.(int)$item->ipn_id,
-                CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_ENCODING => '',
-                CURLOPT_MAXREDIRS => 10,
-                CURLOPT_TIMEOUT => 0,
-                CURLOPT_FOLLOWLOCATION => true,
-                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-                CURLOPT_CUSTOMREQUEST => 'GET',
-                CURLOPT_HTTPHEADER => array(
-                'Authorization: Bearer '.$token,
-                'x-api-key: '.$api_key
-                ),
-              ));
+            // $curl = curl_init();
+            // curl_setopt_array($curl, array(
+            //     CURLOPT_URL => 'https://api.nowpayments.io/v1/payment/'.(int)$item->ipn_id,
+            //     CURLOPT_RETURNTRANSFER => true,
+            //     CURLOPT_ENCODING => '',
+            //     CURLOPT_MAXREDIRS => 10,
+            //     CURLOPT_TIMEOUT => 0,
+            //     CURLOPT_FOLLOWLOCATION => true,
+            //     CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            //     CURLOPT_CUSTOMREQUEST => 'GET',
+            //     CURLOPT_HTTPHEADER => array(
+            //     'Authorization: Bearer '.$token,
+            //     'x-api-key: '.$api_key
+            //     ),
+            //   ));
             
-            $response = curl_exec($curl);
-            curl_close($curl);
-            $data = json_decode($response, true);
+            // $response = curl_exec($curl);
+            // curl_close($curl);
+            $data = GetPaymentStatus($item->ipn_id);
+            return $data;
             if ($data["data"]) {
                 $paid_amount = $data["data"][0]["actually_paid"] ?? 0;
                 $total_amount = $item->start_price;
                 $payment_id = $data["data"][0]["payment_id"];
                 $status = $data["data"][0]["payment_status"];
-
+		var_dump($status);
                 //$total_amount = $invoice["data"]["total_amount"][$coin] ?? 0;
                 if ($status == "waiting") {
-                    echo "waiting".$payment_id;
+//                    echo "waiting".$payment_id;
                 }
             
 
@@ -119,7 +138,7 @@ class WalletController extends BaseController
                 if ($status == "partially_paid") {
                     //недоплачен ждем просрочки
                     
-                    $item->status = 1;
+                    $item->status = 2;
                     //потом 1
                     
                     $wallet = Wallet::findOne(["user_id" => $item->user_id, "chart_id" => $item->start_chart_id, "type" => 0]);
@@ -163,20 +182,18 @@ class WalletController extends BaseController
         // }       
 
 
-        $output_offers = History::find()->where(['wallet_direct_id' => 10])->andWhere(['>=','status',0])->all();
-        $output_offers = [];
+        $output_offers = History::find()->where(['wallet_direct_id' => 10])->andWhere(['status' => 0])->all();
         if ($output_offers) {
             //to do validate adress
 
+        //check balance
+
         //create payout
 
-
-        //проверка payout
         foreach ($output_offers as $item) {
-            $currency = ChartChain::findOne(['id' => $item->payment_id]);
             $curl = curl_init();
             curl_setopt_array($curl, array(
-            CURLOPT_URL => 'https://api.nowpayments.io/v1/payout/'.$item->ipn_id,
+            CURLOPT_URL => 'https://api.nowpayments.io/v1/payout/'.(int)$item->ipn_id,
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_ENCODING => '',
             CURLOPT_MAXREDIRS => 10,
@@ -196,22 +213,24 @@ class WalletController extends BaseController
                 
             $status = $data["withdrawals"][0]["status"];
             $amount = $data["withdrawals"][0]["amount"];
+//	    var_dump($data["withdrawals"][0]["status"]);
 
             if ($status == "FINISHED") {
                 
             $item->status = 1;
             $wallet = Wallet::findOne(["user_id" => $item->user_id, "chart_id" => $item->start_chart_id, "type" => 0]);
-            if ($wallet->balance < $wallet->blocked) {
-                $item->status = 2;
-            } else {
-                $wallet->blocked -= $amount;
+            if(!$wallet) {
+                $wallet = new Wallet(["user_id" => $item->user_id, "chart_id" => $item->start_chart_id, "type" => 0]);
             }
-            
+            $wallet->blocked -= $amount;
             $wallet->save();
             $item->save();
             }
 
-      
+              //verify
+
+
+        
         
             }
         
