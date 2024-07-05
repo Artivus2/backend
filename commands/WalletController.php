@@ -16,24 +16,6 @@ use app\models\ChartChain;
 class WalletController extends BaseController
 {
 
-    protected function GetPaymentStatus($payment_id) {
-        
-                
-        $client = new Client([
-        'baseUrl' => 'http://127.0.0.1:8001/',
-        'requestConfig' => [
-            'format' => Client::FORMAT_JSON
-        ],
-        'responseConfig' => [
-            'format' => Client::FORMAT_JSON
-        ],]);
-        $response = $client->get('get_payment_status/'.$payment_id)->send();
-        $result=$response;
-        return $result->getContent();
-    }
-
-
-
     public function actionIndex()
     {
         set_time_limit(0);
@@ -239,5 +221,21 @@ class WalletController extends BaseController
         
         
        
+    }
+
+    protected function GetPaymentStatus($payment_id) {
+        
+                
+        $client = new Client([
+        'baseUrl' => 'http://127.0.0.1:8001/',
+        'requestConfig' => [
+            'format' => Client::FORMAT_JSON
+        ],
+        'responseConfig' => [
+            'format' => Client::FORMAT_JSON
+        ],]);
+        $response = $client->get('get_payment_status/'.$payment_id)->send();
+        $result=$response;
+        return $result->getContent();
     }
 }
