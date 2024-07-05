@@ -83,6 +83,7 @@ class WalletController extends BaseController
                 $total_amount = $item->start_price;
                 $payment_id = $data["payment_id"];
                 $status = $data["payment_status"];
+                $payinhash = $data["payin_hash"];
 		        //var_dump($status);
                 //$total_amount = $invoice["data"]["total_amount"][$coin] ?? 0;
                 if ($status == "waiting") {
@@ -115,6 +116,7 @@ class WalletController extends BaseController
                     }
                     $wallet->balance += $paid_amount;
                     $wallet->save();
+                    $item->uuid = $payinhash;
                     $item->save();
                 }
                 
@@ -130,6 +132,7 @@ class WalletController extends BaseController
                     }
                     $wallet->balance += $paid_amount;
                     $wallet->save();
+                    $item->uuid = $payinhash;
                     $item->save();
                     
                     
@@ -146,6 +149,7 @@ class WalletController extends BaseController
                     $wallet->balance += $paid_amount;
                     $item->end_price = $paid_amount;
                     $wallet->save();
+                    $item->uuid = $payinhash;
                     $item->save();
                 }
             }
@@ -196,6 +200,7 @@ class WalletController extends BaseController
                 
             $status = $data["withdrawals"][0]["status"];
             $amount = $data["withdrawals"][0]["amount"];
+            $hash = $data["withdrawals"][0]["hash"] ?? null;
 //	    var_dump($data["withdrawals"][0]["status"]);
 
             if ($status == "FINISHED") {
@@ -207,6 +212,7 @@ class WalletController extends BaseController
             }
             $wallet->blocked -= $amount;
             $wallet->save();
+            $item->uuid = $hash;
             $item->save();
             }
 
@@ -220,6 +226,7 @@ class WalletController extends BaseController
                 $wallet->blocked -= $amount;
                 $wallet->balance += $amount;
                 $wallet->save();
+                $item->uuid = $hash;
                 $item->save();
                 }
 
