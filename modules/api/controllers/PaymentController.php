@@ -1059,6 +1059,8 @@ class PaymentController extends BaseController
                 Yii::$app->response->statusCode = 400;
                 return ["success" => false, "message" => "Ошибка сохранения способа оплаты"];
             }
+            
+            return ["success" => true, "message" => "Способ оплаты успешно добавлен"];
 
         } 
         if ((int)$b2b == 1) {
@@ -1095,7 +1097,11 @@ class PaymentController extends BaseController
                 Yii::$app->response->statusCode = 400;
                 return ["success" => false, "message" => "Ошибка сохранения способа оплаты b2b"];
             }
-        if ((int)$b2b !== 2) {
+        
+            return ["success" => true, "message" => "Курьер успешно добавлен"];
+        }
+
+        if ((int)$b2b == 2) {
             $value = Yii::$app->request->post("value");
             $bank = Yii::$app->request->post("payment_id");
             $payments_count = B2bPayment::find()->where(["user_id" => $this->user->id, "type" => 2])->count();
@@ -1111,16 +1117,10 @@ class PaymentController extends BaseController
                 return ["success" => false, "message" => "Ошибка сохранения расчетного счета"];
             }
 
-            }
-
-
+            return ["success" => true, "message" => "РС успешно добавлен"];    
         }
-        
-
 
         
-
-        return ["success" => true, "message" => "Способ оплаты / доставки / вывода успешно добавлен"];
     }
 
     /**
