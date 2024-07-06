@@ -1038,7 +1038,7 @@ class PaymentController extends BaseController
             return ["success" => false, "message" => "Token не найден"];
         }
         $b2b = Yii::$app->request->post("b2b");
-        if ((int)$b2b !== 1) {
+        if ((int)$b2b == 0 || $b2b == null) {
             
             $payment_id = Yii::$app->request->post("payment_id");
             //$payment = PaymentUser::find()->where(["user_id" => $this->user->id, "payment_id" => $payment_id])->one();
@@ -1060,7 +1060,8 @@ class PaymentController extends BaseController
                 return ["success" => false, "message" => "Ошибка сохранения способа оплаты"];
             }
 
-        } else {
+        } 
+        if ((int)$b2b == 1) {
 
             
             $payment_id = Yii::$app->request->post("payment_id");
