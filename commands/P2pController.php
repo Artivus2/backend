@@ -114,7 +114,7 @@ class P2pController extends BaseController
 
                     if($item->amount * $item->course > 0 && $item->amount * $item->course < 500) {
                         
-                        $history_onetwo = P2pHistory::find()->JoinWith(["ads"])->where(['p2p_ads_id' => $item->id, 'status' => [1,2]])->all();
+                        $history_onetwo = P2pHistory::find()->JoinWith(["ads"])->where(['p2p_ads_id' => $item->id, 'p2p_history.status' => [1,2]])->all();
                         if (!$history_onetwo) {
                             if($item->type == 2) {
                                 $wallet_seller = Wallet::find()->where(["user_id" => $item->user_id, "chart_id" => $item->chart_id,'type' => 0])->one();
@@ -136,7 +136,7 @@ class P2pController extends BaseController
         foreach ($historyb2b_six as $item) {
             if($item) {
                 if ($item->currency_id == 1) {
-                    $history_onetwo_b2b = B2bHistory::find()->JoinWith(["ads"])->where(['b2b_ads_id' => $item->id, 'status' => [1,2]])->all();
+                    $history_onetwo_b2b = B2bHistory::find()->JoinWith(["ads"])->where(['b2b_ads_id' => $item->id, 'b2b_history.status' => [1,2]])->all();
 
                     if($item->amount * $item->course > 0 && $item->amount * $item->course < 500) {
                         if (!$history_onetwo_b2b) {
