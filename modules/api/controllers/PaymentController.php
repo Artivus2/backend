@@ -1104,7 +1104,7 @@ class PaymentController extends BaseController
         if ((int)$b2b == 2) {
             $value = Yii::$app->request->post("value");
             $bank = Yii::$app->request->post("payment_id");
-            $payments_count = B2bPayment::find()->where(["user_id" => $this->user->id, "type" => 2])->count();
+            $payments_count = B2bPayment::find()->where(["company_id" => $this->user->id, "type" => 2])->count();
             
             if ($payments_count > 3) {
                 Yii::$app->response->statusCode = 400;
@@ -1439,7 +1439,7 @@ class PaymentController extends BaseController
 
     /**
      * @SWG\Delete(
-     *    path = "/payment/delete-b2bpayment",
+     *    path = "/payment/delete-b2b-payment",
      *    tags = {"Payment"},
      *    summary = "Удалить реквизит",
      *    security={{"access_token":{}}},
@@ -1469,7 +1469,7 @@ class PaymentController extends BaseController
      * @throws HttpException
      */
      
-    public function actionDeleteB2bpayment()
+    public function actionDeleteB2bPayment()
     {
         Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
 
@@ -1481,11 +1481,12 @@ class PaymentController extends BaseController
         
         $id = (int)Yii::$app->request->post("id");
         
-        $b2bpayment = B2bPayment::findOne(['id' => $id, 'company_id' => $this->user->id]);
+        $b2bpayment = B2bPayment::find()->where(['id' => $id, 'company_id' => $this->user->id])->one();
+        return $b2bpayment;
         if(!$b2bpayment->delete()) {
             return ["success" => false, "message" => "Реквизит не найден"];
         } else {
-            return ["success" => true, "message" => "Реквизит удален"];
+            return ["success" => true, "message" => "Реквизит удален", $b2bpayment];
         }
         
     }
