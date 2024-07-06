@@ -114,6 +114,8 @@ class P2pController extends BaseController
 
                     if($item->amount * $item->course > 0 && $item->amount * $item->course < 500) {
                         
+                        $history_onetwo = P2pHistory::find()->JoinWith(["ads"])->where(['p2p_ads_id' => $item->id, 'status' => [1,2]])->all();
+                        if (!$history_onetwo) {
                             if($item->type == 2) {
                                 $wallet_seller = Wallet::find()->where(["user_id" => $item->user_id, "chart_id" => $item->chart_id,'type' => 0])->one();
                                 $wallet_seller->balance += $item->amount;
@@ -122,6 +124,7 @@ class P2pController extends BaseController
                             $item->status = 9;
                             $item->amount = 0;
                             $item->save();
+                        }
                             
                         
                     }
@@ -133,9 +136,10 @@ class P2pController extends BaseController
         foreach ($historyb2b_six as $item) {
             if($item) {
                 if ($item->currency_id == 1) {
+                    $history_onetwo_b2b = B2bHistory::find()->JoinWith(["ads"])->where(['b2b_ads_id' => $item->id, 'status' => [1,2]])->all();
 
                     if($item->amount * $item->course > 0 && $item->amount * $item->course < 500) {
-                        
+                        if (!$history_onetwo_b2b) {
                             if($item->type == 2) {
                                 $wallet_seller = Wallet::find()->where(["user_id" => $item->company_id, "chart_id" => $item->chart_id,'type' => 1])->one();
                                 $wallet_seller->balance += $item->amount;
@@ -144,7 +148,7 @@ class P2pController extends BaseController
                             $item->status = 9;
                             $item->amount = 0;
                             $item->save();
-                            
+                        }    
                         
                     }
                 }
