@@ -255,11 +255,10 @@ class B2bController extends BaseController
             return ["success" => false, "message" => "Сумма ордера превышает текущий баланс кошелька"];
 
         }
-
+        
         if($b2b->type == 2) {
             $wallet->balance -= $b2b->amount; //резервирование средств с финансового кошелька для продажи криптовалюты
         }
-        
 
         if(!$wallet->save()) {
             Yii::$app->response->statusCode = 400;
