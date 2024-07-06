@@ -21,7 +21,6 @@ use app\models\B2bHistory;
 use app\models\B2bPayment;
 use app\models\P2pAds;
 use app\models\WalletAddress;
-use CoinRemitter\CoinRemitter;
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
@@ -941,7 +940,7 @@ class PaymentController extends BaseController
      *    @SWG\Parameter(
      *      name="type",
      *      in="body",
-     *      description="для b2b 0 - карты, 1 - курьер",
+     *      description="для b2b 0 - карты, 1 - курьер, 2 - рс",
      *      @SWG\Schema(type="integer")
      *     ),
      *    @SWG\Parameter(
@@ -1007,9 +1006,9 @@ class PaymentController extends BaseController
      *      @SWG\Schema(type="string")
      *     ),
      *    @SWG\Parameter(
-     *      name="history_id",
+     *      name="bank",
      *      in="body",
-     *      description="id history",
+     *      description="bank",
      *      @SWG\Schema(type="string")
      *     ),
      *	  @SWG\Response(
@@ -1048,19 +1047,9 @@ class PaymentController extends BaseController
             $payment = new PaymentUser(["user_id" => $this->user->id,'payment_id' => $payment_id,'active' => 1]);
             $payment->value = Yii::$app->request->post("value");
             $payment->payment_receiver = Yii::$app->request->post("payment_receiver");
-            //$payment->active = 1;
-
-            //} else {
-                //$payment->value = Yii::$app->request->post("value") ?? $payment->value;
-                //$payment->payment_receiver = Yii::$app->request->post("payment_receiver") ?? $payment->payment_receiver;
-                //$payment->active = 1;
-            //}
-
 
             $payments_count = PaymentUser::find()->where(["user_id" => $this->user->id, "active" => 1])->count();
             
-
-
             if ($payments_count > 10) {
                 Yii::$app->response->statusCode = 400;
                 return ["success" => false, "message" => "Превышено максимальное количество способов оплаты", $payments_count];
@@ -1101,11 +1090,27 @@ class PaymentController extends BaseController
             $b2bpayment->type = $type;
             $b2bpayment->bank = $bank;
             
-            if(!$b2bpayment->save()) {
+        if(!$b2bpayment->save()) {
                 Yii::$app->response->statusCode = 400;
                 return ["success" => false, "message" => "Ошибка сохранения способа оплаты b2b"];
             }
+        if ((int)$b2b !== 2) {
+            $value = Yii::$app->request->post("value");
+            $bank = Yii::$app->request->post("payment_id");
+            $payments_count = B2bPayment::find()->where(["user_id" => $this->user->id, "type" => 2])->count();
+            
+            if ($payments_count > 3) {
+                Yii::$app->response->statusCode = 400;
+                return ["success" => false, "message" => "Превышено максимальное количество расчетных счетов", $payments_count];
+            }
+            $b2bpayment = new B2bPayment(["company_id" => $this->user->id, 'payment_id' => $bank, 'value' => $value, 'type' => 2]);
+            $b2bpayment->description = 'расчетный счет';
+            if(!$b2bpayment->save()) {
+                Yii::$app->response->statusCode = 400;
+                return ["success" => false, "message" => "Ошибка сохранения расчетного счета"];
+            }
 
+            }
 
 
         }
@@ -1346,7 +1351,7 @@ class PaymentController extends BaseController
      * @SWG\Get(
      *    path = "/payment/courier-list",
      *    tags = {"Payment"},
-     *    summary = "Список курьеров или карт",
+     *    summary = "Список курьеров, карт или рс",
      *    security={{"access_token":{}}},
      *    @SWG\Parameter(
      *      name="id",
@@ -1365,7 +1370,7 @@ class PaymentController extends BaseController
      *    @SWG\Parameter(
      *      name="type",
      *      in="body",
-     *      description="Тип type 1 список карт type 0",
+     *      description="Тип type 1 список карт type 0, список РС type 2",
      *      required=true,
      *      @SWG\Schema(type="integer")
      *     ),

@@ -1135,7 +1135,7 @@ class B2bController extends BaseController
             ->andWhere($wheresummmin)
             ->andWhere($wheresummmax)
             ->andWhere($wherediscount)
-            ->andWhere($wherebank)
+//            ->andWhere($wherebank)
             ->all();
     
         } else {
@@ -1150,7 +1150,7 @@ class B2bController extends BaseController
             ->andWhere($wheresummmin)
             ->andWhere($wheresummmax)
             ->andWhere($wherediscount)
-            ->andWhere($wherebank)
+            //->andWhere($wherebank)
             ->all();
     
         }
