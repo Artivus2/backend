@@ -40,8 +40,8 @@ class Company extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['user_id', 'inn', 'ogrn', 'name', 'address','phone','kpp','bank','bik','ks','fio'], 'required'],
-            [['user_id','main_okved','bank'], 'integer'],
+            [['user_id', 'inn', 'ogrn', 'name', 'address','phone','kpp','fio'], 'required'],
+            [['user_id','main_okved'], 'integer'],
             [['inn','phone'], 'string', 'min' => 10],
             [['ogrn'], 'string', 'min' => 13],
             [['name', 'address'], 'string', 'max' => 255],
@@ -64,10 +64,10 @@ class Company extends \yii\db\ActiveRecord
             'kpp' => 'КПП',
             'fio' => 'ФИО',
             'phone' => 'Телефон',
-            'bank' => 'Банк',
-            'bik' => 'БИК',
-            'rs' => 'Расч счет',
-            'ks' => 'Корр счет'
+            // 'bank' => 'Банк',
+            // 'bik' => 'БИК',
+            // 'rs' => 'Расч счет',
+            // 'ks' => 'Корр счет'
         ];
     }
 
@@ -78,7 +78,7 @@ class Company extends \yii\db\ActiveRecord
 
     public function getBankList()
     {
-        return $this->hasOne(Banks::class, ['id' => 'bank']);
+        return $this->hasMany(B2bPayment::class, ['user_id' => 'company_id']);
     }
 
 

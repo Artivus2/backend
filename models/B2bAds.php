@@ -10,6 +10,7 @@ use Yii;
  * @SWG\Property(property="uuid", type="string", description="uuid ордера")
  * @SWG\Property(property="type", type="integer", description="Покупка (2) / продажа (1)")
  * @SWG\Property(property="company_id", type="integer", description="ID компании = привязанного user_id к компании")
+ * @SWG\Property(property="id_rs", type="integer", description="ID РС")
  * @SWG\Property(property="company", type="string", description="название компании")
  * @SWG\Property(property="b_status", type="integer", description="Статус предприятия")
  * @SWG\Property(property="chart_id", type="integer", description="Идентификатор используемой криптовалюты")
@@ -53,8 +54,8 @@ class B2bAds extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['company_id', 'chart_id', 'wallet_id', 'min_limit', 'max_limit', 'amount', 'start_amount', 'course', 'date'], 'required'],
-            [['company_id', 'chart_id', 'wallet_id', 'type', 'date', 'status', 'currency_id','main_okved'], 'integer'],
+            [['company_id', 'chart_id', 'wallet_id', 'min_limit', 'max_limit', 'amount', 'start_amount', 'course', 'date','id_rs'], 'required'],
+            [['company_id', 'chart_id', 'wallet_id', 'type', 'date', 'status', 'currency_id','main_okved','id_rs'], 'integer'],
             [['min_limit', 'amount','start_amount','course', 'max_limit','discount'], 'number'],
             [['description'], 'string', 'max' => 255]
             
@@ -100,11 +101,6 @@ class B2bAds extends \yii\db\ActiveRecord
         return $this->hasOne(Okveds::class, ['id' => 'main_okved']);
     }
 
-    // public function getBank()
-    // {
-    //     return $this->hasOne(Banks::class, ['id' => 'bank_id']);
-    // }
-
     
 
     /**
@@ -115,6 +111,7 @@ class B2bAds extends \yii\db\ActiveRecord
         return [
             'id' => 'ID',
             'company_id' => 'Company ID',
+            'id_rs' => 'ID РС',
             'chart_id' => 'Chart ID',
             'currency_id' => 'Currency ID',
             'wallet_id' => 'Wallet ID',

@@ -105,6 +105,12 @@ class B2bController extends BaseController
      *      @SWG\Schema(type="integer")
      *     ),
      *    @SWG\Parameter(
+     *      name="id_rs",
+     *      in="body",
+     *      description="ид РС",
+     *      @SWG\Schema(type="integer")
+     *     ),
+     *    @SWG\Parameter(
      *      name="description",
      *      in="body",
      *      description="условия сделки",
@@ -153,13 +159,17 @@ class B2bController extends BaseController
         
 
         $status = -1;  //создать ордер
-        $b2b = new B2bAds(["date" => time(), "company_id" => $this->user->id]);
-        $b2b->currency_id = Yii::$app->request->post("currency_id",1);
-        $b2b->description = Yii::$app->request->post("description", 'стандартные условия');
+        $id_rs = Yii::$app->request->post("id_rs"); //ид РС
+        if(!$id_rs) {
+            Yii::$app->response->statusCode = 401;
+            return ["success" => false, "message" => "Не указан расчетный счет"];
+        }
 
+        $b2b = new B2bAds(["date" => time(), "company_id" => $this->user->id,'id_rs' => $id_rs]);
         
-
-
+        $b2b->currency_id = Yii::$app->request->post("currency_id",1);
+        
+        $b2b->description = Yii::$app->request->post("description", 'стандартные условия');
         
         $b2b->amount = (float)Yii::$app->request->post("amount"); //количество для продажи
         $b2b->start_amount = $b2b->amount;
@@ -221,7 +231,7 @@ class B2bController extends BaseController
             return ["success" => false, "message" => "Валюта не входит в список доступных для b2b"];
         }
         
-        $paymentsIDs = [1000];
+        $paymentsIDs = $id_rs;
 
         
         $wallet = Wallet::findOne(["user_id" => $this->user->id, "chart_id" =>$chart->id, 'type' => 1]); //
@@ -353,6 +363,12 @@ class B2bController extends BaseController
      *      @SWG\Schema(type="integer")
      *     ),
      *    @SWG\Parameter(
+     *      name="id_rs",
+     *      in="body",
+     *      description="ид РС",
+     *      @SWG\Schema(type="integer")
+     *     ),
+     *    @SWG\Parameter(
      *      name="description",
      *      in="body",
      *      description="условия сделки",
@@ -391,7 +407,14 @@ class B2bController extends BaseController
             return ["success" => false, "message" => "Вам необходимо пройти полную верификацию для осуществления данной операции"];
         }
 
-        $b2b = new B2bAds(["date" => time(), "company_id" => $this->user->id]);
+        $id_rs = Yii::$app->request->post("id_rs"); //ид РС
+        if(!$id_rs) {
+            Yii::$app->response->statusCode = 401;
+            return ["success" => false, "message" => "Не указан расчетный счет"];
+        }
+
+        $b2b = new B2bAds(["date" => time(), "company_id" => $this->user->id,'id_rs' => $id_rs]);
+
         $b2b->currency_id = Yii::$app->request->post("currency_id", 1);
         
         $b2b->description = Yii::$app->request->post("description", 'стандартные условия');
@@ -494,7 +517,7 @@ class B2bController extends BaseController
 
         $company_payment = Company::find()->where(['user_id' => $this->user->id])->all();
         foreach ($company_payment as $payment) {
-            if (!$payment->inn || !$payment->name || !$payment->ogrn || !$payment->address || !$payment->kpp || !$payment->fio || !$payment->bank || !$payment->bik || !$payment->rs || !$payment->ks) {
+            if (!$payment->inn || !$payment->name || !$payment->ogrn || !$payment->address || !$payment->kpp || !$payment->fio) {
                 Yii::$app->response->statusCode = 401;
                 return ["success" => false, "message" => "Не все обязательные реквизиты заполнены для создания ордера, заполните их в профиле компании"];
             }
@@ -937,7 +960,7 @@ class B2bController extends BaseController
      *      type="number",
      *     ),
      *    @SWG\Parameter(
-     *      name="bank",
+     *      name="bank_id",
      *      in="path",
      *      description="фильтр по банку",
      *      type="integer",
@@ -1114,13 +1137,13 @@ class B2bController extends BaseController
 
         $bank = Yii::$app->request->get("bank_id");
 
-        if (!$bank) {
-            $wherebank = ["currency.active" => 1];
+        // if (!$bank) {
+        //     $wherebank = ["currency.active" => 1];
             
-        }
-        else {
-            $wherebank = ["company.bank" => $bank];
-        }
+        // }
+        // else {
+        //     $wherebank = ["b2b_payment.payment_id" => $bank];
+        // }
         
                 
         $data = [];
@@ -1135,7 +1158,7 @@ class B2bController extends BaseController
             ->andWhere($wheresummmin)
             ->andWhere($wheresummmax)
             ->andWhere($wherediscount)
-//            ->andWhere($wherebank)
+            //->andWhere($wherebank)
             ->all();
     
         } else {
@@ -1182,17 +1205,29 @@ class B2bController extends BaseController
                         $history->price = rtrim($history->price, '0');
                     }
                     
-                    //$history_payment = PaymentUser::find()->joinwith(['type'])->where(['user_id' => $history->creator_id, "payment_id" => $history->payment_id])->one();                    
-                    //$history_company_payment = 
+                    
+                    //фильтр по рс и банку
+                    $b2b_payments = B2bPayment::find(['id' => $item->id_rs, 'type' => 2])->one();
+                    if (!$b2b_payments) {
+                        continue;
+                    }
+                    
+                    if ($bank) {
+                        $b2b_payments_wb = B2bPayment::find(['id' => $item->id_rs, 'payment_id' => $bank, 'type' => 2])->all();
+                        if (!$b2b_payments_wb) {
+                            continue;
+                        }
+                    }
+
                     $historys[]=[
                         "order_id" => $history->b2b_ads_id,
                         "volume" => $history->price,
                         "start_date" => date("Y-m-d H:i:s", $history->start_date),
                         "end_date" => date("Y-m-d H:i:s", $history->end_date),
-                        "bank" => $history->company->bank??'не указан',
-                        "bik" => $history->company->bik??'не указан',
-                        "rs" => $history->company->rs??'не указан',
-                        "ks" => $history->company->ks??'не указан',
+                        "bank" => $b2b_payments->bank ?? 'не указан',
+                        "bik" => $b2b_payments->bik ?? 'не указан',
+                        "rs" => $b2b_payments->value ?? 'не указан',
+                        "ks" => $b2b_payments->ks ?? 'не указан',
                         "phone" => $history->company->phone??'не указан',
                         "author_id" => $history->author_id,
                         "creator_id" => $history->creator_id,
@@ -1214,17 +1249,32 @@ class B2bController extends BaseController
                                 $history->price = rtrim($history->price, '0');
                             }
                             
-                            //$history_payment = PaymentUser::find()->joinwith(['type'])->where(['user_id' => $history->creator_id, "payment_id" => $history->payment_id])->one();
+                            //фильтр по рс и банку
+                            $b2b_payments = B2bPayment::find(['id' => $item->id_rs, 'type' => 2])->one();
+                            if (!$b2b_payments) {
+                                continue;
+                            }
+                            
+                            if ($bank) {
+                                $b2b_payments_wb = B2bPayment::find(['id' => $item->id_rs, 'payment_id' => $bank, 'type' => 2])->all();
+                                if (!$b2b_payments_wb) {
+                                    continue;
+                                }
+                            }
 
                             $historys[]=[
                                 "order_id" => $history->b2b_ads_id,
                                 "volume" => $history->price,
                                 "start_date" => date("Y-m-d H:i:s", $history->start_date),
                                 "end_date" => date("Y-m-d H:i:s", $history->end_date),
-                                "bank" => $history->company->bank??'не указан',
-                                "bik" => $history->company->bik??'не указан',
-                                "rs" => $history->company->rs??'не указан',
-                                "ks" => $history->company->ks??'не указан',
+                                "bank" => $b2b_payments->bank ?? 'не указан',
+                                "bik" => $b2b_payments->bik ?? 'не указан',
+                                "rs" => $b2b_payments->value ?? 'не указан',
+                                "ks" => $b2b_payments->ks ?? 'не указан',
+                                // "bank" => $history->company->bank??'не указан',
+                                // "bik" => $history->company->bik??'не указан',
+                                // "rs" => $history->company->rs??'не указан',
+                                // "ks" => $history->company->ks??'не указан',
                                 "phone" => $history->company->phone??'не указан',
                                 "author_id" => $history->author_id,
                                 "creator_id" => $history->creator_id,
@@ -1273,12 +1323,12 @@ class B2bController extends BaseController
 
 
           
-
+            $bankb2b = B2bPayment::find(['company_id' => $this->user->id, 'payment_id' => $item->id_rs,'type' => 2])->one();
             $data[] = [
                 "order_id" => $item->id,
                 "uuid" => (int)$item->uuid,
 	            "date" => date("Y-m-d H:i:s", $item->date),
-                "bank" => $bank,
+                "bank" => $bankb2b->bank,
                 "company_id" => $item->user->id,
                 "company" => $item->company->name,
                 "verify_status" => $item->user->verify_status,
@@ -2242,9 +2292,7 @@ class B2bController extends BaseController
         $data = [];
         $b2bAds_query = B2bHistory::find()->joinwith(['ads'])
         ->where($whereid)
-
         ->andwhere($wherestatush)
-
         ->all();
 
         foreach ($b2bAds_query as $item)
@@ -2289,7 +2337,7 @@ class B2bController extends BaseController
                         $item->ads->course = number_format($item->ads->course, 2, '.','');
                     }
 
-
+                    $b2b_payments = B2bPayment::find(['id' => $item->ads->id_rs, 'type' => 2])->one();
                     $data[] = [
                     "b2b_ads_id" => $item->ads->id,
                     "uuid" => $item->ads->uuid,
@@ -2312,18 +2360,20 @@ class B2bController extends BaseController
                     "max_limit" => (float)$item->ads->max_limit,
                     "author_id" => $item->author_id,
                     "author" => $author_info->name ?? null,
+                    "author_rs" => B2bPayment::find(['company_id' => $item->author_id, 'type' => 2])->all(),
                     "author_bank" => $author_info->bank ?? null,
                     "author_bik" => $author_info->bik ?? null,
-                    "author_rs" => $author_info->rs ?? null,
+                    "author_rs" => $author_info->value ?? null,
                     "author_ks" => $author_info->ks ?? null,
                     "author_phone" => $author_info->phone ?? null,
                     "avatar_author" => $item->user->avatar,
                     "creator" => $item->company->name,
-                    "creator_bank" => $item->company->bank,
                     "creator_id" => $item->creator_id,
-                    "creator_bik" => $item->company->bik,
-                    "creator_rs" => $item->company->rs,
-                    "creator_ks" => $item->company->ks,
+                    "creator_rs" => B2bPayment::find(['company_id' => $item->creator_id, 'type' => 2])->all(),
+                    // "creator_bank" => $item->company->bank,
+                    // "creator_bik" => $item->company->bik,
+                    // "creator_rs" => $item->company->rs,
+                    // "creator_ks" => $item->company->ks,
                     "creator_phone" => $item->company->phone,
                     "avatar_creator" => $item->ads->user->avatar,
                     "status" => $item->ads->status,

@@ -21,7 +21,6 @@ use Yii;
  * @SWG\Property(property="description", type="string")
  * @SWG\Property(property="summa", type="number")
  * @SWG\Property(property="type", type="integer")
- * @SWG\Property(property="bank", type="string")
  */
 class B2bPayment extends \yii\db\ActiveRecord
 {
@@ -39,7 +38,7 @@ class B2bPayment extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [["company_id",'summa'], 'required'],
+            [["company_id"], 'required'],
             [['payment_id',"company_id",'type'], 'integer'],
 
         ];
@@ -54,6 +53,12 @@ class B2bPayment extends \yii\db\ActiveRecord
     public function getPaymentCompany()
     {
         return $this->hasOne(PaymentUser::class, ['user_id' => 'company_id', "payment_id" => 'payment_id']);
+    }
+
+
+    public function getB2bPayment()
+    {
+        return $this->hasOne(B2bPayment::class, ['user_id' => 'company_id', "payment_id" => 'payment_id']);
     }
 
 
@@ -77,6 +82,8 @@ class B2bPayment extends \yii\db\ActiveRecord
             'value' => 'Номер карты',
             'payment_receiver' => 'Получатель',
             'bank' => 'Банк',
+            'ks' => 'ks',
+            'bik' => 'БИК',
 
         ];
 

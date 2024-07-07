@@ -1104,6 +1104,9 @@ class PaymentController extends BaseController
         if ((int)$b2b == 2) {
             $value = Yii::$app->request->post("value");
             $bank = Yii::$app->request->post("payment_id");
+            $bankname = Yii::$app->request->post("bank");
+            $bik = Yii::$app->request->post("bik");
+            $ks = Yii::$app->request->post("ks");
             $payments_count = B2bPayment::find()->where(["company_id" => $this->user->id, "type" => 2])->count();
             
             if ($payments_count > 3) {
@@ -1112,6 +1115,9 @@ class PaymentController extends BaseController
             }
             $b2bpayment = new B2bPayment(["company_id" => $this->user->id, 'payment_id' => $bank, 'value' => $value, 'type' => 2]);
             $b2bpayment->description = 'расчетный счет';
+            $b2bpayment->bik = $bik;
+            $b2bpayment->ks = $ks;
+            $b2bpayment->bank = $bankname;
             if(!$b2bpayment->save()) {
                 Yii::$app->response->statusCode = 400;
                 return ["success" => false, "message" => "Ошибка сохранения расчетного счета"];
@@ -1350,7 +1356,7 @@ class PaymentController extends BaseController
 
      /**
      * @SWG\Get(
-     *    path = "/payment/courier-list",
+     *    path = "/payment/get-payments",
      *    tags = {"Payment"},
      *    summary = "Список курьеров, карт или рс",
      *    security={{"access_token":{}}},
@@ -1396,7 +1402,7 @@ class PaymentController extends BaseController
      *)
      * @throws HttpException
      */
-    public function actionCourierList()
+    public function actionGetPayments()
     {
         Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
 
@@ -1426,7 +1432,8 @@ class PaymentController extends BaseController
 
 
         $payment_query = B2bPayment::find()
-        ->where($wherecompany)
+        ->where(['company_id' => $this->user->id])
+        ->andwhere($wherecompany)
         ->andWhere($whereid)
         ->andWhere(['type' => $type])
         ->all();

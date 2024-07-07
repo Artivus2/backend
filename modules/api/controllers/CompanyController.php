@@ -303,12 +303,12 @@ class CompanyController extends BaseController
         if (!$base_okved) {
             $main_okved->id = null;
         }
-        $bank = Yii::$app->request->post("bank");
-        $bik = Yii::$app->request->post("bik");
-        $rs = Yii::$app->request->post("rs");
-        $ks = Yii::$app->request->post("ks");
+        // $bank = Yii::$app->request->post("bank");
+        // $bik = Yii::$app->request->post("bik");
+        // $rs = Yii::$app->request->post("rs");
+        // $ks = Yii::$app->request->post("ks");
 
-        if (!$inn || !$name || !$ogrn || !$address || !$kpp || !$fio || !$bank || !$bik || !$ks) {
+        if (!$inn || !$name || !$ogrn || !$address || !$kpp || !$fio) {
             Yii::$app->response->statusCode = 401;
             return ["success" => false, "message" => "Не все обязательные реквизиты заполнены"];
         }
@@ -326,10 +326,10 @@ class CompanyController extends BaseController
             $company->fio = Yii::$app->request->post("fio");
             $company->phone = Yii::$app->request->post("phone");
             $company->main_okved = $base_okved->id;
-            $company->bank = Yii::$app->request->post("bank");
-            $company->bik = Yii::$app->request->post("bik");
-            $company->rs = Yii::$app->request->post("rs",'null');
-            $company->ks = Yii::$app->request->post("ks");
+            // $company->bank = Yii::$app->request->post("bank");
+            // $company->bik = Yii::$app->request->post("bik");
+            // $company->rs = Yii::$app->request->post("rs",'null');
+            // $company->ks = Yii::$app->request->post("ks");
             if(!$company->save()) {
                 Yii::$app->response->statusCode = 400;
                 return ["success" => false, "message" => "Ошибка сохранения компании"];
