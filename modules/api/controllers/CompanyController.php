@@ -138,7 +138,7 @@ class CompanyController extends BaseController
         foreach ($company_query as $company) {
             
             $rss=[];
-            $rs = B2bPayment::find(['company_id' => $company->user_id, 'type' => 2])->all();
+            $rs = B2bPayment::find()->where(['company_id' => $company->user_id, 'type' => 2])->all();
             
             if ($rs) {
                 foreach ($rs as $item) {
