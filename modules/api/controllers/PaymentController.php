@@ -1037,6 +1037,14 @@ class PaymentController extends BaseController
             Yii::$app->response->statusCode = 401;
             return ["success" => false, "message" => "Token не найден"];
         }
+
+        $company = Company::find()->where(['user_id' => $this->user->id])->all();
+            if (!$company) {
+                Yii::$app->response->statusCode = 400;
+                return ["success" => false, "message" => "Добавьте компанию перед добавлением карт, курьеров или расчетных счетов"];
+            }
+
+
         $b2b = Yii::$app->request->post("b2b");
         if ((int)$b2b == 0 || $b2b == null) {
             
@@ -1102,6 +1110,7 @@ class PaymentController extends BaseController
         }
 
         if ((int)$b2b == 2) {
+            
             $value = Yii::$app->request->post("value");
             $bank = Yii::$app->request->post("payment_id");
             $bankname = Yii::$app->request->post("bank");
@@ -1123,7 +1132,7 @@ class PaymentController extends BaseController
                 return ["success" => false, "message" => "Ошибка сохранения расчетного счета"];
             }
 
-            return ["success" => true, "message" => "РС успешно добавлен"];    
+            return ["success" => true, "message" => "РС успешно добавлен".$bik.$ks.$bank];    
         }
 
         
