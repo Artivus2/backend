@@ -143,6 +143,7 @@ class CompanyController extends BaseController
             if ($rs) {
                 foreach ($rs as $item) {
                     $rss[] = [
+                        "id" => $item->id,
                         "bank" => $item->bank,
                         "bik" => $item->bik,
                         "rs" => $item->value,
