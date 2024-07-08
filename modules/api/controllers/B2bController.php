@@ -1373,6 +1373,13 @@ class B2bController extends BaseController
      *      @SWG\Schema(type="integer")
      *     ),
      *    @SWG\Parameter(
+     *      name="author_id_rs",
+     *      in="body",
+     *      description="id рс b2b_ads",
+     *      required=true,
+     *      @SWG\Schema(type="integer")
+     *     ),
+     *    @SWG\Parameter(
      *      name="offer",
      *      in="body",
      *      description="Сумма (в currency)",
@@ -1414,6 +1421,8 @@ class B2bController extends BaseController
 
 
         $b2b_ads_id = Yii::$app->request->post("b2b_ads_id");
+        
+        $author_id_rs = Yii::$app->request->post("author_id_rs");
         
         
         $b2b_ads = B2bAds::find()->where(["id" => $b2b_ads_id])->andWhere(['status' => -1])->one();
@@ -1476,6 +1485,7 @@ class B2bController extends BaseController
 
             $b2b_h->end_date = strtotime($duration, $b2b_h->start_date); //
             $b2b_h->b2b_ads_id = Yii::$app->request->post("b2b_ads_id");
+            $b2b_h->author_id_rs = Yii::$app->request->post("author_id_rs");
             $b2b_h->price = $seller_offer / $b2b_ads->course; //в крипте
             
             if($b2b_ads->min_limit > $b2b_h->price * $b2b_ads->course) {
@@ -1537,7 +1547,8 @@ class B2bController extends BaseController
 
             $data = [
                 "id" => $b2b_h->b2b_ads_id,
-                "offer" => (float)$b2b_h->price
+                "offer" => (float)$b2b_h->price,
+                
             ];
 
             $company = User::find()->where(['id' => $b2b_ads->company_id])->one();
@@ -1566,7 +1577,7 @@ class B2bController extends BaseController
 
         $b2b_h->end_date = strtotime($duration, $b2b_h->start_date); //
         $b2b_h->b2b_ads_id = Yii::$app->request->post("b2b_ads_id");
-        //$b2b_h->payment_id = Yii::$app->request->post("payment");
+        $b2b_h->author_id_rs = Yii::$app->request->post("author_id_rs");
         $b2b_h->price = (float)Yii::$app->request->post("offer") / $b2b_ads->course; //оффер в рублях в базу в крипте
         //$author_price = $b2b_h->price / $b2b_ads->course;  //сумма покупателя * курс продавца бтс
 
