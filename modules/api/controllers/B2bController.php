@@ -283,13 +283,13 @@ class B2bController extends BaseController
         
 
 
-        $company_payment = Company::find()->where(['user_id' => $this->user->id])->all();
-        foreach ($company_payment as $payment) {
-            if (!$payment->inn || !$payment->name || !$payment->ogrn || !$payment->address || !$payment->kpp || !$payment->fio || !$payment->bank || !$payment->bik || !$payment->rs || !$payment->ks) {
-                Yii::$app->response->statusCode = 401;
-                return ["success" => false, "message" => "Не все обязательные реквизиты заполнены для создания ордера, заполните их в профиле компании"];
-            }
-        }
+        // $company_payment = Company::find()->where(['user_id' => $this->user->id])->all();
+        // foreach ($company_payment as $payment) {
+        //     if (!$payment->inn || !$payment->name || !$payment->ogrn || !$payment->address || !$payment->kpp || !$payment->fio) {
+        //         Yii::$app->response->statusCode = 401;
+        //         return ["success" => false, "message" => "Не все обязательные реквизиты заполнены для создания ордера, заполните их в профиле компании"];
+        //     }
+        // }
 
         if(!$b2b->save()) {
             Yii::$app->response->statusCode = 400;
