@@ -40,6 +40,7 @@ class B2bPayment extends \yii\db\ActiveRecord
         return [
             [["company_id"], 'required'],
             [['payment_id',"company_id",'type'], 'integer'],
+            [['bik','ks','bank','value'], 'string', 'max' => 255]
 
         ];
     }
