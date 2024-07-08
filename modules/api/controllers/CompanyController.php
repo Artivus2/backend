@@ -142,7 +142,7 @@ class CompanyController extends BaseController
             
             if ($rs) {
                 foreach ($rs as $item) {
-                    $bankname = Banks::find()->where(["id" => $item->payment_id]->one());
+                    $bankname = Banks::find(["id" => $item->payment_id]);
                     $rss[] = [
                         "id" => $item->id,
                         "bank_id" => $item->payment_id,
