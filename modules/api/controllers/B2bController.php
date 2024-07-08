@@ -249,7 +249,7 @@ class B2bController extends BaseController
         return ["success" => false, "message" => "Превышен лимит текущего баланса"];
         }
         if ($b2b->max_limit / $b2b->course > $b2b->amount) {
-        return ["success" => false, "message" => "Превышен максимальный лимит суммы ордера"];
+        return ["success" => false, "message" => "Превышен максимальный лимит суммы ордера ".$b2b->max_limit / $b2b->course];
         }
         if ($b2b->max_limit < $b2b->min_limit) {
         return ["success" => false, "message" => "Минимальный лимит меньше максимального"];
