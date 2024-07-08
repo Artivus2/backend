@@ -75,6 +75,14 @@ class History extends \yii\db\ActiveRecord
     //     return $this->hasOne(PaymentStatus::class, ['status_id' => 'status']);
     // }
 
+    public function beforeSave($insert)
+    {
+        if($insert === self::EVENT_BEFORE_INSERT){
+                $this->uuid = new yii\db\Expression('UUID()');
+        }
+        return parent::beforeSave($insert);
+    }
+
 
 
 

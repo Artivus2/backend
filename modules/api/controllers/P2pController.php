@@ -16,8 +16,6 @@ use app\models\PaymentType;
 use app\models\PaymentUser;
 use app\models\StatusType;
 use app\models\P2pPayment;
-use app\components\Cryptomus\Client;
-use app\components\Cryptomus\Payment;
 
 
 class P2pController extends BaseController
@@ -233,7 +231,7 @@ class P2pController extends BaseController
         return ["success" => false, "message" => "Превышен лимит текущего баланса"];
         }
         if ($p2p->max_limit / $p2p->course > $p2p->amount) {
-        return ["success" => false, "message" => "Превышен максимальный лимит суммы ордера"];
+        return ["success" => false, "message" => "Превышен максимальный лимит суммы ордера "];
         }
         if ($p2p->max_limit < $p2p->min_limit) {
         return ["success" => false, "message" => "Минимальный лимит меньше максимального"];

@@ -135,6 +135,17 @@ class CompanyController extends BaseController
         }
 
         foreach ($company_query as $company) {
+            
+            $rs = B2bPayment::find(['company_id' => $company->user_id, 'type' => 2])->all();
+            $rss=[];
+            foreach ($rs as $item) {
+                $rss[] = [
+                    "bank" => $item->bank,
+                    "bik" => $item->bik,
+                    "rs" => $item->value,
+                    "ks" => $item->ks
+                ];
+            }
             $data[] = [
                 "id" => $company->id,
                 "name" => $company->name,
@@ -145,10 +156,11 @@ class CompanyController extends BaseController
                 "kpp" => $company->kpp,
                 "fio" => $company->fio,
                 "phone" => $company->phone,
-                "bank" => $company->bankList->title,
-                "bik" => $company->bankList->bik,
-                "rs" => $company->rs,
-                "ks" => $company->bankList->ks
+                "rs" => $rss
+                // "bank" => $company->bankList->title,
+                // "bik" => $company->bankList->bik,
+                // "rs" => $company->rs,
+                // "ks" => $company->bankList->ks
  
             ];
         }
@@ -479,10 +491,10 @@ class CompanyController extends BaseController
             $company->kpp = Yii::$app->request->post("kpp") ?? $company->kpp;
             $company->fio = Yii::$app->request->post("fio") ?? $company->fio;
             $company->phone = Yii::$app->request->post("phone") ?? $company->phone;
-            $company->bank = Yii::$app->request->post("bank") ?? $company->bank;
-            $company->bik = Yii::$app->request->post("bik") ?? $company->bik;
-            $company->rs = Yii::$app->request->post("rs") ?? $company->rs;
-            $company->ks = Yii::$app->request->post("ks") ?? $company->ks;
+            // $company->bank = Yii::$app->request->post("bank") ?? $company->bank;
+            // $company->bik = Yii::$app->request->post("bik") ?? $company->bik;
+            // $company->rs = Yii::$app->request->post("rs") ?? $company->rs;
+            // $company->ks = Yii::$app->request->post("ks") ?? $company->ks;
 
             if(!$company->save()) {
                 Yii::$app->response->statusCode = 400;

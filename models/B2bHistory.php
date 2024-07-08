@@ -39,8 +39,8 @@ class B2bHistory extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['b2b_ads_id', 'author_id','creator_id', 'start_date', 'end_date', 'price'], 'required'],
-            [['b2b_ads_id', 'author_id', 'creator_id','payment_id', 'start_date','end_date', 'status'], 'integer'],
+            [['b2b_ads_id', 'author_id','creator_id', 'start_date', 'end_date', 'price','author_id_rs'], 'required'],
+            [['b2b_ads_id', 'author_id', 'creator_id','payment_id', 'start_date','end_date', 'status','author_id_rs'], 'integer'],
             [['image'], 'file', 'extensions' => 'png, jpg, pdf'],
             [['price'], 'number']
             
@@ -98,6 +98,7 @@ class B2bHistory extends \yii\db\ActiveRecord
             'id' => 'ID',
             'b2b_ads_id' => 'B2b Ads ID',
             'author_id' => 'Author ID',
+            'author_id_rs' => 'Author ID RS',
             'creator_id' => 'Author ID',
             'payment_id' => 'Payment ID',
             'start_date' => 'Start Date',
