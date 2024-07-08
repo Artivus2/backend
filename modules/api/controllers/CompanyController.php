@@ -144,7 +144,8 @@ class CompanyController extends BaseController
                 foreach ($rs as $item) {
                     $rss[] = [
                         "id" => $item->id,
-                        "bank" => $item->bank,
+                        "bank_id" => $item->payment_id,
+                        "bank" => Banks::find()->where(["id" => $item->payment_id]->one()),
                         "bik" => $item->bik,
                         "rs" => $item->value,
                         "ks" => $item->ks
