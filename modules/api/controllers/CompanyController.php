@@ -9,6 +9,7 @@ use app\models\User;
 use app\models\Company;
 use app\models\Okveds;
 use app\models\Banks;
+use app\models\B2bPayment;
 
 class CompanyController extends BaseController
 {
@@ -136,15 +137,18 @@ class CompanyController extends BaseController
 
         foreach ($company_query as $company) {
             
-            $rs = B2bPayment::find(['company_id' => $company->user_id, 'type' => 2])->all();
             $rss=[];
-            foreach ($rs as $item) {
-                $rss[] = [
-                    "bank" => $item->bank,
-                    "bik" => $item->bik,
-                    "rs" => $item->value,
-                    "ks" => $item->ks
-                ];
+            $rs = B2bPayment::find(['company_id' => $company->user_id, 'type' => 2])->all();
+            
+            if ($rs) {
+                foreach ($rs as $item) {
+                    $rss[] = [
+                        "bank" => $item->bank,
+                        "bik" => $item->bik,
+                        "rs" => $item->value,
+                        "ks" => $item->ks
+                    ];
+                }
             }
             $data[] = [
                 "id" => $company->id,
