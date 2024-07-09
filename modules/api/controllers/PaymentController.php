@@ -157,7 +157,7 @@ class PaymentController extends BaseController
             return ["success" => true, "message" => "Запрос отправлен в обработку", $result];
         
         } else {
-            return ["success" => false, "message" => "Ошибка", $result];
+            return ["success" => false, "message" => "Ошибка ".var_dump($result)];
         }
 
                 
@@ -318,7 +318,7 @@ class PaymentController extends BaseController
             return ["success" => true, "message" => "Запрос отправлен в обработку", $result];
             
         } else {
-            return ["success" => false, "message" => "Ошибка ", $result];
+            return ["success" => false, "message" => "Ошибка ".var_dump($result)];
         }
 
     
@@ -1499,7 +1499,7 @@ class PaymentController extends BaseController
         $id = (int)Yii::$app->request->post("id");
         
         $b2bpayment = B2bPayment::find()->where(['id' => $id, 'company_id' => $this->user->id])->one();
-        return $b2bpayment;
+        
         if(!$b2bpayment->delete()) {
             return ["success" => false, "message" => "Реквизит не найден"];
         } else {
