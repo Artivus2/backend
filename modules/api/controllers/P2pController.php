@@ -1354,6 +1354,11 @@ class P2pController extends BaseController
         $p2p_ads = P2pAds::find()->where(["id" => $p2p_ads_id])->andWhere(['status' => -1])->one();
 
         
+        if ($p2p_ads->user_id == $this->user->id) {
+
+            Yii::$app->response->statusCode = 401;
+            return ["success" => false, "message" => "Невозможна сделка со своим ордером"];
+        }
 
         if(!$p2p_ads) {
             Yii::$app->response->statusCode = 401;
