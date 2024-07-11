@@ -1189,7 +1189,7 @@ class B2bController extends BaseController
             
 
             if ($bank) {
-                if ($bank !== $item->payment_id) {
+                if ($bank != $item->rs->payment_id) {
                     continue;
                 }
             }            
@@ -1409,6 +1409,11 @@ class B2bController extends BaseController
         $b2b_ads = B2bAds::find()->where(["id" => $b2b_ads_id])->andWhere(['status' => -1])->one();
 
         
+        if ($b2b_ads->company == $this->user->id) {
+
+            Yii::$app->response->statusCode = 401;
+            return ["success" => false, "message" => "Невозможна сделка со своим ордером"];
+        }
 
         if(!$b2b_ads) {
             Yii::$app->response->statusCode = 401;
