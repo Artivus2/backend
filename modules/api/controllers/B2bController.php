@@ -1051,7 +1051,7 @@ class B2bController extends BaseController
                 $whereusers = ["<>", "b2b_ads.company_id", null];
             }
             else {
-                $whereusers = ["<>", "b2b_ads.company_id", null];
+                $whereusers = ["<>", "b2b_ads.company_id", $this->user->id];
             }
             
         } else {
@@ -1168,7 +1168,7 @@ class B2bController extends BaseController
             ->andwhere($wherechart)
             ->andwhere($wherecurrency)
             ->andwhere($wherestatus)
-            ->andWhere($whereusers)
+           // ->andWhere($whereusers)
             ->andWhere($whereokved)
             ->andWhere($wheresummmin)
             ->andWhere($wheresummmax)
