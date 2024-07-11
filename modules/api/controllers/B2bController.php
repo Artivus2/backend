@@ -1184,6 +1184,18 @@ class B2bController extends BaseController
             $b2bAds_query_count_complete = B2bAds::find()->where(["company_id" => $item->user->id, "status" => 10])->count();
             $complete = number_format($b2bAds_query_count_complete / $b2bAds_query_count, 2, '.','');
             $b2bAds_history = B2bHistory::find()->where(["creator_id" => $item->user->id, "b2b_ads_id" => $item->id])->joinwith(['company'])->andwhere($wherestatush)->all();
+            //фильтр по рс и банку
+            $b2b_payments = B2bPayment::find(['id' => $item->id_rs, 'type' => 2])->one();
+            if (!$b2b_payments) {
+                continue;
+            }
+
+            if ($bank) {
+                $b2b_payments_wb = B2bPayment::find(['id' => $item->id_rs, 'payment_id' => $bank, 'type' => 2])->all();
+                if (!$b2b_payments_wb) {
+                    continue;
+                }
+            }            
             
             if (!$b2bAds_history) {
                 
@@ -1206,19 +1218,6 @@ class B2bController extends BaseController
                     }
                     
                     
-                    //фильтр по рс и банку
-                    $b2b_payments = B2bPayment::find(['id' => $item->id_rs, 'type' => 2])->one();
-                    if (!$b2b_payments) {
-                        continue;
-                    }
-                    
-                    if ($bank) {
-                        $b2b_payments_wb = B2bPayment::find(['id' => $item->id_rs, 'payment_id' => $bank, 'type' => 2])->all();
-                        if (!$b2b_payments_wb) {
-                            continue;
-                        }
-                    }
-
                     $historys[]=[
                         "order_id" => $history->b2b_ads_id,
                         "volume" => $history->price,
@@ -1249,19 +1248,6 @@ class B2bController extends BaseController
                                 $history->price = rtrim($history->price, '0');
                             }
                             
-                            //фильтр по рс и банку
-                            $b2b_payments = B2bPayment::find(['id' => $item->id_rs, 'type' => 2])->one();
-                            if (!$b2b_payments) {
-                                continue;
-                            }
-                            
-                            if ($bank) {
-                                $b2b_payments_wb = B2bPayment::find(['id' => $item->id_rs, 'payment_id' => $bank, 'type' => 2])->all();
-                                if (!$b2b_payments_wb) {
-                                    continue;
-                                }
-                            }
-
                             $historys[]=[
                                 "order_id" => $history->b2b_ads_id,
                                 "volume" => $history->price,
@@ -1271,10 +1257,6 @@ class B2bController extends BaseController
                                 "bik" => $b2b_payments->bik ?? 'не указан',
                                 "rs" => $b2b_payments->value ?? 'не указан',
                                 "ks" => $b2b_payments->ks ?? 'не указан',
-                                // "bank" => $history->company->bank??'не указан',
-                                // "bik" => $history->company->bik??'не указан',
-                                // "rs" => $history->company->rs??'не указан',
-                                // "ks" => $history->company->ks??'не указан',
                                 "phone" => $history->company->phone??'не указан',
                                 "author_id" => $history->author_id,
                                 "creator_id" => $history->creator_id,
@@ -1324,11 +1306,13 @@ class B2bController extends BaseController
 
           
             $bankb2b = B2bPayment::find(['company_id' => $this->user->id, 'payment_id' => $item->id_rs,'type' => 2])->one();
+
+            }
             $data[] = [
                 "order_id" => $item->id,
                 "uuid" => (int)$item->uuid,
 	            "date" => date("Y-m-d H:i:s", $item->date),
-                "bank" => $bankb2b->bank,
+                "bank" => $bankb2b ? $bankb2b->bank : 'не указан РС',
                 "company_id" => $item->user->id,
                 "company" => $item->company->name,
                 "verify_status" => $item->user->verify_status,
@@ -1351,7 +1335,7 @@ class B2bController extends BaseController
                 "user_orders_oount_complete_percent" =>(int)$complete,
                 "okved" => $item->main_okved,
                 'description' => $item->description,
-                'discount' => $item->discount
+                'discount' => (float)$item->discount
                 
             ];
         }
