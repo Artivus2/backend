@@ -1303,14 +1303,14 @@ class B2bController extends BaseController
 
 
           
-            $bankb2b = B2bPayment::find(['company_id' => $item->company_id, 'id' => $item->id_rs,'type' => 2])->one();
+            //$bankb2b = B2bPayment::find(['company_id' => $item->company_id, 'id' => $item->id_rs,'type' => 2])->one();
 
             
             $data[] = [
                 "order_id" => $item->id,
                 "uuid" => (int)$item->uuid,
 	            "date" => date("Y-m-d H:i:s", $item->date),
-                "bank" => $bankb2b->bank ?? 'не указан РС',
+                "bank" => $item->rs->bank ?? 'не указан РС',
                 "company_id" => $item->user->id,
                 "company" => $item->company->name,
                 "verify_status" => $item->user->verify_status,

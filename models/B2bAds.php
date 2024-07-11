@@ -101,6 +101,11 @@ class B2bAds extends \yii\db\ActiveRecord
         return $this->hasOne(Okveds::class, ['id' => 'main_okved']);
     }
 
+    public function getRs()
+    {
+        return $this->hasOne(B2bPayment::class, ['id' => 'id_rs']);
+    }
+
     
 
     /**
