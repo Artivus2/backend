@@ -117,7 +117,31 @@ class ChartController extends BaseController
      *)
      * @throws HttpException
      */
-    public function actionList()
+    
+     public function actionList()
+    {
+        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+
+        $data[] = [
+            "id" => 259,
+            "name" => 'USDT',
+            "symbol" => 'USDT',
+            "price" => 1,
+            "lowPrice" => 1,
+            "highPrice" => 1,
+            "percent" => 1,
+            "icon" => Url::to(["/images/icons/USDT.png"], "https"),
+            "chart_image" => Url::to(["/charts/USDT.png"], "https"),
+        ];
+
+        
+
+        return $data;
+            
+    }
+    
+    
+     public function actionList_old()
     {
         Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
 
