@@ -1185,12 +1185,11 @@ class B2bController extends BaseController
             $complete = number_format($b2bAds_query_count_complete / $b2bAds_query_count, 2, '.','');
             $b2bAds_history = B2bHistory::find()->where(["creator_id" => $item->user->id, "b2b_ads_id" => $item->id])->joinwith(['company'])->andwhere($wherestatush)->all();
             //фильтр по рс и банку
-            $b2b_payments = B2bPayment::find(['id' => $item->id_rs, 'type' => 2])->one();
+            //$b2b_payments = B2bPayment::find(['id' => $item->id_rs, 'type' => 2])->one();
             
 
             if ($bank) {
-                $b2b_payments_wb = B2bPayment::find(['id' => $item->id_rs, 'payment_id' => $bank, 'type' => 2])->all();
-                if (!$b2b_payments_wb) {
+                if ($bank !== $item->payment_id) {
                     continue;
                 }
             }            
@@ -1221,10 +1220,10 @@ class B2bController extends BaseController
                         "volume" => $history->price,
                         "start_date" => date("Y-m-d H:i:s", $history->start_date),
                         "end_date" => date("Y-m-d H:i:s", $history->end_date),
-                        "bank" => $b2b_payments->bank ?? 'не указан',
-                        "bik" => $b2b_payments->bik ?? 'не указан',
-                        "rs" => $b2b_payments->value ?? 'не указан',
-                        "ks" => $b2b_payments->ks ?? 'не указан',
+                        "bank" => $history->rs->bank ?? 'не указан',
+                        "bik" => $history->rs->bik ?? 'не указан',
+                        "rs" => $history->rs->value ?? 'не указан',
+                        "ks" => $history->rs->ks ?? 'не указан',
                         "phone" => $history->company->phone??'не указан',
                         "author_id" => $history->author_id,
                         "creator_id" => $history->creator_id,
@@ -1251,10 +1250,10 @@ class B2bController extends BaseController
                                 "volume" => $history->price,
                                 "start_date" => date("Y-m-d H:i:s", $history->start_date),
                                 "end_date" => date("Y-m-d H:i:s", $history->end_date),
-                                "bank" => $b2b_payments->bank ?? 'не указан',
-                                "bik" => $b2b_payments->bik ?? 'не указан',
-                                "rs" => $b2b_payments->value ?? 'не указан',
-                                "ks" => $b2b_payments->ks ?? 'не указан',
+                                "bank" => $history->rs->bank ?? 'не указан',
+                                "bik" => $history->rs->bik ?? 'не указан',
+                                "rs" => $history->rs->value ?? 'не указан',
+                                "ks" => $history->rs->ks ?? 'не указан',
                                 "phone" => $history->company->phone??'не указан',
                                 "author_id" => $history->author_id,
                                 "creator_id" => $history->creator_id,

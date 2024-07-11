@@ -88,6 +88,11 @@ class B2bHistory extends \yii\db\ActiveRecord
         return $this->hasOne(User::class, ['id' => 'author_id']);
     }
 
+    public function getRs()
+    {
+        return $this->hasOne(B2bPayment::class, ['id' => 'author_id_rs']);
+    }
+
 
     /**
      * {@inheritdoc}
