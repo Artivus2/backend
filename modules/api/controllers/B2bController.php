@@ -1051,7 +1051,7 @@ class B2bController extends BaseController
                 $whereusers = ["<>", "b2b_ads.company_id", null];
             }
             else {
-                $whereusers = ["<>", "b2b_ads.company_id", $this->user->id];
+                $whereusers = ["<>", "b2b_ads.company_id", null];
             }
             
         } else {
@@ -1186,9 +1186,7 @@ class B2bController extends BaseController
             $b2bAds_history = B2bHistory::find()->where(["creator_id" => $item->user->id, "b2b_ads_id" => $item->id])->joinwith(['company'])->andwhere($wherestatush)->all();
             //фильтр по рс и банку
             $b2b_payments = B2bPayment::find(['id' => $item->id_rs, 'type' => 2])->one();
-            if (!$b2b_payments) {
-                continue;
-            }
+            
 
             if ($bank) {
                 $b2b_payments_wb = B2bPayment::find(['id' => $item->id_rs, 'payment_id' => $bank, 'type' => 2])->all();
@@ -1305,14 +1303,14 @@ class B2bController extends BaseController
 
 
           
-            $bankb2b = B2bPayment::find(['company_id' => $this->user->id, 'payment_id' => $item->id_rs,'type' => 2])->one();
+            $bankb2b = B2bPayment::find(['company_id' => $item->company_id, 'id' => $item->id_rs,'type' => 2])->one();
 
-            }
+            
             $data[] = [
                 "order_id" => $item->id,
                 "uuid" => (int)$item->uuid,
 	            "date" => date("Y-m-d H:i:s", $item->date),
-                "bank" => $bankb2b ? $bankb2b->bank : 'не указан РС',
+                "bank" => $bankb2b->bank ?? 'не указан РС',
                 "company_id" => $item->user->id,
                 "company" => $item->company->name,
                 "verify_status" => $item->user->verify_status,
