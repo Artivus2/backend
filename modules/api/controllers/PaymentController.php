@@ -157,7 +157,7 @@ class PaymentController extends BaseController
             return ["success" => true, "message" => "Запрос отправлен в обработку", $result];
         
         } else {
-            return ["success" => false, "message" => "Ошибка ".var_dump($result)];
+            return ["success" => false, "message" => "Ошибка ".$result["detail"]["code"]];
         }
 
                 
@@ -318,7 +318,7 @@ class PaymentController extends BaseController
             return ["success" => true, "message" => "Запрос отправлен в обработку", $result];
             
         } else {
-            return ["success" => false, "message" => "Ошибка ".var_dump($result)];
+            return ["success" => false, "message" => "Ошибка ".$result["detail"]["code"]];
         }
 
     
@@ -1039,12 +1039,6 @@ class PaymentController extends BaseController
             return ["success" => false, "message" => "Token не найден"];
         }
 
-        $company = Company::find()->where(['user_id' => $this->user->id])->all();
-            if (!$company) {
-                Yii::$app->response->statusCode = 400;
-                return ["success" => false, "message" => "Добавьте компанию перед добавлением карт, курьеров или расчетных счетов"];
-            }
-
 
         $b2b = Yii::$app->request->post("b2b");
         if ((int)$b2b == 0 || $b2b == null) {
@@ -1074,7 +1068,11 @@ class PaymentController extends BaseController
         } 
         if ((int)$b2b == 1) {
 
-            
+            $company = Company::find()->where(['user_id' => $this->user->id])->all();
+            if (!$company) {
+                Yii::$app->response->statusCode = 400;
+                return ["success" => false, "message" => "Добавьте компанию перед добавлением карт, курьеров или расчетных счетов"];
+            }            
             $payment_id = Yii::$app->request->post("payment_id");
             $fio = Yii::$app->request->post("fio_courier");
             $phone = Yii::$app->request->post("phone_courier");
@@ -1111,7 +1109,11 @@ class PaymentController extends BaseController
         }
 
         if ((int)$b2b == 2) {
-            
+            $company = Company::find()->where(['user_id' => $this->user->id])->all();
+            if (!$company) {
+                Yii::$app->response->statusCode = 400;
+                return ["success" => false, "message" => "Добавьте компанию перед добавлением карт, курьеров или расчетных счетов"];
+            }
             $value = Yii::$app->request->post("value");
             $bank = Yii::$app->request->post("payment_id");
             $bankname = Yii::$app->request->post("bank");
