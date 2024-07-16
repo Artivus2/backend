@@ -1409,7 +1409,7 @@ class B2bController extends BaseController
         $b2b_ads = B2bAds::find()->where(["id" => $b2b_ads_id])->andWhere(['status' => -1])->one();
 
         
-        if ($b2b_ads->company == $this->user->id) {
+        if ($b2b_ads->company_id == $this->user->id) {
 
             Yii::$app->response->statusCode = 401;
             return ["success" => false, "message" => "Невозможна сделка со своим ордером"];
@@ -2290,6 +2290,7 @@ class B2bController extends BaseController
         $b2bAds_query = B2bHistory::find()->joinwith(['ads'])
         ->where($whereid)
         ->andwhere($wherestatush)
+        ->andwhere($whereusers)
         ->all();
 
         foreach ($b2bAds_query as $item)
@@ -2418,7 +2419,7 @@ class B2bController extends BaseController
                     $author_payments = B2bPayment::find(['id' => $item->author_id_rs, 'type' => 2])->one();
                     $creator_payments = B2bPayment::find(['id' => $item->ads->id_rs, 'type' => 2])->one();
                     $data[] = [
-                        "b2b_ads_id" => $item->ads->id,
+                    "b2b_ads_id" => $item->ads->id,
                     "uuid" => $item->ads->uuid,
                     "date" => date("Y-m-d H:i:s", $item->ads->date),
                     "company_id" => $item->ads->user->id,
