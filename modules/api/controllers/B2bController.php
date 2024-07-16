@@ -2290,7 +2290,7 @@ class B2bController extends BaseController
         $b2bAds_query = B2bHistory::find()->joinwith(['ads'])
         ->where($whereid)
         ->andwhere($wherestatush)
-        ->andwhere($whereusers)
+        //->andwhere($whereusers)
         ->all();
 
         foreach ($b2bAds_query as $item)
