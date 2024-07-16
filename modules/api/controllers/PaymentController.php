@@ -1116,6 +1116,10 @@ class PaymentController extends BaseController
             }
             $value = Yii::$app->request->post("value");
             $bank = Yii::$app->request->post("payment_id");
+            if (!$bank) {
+                Yii::$app->response->statusCode = 400;
+                return ["success" => false, "message" => "Не все реквизиты заполнены"];
+            }
             $bankname = Yii::$app->request->post("bank");
             $bik = Yii::$app->request->post("bik");
             $ks = Yii::$app->request->post("ks");
