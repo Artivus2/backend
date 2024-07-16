@@ -2335,8 +2335,8 @@ class B2bController extends BaseController
                         $item->ads->course = number_format($item->ads->course, 2, '.','');
                     }
 
-                    $author_payments = B2bPayment::find(['id' => $item->author_id_rs, 'type' => 2])->one();
-                    $creator_payments = B2bPayment::find(['id' => $item->ads->id_rs, 'type' => 2])->one();
+                    $author_payments = B2bPayment::find()->where(['id' => $item->author_id_rs, 'type' => 2])->one();
+                    $creator_payments = B2bPayment::find()->where(['id' => $item->ads->id_rs, 'type' => 2])->one();
                     $data[] = [
                     "b2b_ads_id" => $item->ads->id,
                     "uuid" => $item->ads->uuid,
@@ -2416,8 +2416,8 @@ class B2bController extends BaseController
                         $item->ads->course = number_format($item->ads->course, 2, '.','');
                     }
                     
-                    $author_payments = B2bPayment::find(['id' => $item->author_id_rs, 'type' => 2])->one();
-                    $creator_payments = B2bPayment::find(['id' => $item->ads->id_rs, 'type' => 2])->one();
+                    $author_payments = B2bPayment::find()->where(['id' => $item->author_id_rs, 'type' => 2])->one();
+                    $creator_payments = B2bPayment::find()->where(['id' => $item->ads->id_rs, 'type' => 2])->one();
                     $data[] = [
                     "b2b_ads_id" => $item->ads->id,
                     "uuid" => $item->ads->uuid,
