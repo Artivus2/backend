@@ -126,7 +126,7 @@ class WalletController extends BaseController
 
         $sign = md5($merchant_id . ':' . $history->start_price . ':' . $secret_word . ':' . $currency.':' . $history->id);
 
-        $url = 'https://pay.freekassa.ru/?';
+        $url = 'https://pay.freekassa.com/?';
         $url .= 'oa='.$history->start_price;
         $url .= '&o='.$history->id;
         $url .= '&currency='.$currency;
@@ -1481,6 +1481,178 @@ class WalletController extends BaseController
         
 
         return $result;
+     }
+
+
+     /**
+     * @SWG\Get(
+     *    path = "/Wallet/get-wallet-address",
+     *    tags = {"Wallet"},
+     *    summary = "Список адресов",
+     *    security={{"access_token":{}}},
+     *	  @SWG\Response(
+     *      response = 200,
+     *      description = "Список адресов",
+     *      @SWG\Schema(
+     *          type="array",
+     *          @SWG\Items(ref="#/definitions/WalletAddress")
+     *      ),
+     *    ),
+     *    @SWG\Response(
+     *      response = 400,
+     *      description = "Ошибка запроса",
+     *      @SWG\Schema(ref = "#/definitions/Result")
+     *    ),
+     *    @SWG\Response(
+     *      response = 403,
+     *      description = "Ошибка авторизации",
+     *      @SWG\Schema(ref = "#/definitions/Result")
+     *    ),
+     *)
+     * @throws HttpException
+     */
+
+   
+     public function actionGetWalletAddress()
+     {
+        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+
+        if(!$this->user) {
+            Yii::$app->response->statusCode = 401;
+            return ["success" => false, "message" => "Token не найден"];
+        }
+
+        if (!in_array($this->user->verify_status, self::VERIFY_STATUS))
+        {
+            Yii::$app->response->statusCode = 401;
+            return ["success" => false, "message" => "Вам необходимо пройти полную верификацию для осуществления данной операции"];
+        }
+
+        $result = WalletAddress::find()->where(['user_id' => $this->user->id])->all();
+
+        
+
+        return $result;
+     }
+    /**
+     * @SWG\Post(
+     *    path = "/wallet/add-wallet-address",
+     *    tags = {"Wallet"},
+     *    summary = "добавить криптоадрес",
+     *    security={{"access_token":{}}},
+     *    @SWG\Parameter(
+     *      name="address",
+     *      in="body",
+     *      description="адреса",
+     *      required=true,
+     *      @SWG\Schema(type="integer")
+     *     ),
+     *    @SWG\Parameter(
+     *      name="id",
+     *      in="body",
+     *      description="chart_id",
+     *      required=true,
+     *      @SWG\Schema(type="integer")
+     *     ),
+     *	  @SWG\Response(
+     *      response = 200,
+     *      description = "Перевод на успешно выполнен",
+     *      @SWG\Schema(ref = "#/definitions/Result")
+     *    ),
+     *    @SWG\Response(
+     *      response = 400,
+     *      description = "Ошибка запроса",
+     *      @SWG\Schema(ref = "#/definitions/Result")
+     *    ),
+     *    @SWG\Response(
+     *      response = 403,
+     *      description = "Ошибка авторизации",
+     *      @SWG\Schema(ref = "#/definitions/Result")
+     *    ),
+     *)
+     * @throws HttpException
+     */
+     public function actionAddWalletAddress()
+     {
+        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+
+        if(!$this->user) {
+            Yii::$app->response->statusCode = 401;
+            return ["success" => false, "message" => "Token не найден"];
+        }
+
+        if (!in_array($this->user->verify_status, self::VERIFY_STATUS))
+        {
+            Yii::$app->response->statusCode = 401;
+            return ["success" => false, "message" => "Вам необходимо пройти полную верификацию для осуществления данной операции"];
+        }
+
+
+        $address = Yii::$app->request->post("address");
+        $chart_id = Yii::$app->request->post("chart_id");
+        if (!$address) {
+            Yii::$app->response->statusCode = 400;
+            return ["success" => false, "message" => "Не указан кошелек"];
+        }
+
+        $newaddress =new WalletAddress(["user_id" => $this->user->id,'chain_id' -> $chart_id,'value' => $address]);
+        if (!$newaddress->save()) {
+            Yii::$app->response->statusCode = 400;
+            return ["success" => false, "message" => "Не удалось сохранить кошелек"];
+        }
+        
+     }
+
+/**
+     * @SWG\Post(
+     *    path = "/wallet/remove-wallet-address",
+     *    tags = {"Wallet"},
+     *    summary = "удалить криптоадрес",
+     *    security={{"access_token":{}}},
+     *    @SWG\Parameter(
+     *      name="id",
+     *      in="body",
+     *      description="ID адреса",
+     *      required=true,
+     *      @SWG\Schema(type="integer")
+     *     ),
+          *	  @SWG\Response(
+     *      response = 200,
+     *      description = "Перевод на успешно выполнен",
+     *      @SWG\Schema(ref = "#/definitions/Result")
+     *    ),
+     *    @SWG\Response(
+     *      response = 400,
+     *      description = "Ошибка запроса",
+     *      @SWG\Schema(ref = "#/definitions/Result")
+     *    ),
+     *    @SWG\Response(
+     *      response = 403,
+     *      description = "Ошибка авторизации",
+     *      @SWG\Schema(ref = "#/definitions/Result")
+     *    ),
+     *)
+     * @throws HttpException
+     */
+     public function actionRemoveWalletAddress()
+     {
+        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+
+        if(!$this->user) {
+            Yii::$app->response->statusCode = 401;
+            return ["success" => false, "message" => "Token не найден"];
+        }
+
+        
+        $id = (int)Yii::$app->request->post("id");
+        
+        $walletaddress = WalletAddress::find()->where(['id' => $id, 'user_id' => $this->user->id])->one();
+        
+        if(!$walletaddress->delete()) {
+            return ["success" => false, "message" => "Адрес не найден"];
+        } else {
+            return ["success" => true, "message" => "Адрес удален", $b2bpayment];
+        }
      }
     
     

@@ -12,14 +12,11 @@ $this->params['breadcrumbs'][] = ['label' => '  >>>> Реквизиты для �
 $this->params['breadcrumbs'][] ='   >>>>  Заявка №'. $this->title;
 \yii\web\YiiAsset::register($this);
 ?>
- <p>
-        <?= Html::a('Подтвердить вывод', ['confirm', 'id' => $model->id], ['class' => 'btn btn-success']) ?>
-    </p>
+ 
 <div class="sell-view">
 
     <?= DetailView::widget([
         'model' => $model,
-        
         'attributes' => [
             'id',
             'user_id',
@@ -36,29 +33,25 @@ $this->params['breadcrumbs'][] ='   >>>>  Заявка №'. $this->title;
             ],
             'start_price',
             'status',
-            [   
+            [
                 'label' => 'Адрес кошелька',
-                'attribute' => 'Wallet address',
-                'value' => function($model){return $model->type == 0 ? $model->ipn_id : '-';} 
+                'attribute' => 'wallet_address',
+                'value' => function($model){return $model->walletAddress->value;} 
             ],
-            // [   
-            //     'label' => 'Номер карты',
-            //     'attribute' => 'chart_id',
-            //     'value' => function($model){return $model->type == 0 ? $model->paymentUser->value : '-';} 
-            // ],
-            // [   
-            //     'label' => 'Получатель',
-            //     'attribute' => 'recepient',
-            //     'value' => function($model){return $model->type == 0 ? $model->paymentUser->payment_receiver :'-';} 
+            // [   'label' => 'Выбранный способ вывода',
+            //     'attribute'=>'payment_id',
+            //     'value'=>function($model) {
+            //     return $model->paymentType->name;
+            //     }
             // ]
             
             
         ],
     ]) ?>
 
-<div>Способы оплаты пользователя / компании</div>
+<!-- <div>Способы оплаты Пользователя / компании</div>
 <?php
-   if ($model->wallet_direct_id == 10) {
+//    if ($model->type == 0) {
 //    echo GridView::widget([
 //        'dataProvider' => $payments,
 //        'tableOptions' => [
@@ -86,62 +79,33 @@ $this->params['breadcrumbs'][] ='   >>>>  Заявка №'. $this->title;
 //         ],
 
 //     ]);
-} 
-if ($model->wallet_direct_id == 13) {
-
-    if ($model->payment_id == 0) {
-    echo GridView::widget([
-            'dataProvider' => $b2bpayments,
-            'tableOptions' => [
-                 
-             'class'=>'table table-striped table-responsive'
-             ],
+// } else {
+    
+//     echo GridView::widget([
+//         'dataProvider' => $b2bpayments,
+//         'tableOptions' => [
              
-            'columns' => [
-                'id',
-                ['label' => 'Номер карты', 'value' => function($data){return $data->type == 0 ? $data->value ?? null : '-';}],
-                ['label' => 'Получатель', 'value' => function($data){return $data->type == 0 ? $data->payment_receiver ?? null : '-';}],
-                ['label' => 'Банк', 'value' => function($data){return $data->type == 0 ? $data->bank ?? null : '-';}],
-                ['label' => 'Сумма', 'value' => function($data){return $data->summa ?? null;}],
-                
-             ],
-     
-         ]);
-
-        } else {
-            echo GridView::widget([
-                'dataProvider' => $b2bpayments,
-                'tableOptions' => [
-                     
-                 'class'=>'table table-striped table-responsive'
-                 ],
-                 
-                'columns' => [
-                    'id',
-                    
-                    ['label' => 'ФИО курьер', 'value' => function($data){return $data->type == 1 ? $data->fio_courier ?? null : '-';}],
-                    ['label' => 'Телефон курьер', 'value' => function($data){return $data->type == 1 ? $data->phone_courier ?? null : '-';}],
-                    ['label' => 'Сумма', 'value' => function($data){return $data->summa ?? null;}],
-                    ['label' => 'улица', 'value' => function($data){return $data->type == 1 ? $data->street_for_courier ?? null : '-';}],
-                    ['label' => '№ дома', 'value' => function($data){return $data->type == 1 ? $data->build_for_courier ?? null : '-';}],
-                    ['label' => 'подьезд', 'value' => function($data){return $data->type == 1 ? $data->pod_for_courier ?? null : '-';}],
-                    ['label' => 'примечание', 'value' => function($data){return $data->type == 1 ? $data->description ?? null : '-';}]
-                    
-                 ],
-         
-             ]);
-        }
-    
-    
-    
-
-}
-
-    
-    
-
+//          'class'=>'table table-striped table-responsive'
+//          ],
+//         'columns' => [
+//             'id',
+//             'fio_courier',
+//             'phone_courier',
+//             'build_for_courier',
+//             'street_for_courier',
+//             'pod_for_courier',
+//             'description',
+//             'summa',
+//             'type',
+//             'value',
+//             'payment_receiver',
+//             'bank'
+//          ],
+ 
+//      ]);
+// }
  ?>
 
 
 
-</div>
+</div> -->

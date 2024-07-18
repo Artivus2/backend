@@ -29,7 +29,6 @@ $this->params['breadcrumbs'][] = $this->title;
 
     <?= DetailView::widget([
         'model' => $model,
-        'class'=>'table table-striped table-responsive',
         'attributes' => [
             'id',
             'user_id',
@@ -45,10 +44,7 @@ $this->params['breadcrumbs'][] = $this->title;
             ],
             'fio',
             'phone',
-            'bank',
-            'bik',
-            'rs',
-            'ks',
+            
         ],
     ]) ?>
 

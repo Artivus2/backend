@@ -24,7 +24,6 @@ $this->params['breadcrumbs'][] = '   >>>>  '.$this->title;
 
     <?= DetailView::widget([
         'model' => $model,
-        'class'=>'table table-striped table-responsive',
         'attributes' => [
             'id',
             'uuid',
@@ -54,25 +53,21 @@ $this->params['breadcrumbs'][] = '   >>>>  '.$this->title;
             'min_limit',
             'max_limit',
             'course',
-            [   'attribute'=>'duration',
-                'value'=>function($data) {
-                    return $data->duration == 272200 ? '3 дня' : 'менее 3 дней';
-                }
-            ],
             [
                 'label' => 'Статус',
                 'attribute' => 'status',
                 'value' => function($data){return $data->statusType->title;}
                ],
-               [
+            [
                 'label' => 'Оквед',
                 'attribute' => 'main_okved',
                 'value' => function($data){return $data->okved->okved_id . ' (' . $data->okved->title . ' )';}
                ],
+            'discount'
         ],
     ]) ?>
 
-<div>Способы оплаты ордера</div>
+<div>Расчетный счет</div>
 <?php
    echo GridView::widget([
        'dataProvider' => $payments,
@@ -82,11 +77,6 @@ $this->params['breadcrumbs'][] = '   >>>>  '.$this->title;
         ],
        'columns' => [
            
-           [
-            'label' => 'ФИО получателя',
-            
-            'value' => function($data){return $data->fio??null;} 
-           ],
            [
             'label' => 'Наименование Банка',
             
@@ -100,17 +90,12 @@ $this->params['breadcrumbs'][] = '   >>>>  '.$this->title;
            [
             'label' => 'Расч счет',
             
-            'value' => function($data){return $data->rs??null;} 
+            'value' => function($data){return $data->value??null;} 
            ],
            [
             'label' => 'Корр счет',
             
             'value' => function($data){return $data->ks??null;} 
-           ],
-           [
-            'label' => 'Телефон',
-            
-            'value' => function($data){return $data->phone??null;} 
            ],
         ],
 
@@ -167,16 +152,30 @@ $this->params['breadcrumbs'][] = '   >>>>  '.$this->title;
                 //     '<span class="glyphicon glyphicon-cog">view</span>', 
                 //     ['/admin/b2b/viewhistory', 'id' => $history->id]);
                 // },
+                // 'update' => function ($url,$history) {
+                //     return Html::a(
+                //     '<span class="glyphicon glyphicon-cog">update</span>', 
+                //     ['/admin/b2b/updatehistory', 'id' => $history->id]);
+                // },
+                // 'delete' => function ($url,$history) {
+                //     return Html::a(
+                //     '<span class="glyphicon glyphicon-cog">delete</span>', 
+                //     ['/admin/b2b/deletehistory', 'id' => $history->id]);
+                // },
                 'update' => function ($url,$history) {
                     return Html::a(
-                    '<span class="glyphicon glyphicon-cog">update</span>', 
+                    '<span class="view-icon"></span>', 
                     ['/admin/b2b/updatehistory', 'id' => $history->id]);
                 },
-                'delete' => function ($url,$history) {
-                    return Html::a(
-                    '<span class="glyphicon glyphicon-cog">delete</span>', 
-                    ['/admin/b2b/deletehistory', 'id' => $history->id]);
-                },
+                'delete' => function($url, $history){
+                    return Html::a('<span class="delete-icon"></span>', ['deletehistory', 'id' => $history->id], [
+                        // 'class' => '',
+                        'data' => [
+                            'confirm' => 'Уверены что хотите удалить ?',
+                            'method' => 'post',
+                        ],
+                    ]);
+                }
                 
             ],
         ],

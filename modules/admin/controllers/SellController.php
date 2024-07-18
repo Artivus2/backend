@@ -8,6 +8,7 @@ use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 use app\models\History;
 use app\models\Wallet;
+use app\models\WalletAddress;
 use app\models\PaymentUser;
 use app\models\B2bPayment;
 use app\models\search\HistorySearch;
@@ -36,13 +37,13 @@ class SellController extends Controller
     }
 
     /**
-     * Lists all Faq models.
+     * Lists models.
      *
      * @return string
      */
     public function actionIndex()
     {
-        $history = History::find()->where(['status'=>0])->andWhere(['in','wallet_direct_id', [10,13]]);
+        $history = History::find()->Where(['in','wallet_direct_id', [10,13]]);
         //$searchModel = new HistorySearch();
         $dataProvider = new ActiveDataProvider([
             
@@ -73,23 +74,11 @@ class SellController extends Controller
     public function actionView($id)
     {
         $model = $this->findModel($id);
+        //$payments = B2bPayment::find()->where(['p2p_ads_id' => $model->id]);
         $wallet = Wallet::find()->where(['user_id' => $model->id]);
-        $payment = PaymentUser::find()->where(['user_id' => $model->user_id]);
-        $pays = $model->ipn_id;
-        $b2bpayment = [];
-        if ($model->wallet_direct_id == 13) {
-                $b2bpaymentsss = (array)explode(",", $pays);
-                $b2bpayment = B2bPayment::find()->where(['company_id' => $model->user_id, 'id' => $b2bpaymentsss]);
-                
-        }         
-        $b2bpayments = new ActiveDataProvider([
-            'query' => $b2bpayment,
-            'pagination' => [
-                'pageSize' => 10,
-            ],
-            ]);
-        
-
+        $payment = PaymentUser::find()->where(['user_id' => $model->user_id,'active'=>1]);
+        $b2bpayment = B2bPayment::find()->where(['company_id' => $model->user_id]);
+        $walletaddress = WalletAddress::find()->where(['user_id' => $model->user_id]);
         $wallets = new ActiveDataProvider([
             'query' => $wallet,
             'pagination' => [
@@ -102,13 +91,25 @@ class SellController extends Controller
                 'pageSize' => 10,
             ],
             ]);
-
+        $b2bpayments = new ActiveDataProvider([
+            'query' => $b2bpayment,
+            'pagination' => [
+                'pageSize' => 10,
+            ],
+            ]);
+        $wa = new ActiveDataProvider([
+                'query' => $walletaddress,
+                'pagination' => [
+                    'pageSize' => 10,
+                ],
+                ]);
 
         return $this->render('view', [
             'model' => $model,
             'wallets' => $wallets,
             'payments' => $payments,
-            'b2bpayments' => $b2bpayments
+            'b2bpayments' => $b2bpayments,
+            'wa' => $wa
         ]);
     }
 
@@ -143,23 +144,23 @@ class SellController extends Controller
      * @return \yii\web\Response
      * @throws NotFoundHttpException if the model cannot be found
      */
-    public function actionReject($id)
-    {
-        $model = $this->findModel($id);
-        //$wallet = Wallet::find()->where(['user_id' => $model->id]);
-        $model->status = 2;
-        if ($model->wallet_direct_id == 10) {
-            $wallet = Wallet::findOne(['user_id' => $model->user_id, 'chart_id' => $model->start_chart_id,'type' => 0]);
-            }
-        if ($model->wallet_direct_id == 13) {
-            $wallet = Wallet::findOne(['user_id' => $model->user_id, 'chart_id' => $model->start_chart_id,'type' => 1]);
-            }
-        $wallet->balance += $model->start_price;
-        $wallet->blocked = 0;
-        $model->save();
-        $wallet->save();
-        return $this->redirect(['index']);
-    }
+    // public function actionReject($id)
+    // {
+    //     $model = $this->findModel($id);
+    //     //$wallet = Wallet::find()->where(['user_id' => $model->id]);
+    //     $model->status = 2;
+    //     if ($model->wallet_direct_id == 10) {
+    //         $wallet = Wallet::findOne(['user_id' => $model->user_id, 'chart_id' => $model->start_chart_id,'type' => 0]);
+    //         }
+    //     if ($model->wallet_direct_id == 13) {
+    //         $wallet = Wallet::findOne(['user_id' => $model->user_id, 'chart_id' => $model->start_chart_id,'type' => 1]);
+    //         }
+    //     $wallet->balance += $model->start_price;
+    //     $wallet->blocked = 0;
+    //     $model->save();
+    //     $wallet->save();
+    //     return $this->redirect(['index']);
+    // }
 
     /**
      * Finds the Faq model based on its primary key value.

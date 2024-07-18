@@ -171,7 +171,7 @@ class B2bController extends Controller
             return null;
         }
         
-        $company = Company::find()->where(['user_id' => $b2b_ads->company_id]);
+        $company = B2bPayment::find()->where(['id' => $b2b_ads->id_rs]);
         if (!$company){
             return null;
         }

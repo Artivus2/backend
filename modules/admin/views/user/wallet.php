@@ -19,10 +19,6 @@ $this->params['breadcrumbs'][] = ['label' => ' >>>> Пользователи >>>
 <?php
    echo GridView::widget([
        'dataProvider' => $wallet,
-       'tableOptions' => [
-            
-        'class'=>'table table-striped table-responsive'
-        ],
        'columns' => [
            
            [

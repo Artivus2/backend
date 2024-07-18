@@ -19,7 +19,6 @@ $this->params['breadcrumbs'][] ='   >>>>  Заявка №'. $this->title;
 
     <?= DetailView::widget([
         'model' => $model,
-        
         'attributes' => [
             'id',
             'user_id',

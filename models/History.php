@@ -69,19 +69,24 @@ class History extends \yii\db\ActiveRecord
     {
         return $this->hasOne(WalletType::class, ['id' => 'wallet_direct_id']);
     }
+    
+    public function getWalletAddress()
+    {
+        return $this->hasOne(WalletAddress::class, ['user_id' => 'user_id']);
+    }
 
     // public function getStatus()
     // {
     //     return $this->hasOne(PaymentStatus::class, ['status_id' => 'status']);
     // }
 
-    public function beforeSave($insert)
-    {
-        if($insert === self::EVENT_BEFORE_INSERT){
-                $this->uuid = new yii\db\Expression('UUID()');
-        }
-        return parent::beforeSave($insert);
-    }
+    // public function beforeSave($insert)
+    // {
+    //     if($insert === self::EVENT_BEFORE_INSERT){
+    //             $this->uuid = new yii\db\Expression('UUID()');
+    //     }
+    //     return parent::beforeSave($insert);
+    // }
 
 
 
@@ -103,7 +108,8 @@ class History extends \yii\db\ActiveRecord
             'status' => 'Статус',
             'wallet_direct_id' => 'Тип вывода',
             'payment_id' => 'Способ вывода',
-            'ipn_id' => 'ipn_id',
+            'ipn_id' => 'NowPayment ID',
+            'walletAddress' => 'Адрес кошелька'
         ];
     }
 }

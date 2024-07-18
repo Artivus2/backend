@@ -19,10 +19,6 @@ $this->params['breadcrumbs'][] = $this->title;
 
     <?= GridView::widget([
         'dataProvider' => $dataProvider,
-        'tableOptions' => [
-            
-            'class'=>'table table-striped table-responsive'
-            ],
         'columns' => [
             ['class' => 'yii\grid\SerialColumn'],
 
@@ -42,34 +38,31 @@ $this->params['breadcrumbs'][] = $this->title;
             'status',
             [
                 'label' => 'Адрес кошелька',
-                'attribute' => 'ipn_id',
-                'value' => function($model){return $model->ipn_id;} 
+                'attribute' => 'Адрес кошелька',
+                'value' => function($model){return $model->walletAddress->value;} 
             ],
+            'ipn_id',
             [
 				'class' => 'yii\grid\ActionColumn',
-				'template' => '{confirm} {reject}',
+				'template' => '{view}',
                 'header' => 'Действия',
                 'contentOptions' => ['style' => 'display: flex;'],
 				'buttons' => [
 
-                    'confirm' => function($url, $model){
+                    'View' => function($url, $model){
                         return Html::a('<span class="view-icon"></span>', ['view', 'id' => $model->id], [
-                            // 'class' => '',
-                            // 'data' => [
-                            //     'confirm' => 'Подтвердить вывод средств у пользователя ?',
-                            //     'method' => 'post',
-                            // ],
+                            
                         ]);
                     },
-                    'reject' => function($url, $model){
-                        return Html::a('<span class="delete-icon"></span>', ['reject', 'id' => $model->id], [
-                            // 'class' => '',
-                            'data' => [
-                                'confirm' => 'Подтвердить отмену вывода средств у пользователя, средства вернутся на баланс !!!',
-                                'method' => 'post',
-                            ],
-                        ]);
-                    }
+                    // 'reject' => function($url, $model){
+                    //     return Html::a('<span class="delete-icon"></span>', ['reject', 'id' => $model->id], [
+                    //         // 'class' => '',
+                    //         'data' => [
+                    //             'confirm' => 'Подтвердить отмену вывода средств у пользователя, средства вернутся на баланс !!!',
+                    //             'method' => 'post',
+                    //         ],
+                    //     ]);
+                    // }
                    
                     
 					
