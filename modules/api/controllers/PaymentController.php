@@ -279,9 +279,19 @@ class PaymentController extends BaseController
         $history->end_price = $history->start_price;
 
         $history->uuid = vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex(random_bytes(16)), 4));
+
+        $address = Yii::$app->request->post("address");
+
+        if (!$address) {
+            Yii::$app->response->statusCode = 400;
+            return ["success" => false, "message" => "Не указан кошелек"];
+        }
+
+        $newaddress =new WalletAddress(["user_id" => $this->user->id,'chain_id' -> $chart->id,'value' => $address]);
+        $newaddress->save();
         
         $data = [
-            "address" => Yii::$app->request->post("address"),
+            "address" => $address,
             "amount" => Yii::$app->request->post("amount"),
             "currency" => $chain->symbol
         ];

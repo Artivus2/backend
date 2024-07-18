@@ -132,7 +132,7 @@ class B2bAds extends \yii\db\ActiveRecord
             'main_okved' => 'Оквед',
             'uuid' => 'uuid',
             'description' => 'Description',
-            'discount' => 'Discount'
+            'discount' => 'Дискаунт'
         ];
     }
 
