@@ -18,6 +18,8 @@ use app\models\PaymentUser;
 use app\models\P2pPayment;
 use app\models\StatusType;
 use yii\data\ActiveDataProvider;
+use PubNub\PubNub;
+use PubNub\PNConfiguration;
 
 
 /**
@@ -148,5 +150,33 @@ class P2pController extends Controller
         return $this->render('updatehistory', [
             'model' => $model,
         ]);
+    }
+
+
+    public function actionChat($id)
+    {
+        $model = $this->findModelHistory($id);
+
+        // if ($model->load(Yii::$app->request->post()) && $model->save()) {
+        //     return $this->redirect(['view', 'id' => $model->p2p_ads_id]);
+        // }
+
+        // return $this->render('updatehistory', [
+        //     'model' => $model,
+        // ]);
+        $pnConfiguration = new PNConfiguration();
+        // $pnConfiguration->setSubscribeKey("sub-c-7a080724-d4d0-46af-a644-53d651aa3dd4");
+        // $pnConfiguration->setPublishKey("pub-c-ed0d5f65-4368-492b-a376-0b82917208b9");
+        // $pnConfiguration->setUserId($model->author_id);
+        // $pubnub = new PubNub($pnConfiguration);
+
+        // $pubnub->publish([
+        //     'channel' => 'chat-channel',
+        //     'message' => $message,
+        // ]);
+        
+        // return response()->json(['success' => true]);
+
+        //return $pubnub;
     }
 }

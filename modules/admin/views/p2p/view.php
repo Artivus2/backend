@@ -6,6 +6,7 @@ use yii\grid\GridView;
 use yii\grid\ActionColumn;
 use yii\grid\DataColumn;
 
+
 /* @var $this yii\web\View */
 /* @var $model app\models\p2pAds */
 
@@ -108,7 +109,6 @@ $this->params['breadcrumbs'][] ='   >>>>  '. $this->title;
         'class'=>'table table-striped table-responsive'
         ],
        'columns' => [
-           
            [
             'label' => 'ID предложения',
             'attribute' => 'p2p_ads_id',
@@ -146,14 +146,10 @@ $this->params['breadcrumbs'][] ='   >>>>  '. $this->title;
            ],
            [
             'class' => 'yii\grid\ActionColumn',
-            'template' => '{update} {delete}',
+            'template' => '{chat} {update} {delete}',
             'contentOptions' => ['style' => 'display: flex'],
             'buttons' => [
-                // 'view' => function ($url,$history) {
-                //     return Html::a(
-                //     '<span class="glyphicon glyphicon-cog">view</span>', 
-                //     ['/admin/p2p/viewhistory', 'id' => $history->id]);
-                // },
+                
                 'update' => function ($url,$history) {
                     return Html::a(
                     '<span class="view-icon"></span>', 
@@ -167,7 +163,13 @@ $this->params['breadcrumbs'][] ='   >>>>  '. $this->title;
                             'method' => 'post',
                         ],
                     ]);
-                }
+                },
+                'chat' => function ($url,$history) {
+                    return Html::a(
+                    '<span class="edit-icon">Чат</span>', 
+                    ['/admin/p2p/chat', 'id' => $history->id]);
+                },
+
                 
             ],
         ],
