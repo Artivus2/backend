@@ -210,9 +210,11 @@ class P2pController extends Controller
                 Yii::$app->response->statusCode = 400;
                 return ["success" => false, "message" => "Ошибка сохранения сделки"];
             }
-            if ($model->load(Yii::$app->request->post()) && $model->save()) {
-                return $this->redirect(['view', 'id' => $model->p2p_ads_id]);
-            }
+            
+        }
+
+        if ($model->load(Yii::$app->request->post()) && $model->save() && $model->status == 5) {
+            return $this->redirect(['view', 'id' => $model->p2p_ads_id]);
         }
 
         return $this->render('updatehistory', [
