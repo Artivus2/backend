@@ -213,9 +213,14 @@ class P2pController extends Controller
             
         }
 
-        if ($model->load(Yii::$app->request->post()) && $model->save() && $model->status == 5) {
+        if ($model->status == 5) {
+            if ($model->load(Yii::$app->request->post()) && $model->save()) {
+                return $this->redirect(['view', 'id' => $model->p2p_ads_id]);
+            }
+        } else {
             return $this->redirect(['view', 'id' => $model->p2p_ads_id]);
         }
+        
 
         return $this->render('updatehistory', [
             'model' => $model,
