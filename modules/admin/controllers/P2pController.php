@@ -18,6 +18,7 @@ use app\models\PaymentUser;
 use app\models\P2pPayment;
 use app\models\StatusType;
 use yii\data\ActiveDataProvider;
+use app\models\MySubscribeCallback;
 use PubNub\PubNub;
 use PubNub\PNConfiguration;
 
@@ -143,6 +144,68 @@ class P2pController extends Controller
     {
         $model = $this->findModelHistory($id);
 
+        $p2p_ads = P2pAds::find()->where(['id' => $model->p2p_ads_id, 'status' => [-1,6]])->one();
+        
+        if ($p2p_ads->type == 2) {
+            $p2p_h = P2pHistory::find()->where(['p2p_ads_id' => $id, 'creator_id' => $model->creator_id, 'status' => $model->status])->one();
+            if (!$p2p_h) {
+                Yii::$app->response->statusCode = 400;
+                return ["success" => false, "message" => "Сделка не найдена (в истории)"];
+            }
+            //подтвердил оплату админ после выяснения
+            if ($p2p_ads->amount == 0) {
+                $p2p_ads->status = 10;
+            } else {
+                $p2p_ads->status = -1;
+                if ($p2p_ads->min_limit / $p2p_ads->course > $p2p_ads->amount) {
+                    $p2p_ads->min_limit = $p2p_ads->amount * $p2p_ads->course;
+                }
+            }
+            $p2p_h->status = 4;
+            $wallet_seller = Wallet::findOne(["user_id" => $p2p_h->author_id, 'chart_id' => $p2p_ads->chart_id,'type' => 0]);
+            if (!$wallet_seller) {
+                $wallet_seller = new Wallet(["user_id" => $p2p_h->author_id, "chart_id" => $p2p_ads->chart_id, "type" => 0]);
+            }
+            $wallet_seller->balance += $p2p_h->price;
+            if(!$wallet_seller->save()) {
+                Yii::$app->response->statusCode = 400;
+                return ["success" => false, "message" => "Ошибка сохранения кошелька"];
+            }
+        }
+
+        //  typw1
+        if ($p2p_ads->type == 1) {
+            $p2p_h = P2pHistory::find()->where(['p2p_ads_id' => $history_id, 'author_id' => $this->user->id, 'status' => $model->history])->one();
+            if (!$p2p_h) {
+                Yii::$app->response->statusCode = 400;
+                return ["success" => false, "message" => "Сделка не найдена (в истории)"];
+            }
+            //подтвердил оплату 
+            if($p2p_ads->amount == 0) {
+                $p2p_ads->status = 10;
+            } else {
+                $p2p_ads->status = -1;
+                if ($p2p_ads->min_limit / $p2p_ads->course > $p2p_ads->amount) {
+                    $p2p_ads->min_limit = $p2p_ads->amount * $p2p_ads->course;
+                }
+            }
+            $p2p_h->status = 4;
+            $wallet_buyer = Wallet::findOne(["user_id" => $p2p_h->creator_id, 'chart_id' => $p2p_ads->chart_id,'type' => 0]);
+            if (!$wallet_buyer) {
+                $wallet_buyer = new Wallet(["user_id" => $p2p_h->creator_id, "chart_id" => $p2p_ads->chart_id,'type' => 0]);
+            }
+            $wallet_buyer->balance += $p2p_h->price;
+            if(!$wallet_buyer->save()) {
+                Yii::$app->response->statusCode = 400;
+                return ["success" => false, "message" => "Ошибка сохранения кошелька"];
+            }
+
+
+        //history
+        if(!$p2p_ads->save()) {
+            Yii::$app->response->statusCode = 400;
+            return ["success" => false, "message" => "Ошибка сохранения сделки"];
+        }
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
             return $this->redirect(['view', 'id' => $model->p2p_ads_id]);
         }
@@ -153,8 +216,10 @@ class P2pController extends Controller
     }
 
 
+    
     public function actionChat($id)
     {
+        
         $model = $this->findModelHistory($id);
 
         // if ($model->load(Yii::$app->request->post()) && $model->save()) {
@@ -164,19 +229,39 @@ class P2pController extends Controller
         // return $this->render('updatehistory', [
         //     'model' => $model,
         // ]);
-        $pnConfiguration = new PNConfiguration();
+        $pnconf = new PNConfiguration();
+
+        $pnconf->setSubscribeKey("sub-c-7a080724-d4d0-46af-a644-53d651aa3dd4");
+        $pnconf->setPublishKey("pub-c-ed0d5f65-4368-492b-a376-0b82917208b9");
+        $pnconf->setSecure(false);
+        $pnconf->setUserId("admin");
+        $pubnub = new PubNub($pnconf);
         // $pnConfiguration->setSubscribeKey("sub-c-7a080724-d4d0-46af-a644-53d651aa3dd4");
         // $pnConfiguration->setPublishKey("pub-c-ed0d5f65-4368-492b-a376-0b82917208b9");
         // $pnConfiguration->setUserId($model->author_id);
         // $pubnub = new PubNub($pnConfiguration);
-
-        // $pubnub->publish([
-        //     'channel' => 'chat-channel',
-        //     'message' => $message,
-        // ]);
         
-        // return response()->json(['success' => true]);
+        $subscribeCallback = new MySubscribeCallback();
+        $pubnub->addListener($subscribeCallback);
 
-        //return $pubnub;
+
+        // $result = $pubnub->subscribe()
+        // ->channels("p2p_order_32024_07_22_14_49_12")
+        // ->execute();
+
+
+        $result = $pubnub->publish()
+            ->channel("p2p_order_32024_07_22_14_49_12")
+            ->message("Admin: 123")
+            ->sync();
+
+        return print_r($result);
+        
+        // return response()->json(['success' => true]); https://www.pubnub.com/docs/sdks/php#putting-it-all-together
+
+        
     }
 }
+
+
+
