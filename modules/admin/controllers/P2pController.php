@@ -194,15 +194,15 @@ class P2pController extends Controller
                     }
                 }
                 $p2p_h->status = 4;
-                // $wallet_buyer = Wallet::findOne(["user_id" => $p2p_h->creator_id, 'chart_id' => $p2p_ads->chart_id,'type' => 0]);
-                // if (!$wallet_buyer) {
-                //     $wallet_buyer = new Wallet(["user_id" => $p2p_h->creator_id, "chart_id" => $p2p_ads->chart_id,'type' => 0]);
-                // }
-                // $wallet_buyer->balance += $p2p_h->price;
-                // if(!$wallet_buyer->save()) {
-                //     Yii::$app->response->statusCode = 400;
-                //     return ["success" => false, "message" => "Ошибка сохранения кошелька"];
-                // }
+                $wallet_buyer = Wallet::findOne()->where(["user_id" => $p2p_h->creator_id, 'chart_id' => $p2p_ads->chart_id,'type' => 0])->one();
+                if (!$wallet_buyer) {
+                    $wallet_buyer = new Wallet(["user_id" => $p2p_h->creator_id, "chart_id" => $p2p_ads->chart_id,'type' => 0]);
+                }
+                $wallet_buyer->balance += $p2p_h->price;
+                if(!$wallet_buyer->save()) {
+                    Yii::$app->response->statusCode = 400;
+                    return ["success" => false, "message" => "Ошибка сохранения кошелька"];
+                }
 
             }
             //history
