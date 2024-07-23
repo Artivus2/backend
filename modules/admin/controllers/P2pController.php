@@ -151,10 +151,10 @@ class P2pController extends Controller
             return ["success" => false, "message" => "Ордер не найден"];
         }
         if ($p2p_ads->type == 2) {
-            $p2p_h = P2pHistory::find()->where(['p2p_ads_id' => $id, 'creator_id' => $model->creator_id, 'status' => $model->status])->one();
+            $p2p_h = P2pHistory::find()->where(['id' => $id])->one();
             if (!$p2p_h) {
                 Yii::$app->response->statusCode = 400;
-                return ["success" => false, "message" => "Сделка не найдена (в истории)"];
+                return ["success" => false, "message" => "Сделка не найдена (в истории покупок)"];
             }
             //подтвердил оплату админ после выяснения
             if ($p2p_ads->amount == 0) {
@@ -179,10 +179,10 @@ class P2pController extends Controller
 
         //  typw1
         if ($p2p_ads->type == 1) {
-            $p2p_h = P2pHistory::find()->where(['p2p_ads_id' => $id, 'author_id' => $model->author_id, 'status' => $model->status])->one();
+            $p2p_h = P2pHistory::find()->where(['id' => $id])->one();
             if (!$p2p_h) {
                 Yii::$app->response->statusCode = 400;
-                return ["success" => false, "message" => "Сделка не найдена (в истории)"];
+                return ["success" => false, "message" => "Сделка не найдена (в истории продаж)"];
             }
             //подтвердил оплату 
             if($p2p_ads->amount == 0) {
