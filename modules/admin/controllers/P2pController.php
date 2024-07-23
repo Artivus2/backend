@@ -142,10 +142,14 @@ class P2pController extends Controller
 
     public function actionUpdatehistory($id)
     {
+        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
         $model = $this->findModelHistory($id);
 
         $p2p_ads = P2pAds::find()->where(['id' => $model->p2p_ads_id, 'status' => [-1,6]])->one();
-        
+        if (!$p2p_ads) {
+            Yii::$app->response->statusCode = 401;
+            return ["success" => false, "message" => "Ордер не найден"];
+        }
         if ($p2p_ads->type == 2) {
             $p2p_h = P2pHistory::find()->where(['p2p_ads_id' => $id, 'creator_id' => $model->creator_id, 'status' => $model->status])->one();
             if (!$p2p_h) {
@@ -175,7 +179,7 @@ class P2pController extends Controller
 
         //  typw1
         if ($p2p_ads->type == 1) {
-            $p2p_h = P2pHistory::find()->where(['p2p_ads_id' => $history_id, 'author_id' => $this->user->id, 'status' => $model->history])->one();
+            $p2p_h = P2pHistory::find()->where(['p2p_ads_id' => $id, 'author_id' => $model->author_id, 'status' => $model->status])->one();
             if (!$p2p_h) {
                 Yii::$app->response->statusCode = 400;
                 return ["success" => false, "message" => "Сделка не найдена (в истории)"];
@@ -200,7 +204,7 @@ class P2pController extends Controller
                 return ["success" => false, "message" => "Ошибка сохранения кошелька"];
             }
 
-
+        }
         //history
         if(!$p2p_ads->save()) {
             Yii::$app->response->statusCode = 400;
