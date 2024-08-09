@@ -25,7 +25,8 @@ use app\models\chat\ChatMessagePinned;
 use app\models\chat\ChatMessageReciever;
 use app\models\chat\ChatRecieverHistory;
 use app\models\chat\ChatRoom;
-
+use DateTimeZone;
+use DateTime;
 
 class P2pController extends BaseController
 {
@@ -2734,8 +2735,8 @@ class P2pController extends BaseController
             } else {
                 return false;
             }
-            $current_date = $now;
-            $chat_id = $chat_database->newRoom($start_date, 2 /*групповой*/, $current_date);
+            $current_date = $now->format('Y-m-d H:i:s');
+            $chat_id = $chat_database->newRoom("chat: ".random(000000,999999), 2 /*групповой*/, $current_date);
             $chat_database->newMember($chat_id, $author_id, $current_date, 1, 2 /*Участник*/);
             $chat_database->newMember($chat_id, $creator_id, $current_date, 1, 2 /*Участник*/);
             $result = (int)$chat_id;
