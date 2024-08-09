@@ -1503,7 +1503,7 @@ class P2pController extends BaseController
 
             
             // chat_room
-            $chat_id = $this->newChatroom($p2p_h->author_id, $p2p_h->creator_id);
+            $chat_id = $this->newChatroom($p2p_h->start_date, $p2p_h->author_id, $p2p_h->creator_id);
             $p2p_h->chat_room_id = $chat_id;
             
             
@@ -2719,7 +2719,7 @@ class P2pController extends BaseController
      *
      *
      */
-    protected function newChatroom($author_id, $creator_id)
+    protected function newChatroom($start_date, $author_id, $creator_id)
     
     {
             $chat_database = new ChatDatabaseModel();
@@ -2728,8 +2728,8 @@ class P2pController extends BaseController
              * Создание комнаты в БД
              * ===============================================================*/
 
-            $title = $history_id;
-            $chat_id = $chat_database->newRoom($title, 2 /*групповой*/, $current_date);
+            
+            $chat_id = $chat_database->newRoom($start_date, 2 /*групповой*/, $current_date);
             $chat_database->newMember($chat_id, $author_id, $current_date, 1, 2 /*Участник*/);
             $chat_database->newMember($chat_id, $creator_id, $current_date, 1, 2 /*Участник*/);
             $result = (int)$chat_id;

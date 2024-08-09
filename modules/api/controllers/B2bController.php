@@ -1522,7 +1522,7 @@ class B2bController extends BaseController
             
             
             // chat_room b2b
-            $chat_id = P2pController::newChatroom($b2b_h->author_id, $b2b_h->creator_id);
+            $chat_id = P2pController::newChatroom($b2b_h->start_date, $b2b_h->author_id, $b2b_h->creator_id);
             $b2b_h->chat_room_id = $chat_id;
             
             
