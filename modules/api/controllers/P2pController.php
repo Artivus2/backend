@@ -2727,7 +2727,7 @@ class P2pController extends BaseController
             /**=================================================================
              * Создание комнаты в БД
              * ===============================================================*/
-
+            $current_date = Assistant::GetDateTimeNow();
             
             $chat_id = $chat_database->newRoom($start_date, 2 /*групповой*/, $current_date);
             $chat_database->newMember($chat_id, $author_id, $current_date, 1, 2 /*Участник*/);
