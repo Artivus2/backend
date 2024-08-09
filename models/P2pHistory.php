@@ -29,7 +29,7 @@ class P2pHistory extends \yii\db\ActiveRecord
     {
         return [
             [['p2p_ads_id', 'creator_id', 'author_id', 'start_date', 'end_date', 'price'], 'required'],
-            [['p2p_ads_id', 'creator_id', 'author_id', 'start_date','end_date', 'status', 'payment_id'], 'integer'],
+            [['p2p_ads_id', 'creator_id', 'author_id', 'start_date','end_date', 'status', 'payment_id','chat_room_id'], 'integer'],
             [['price'], 'number']
             
             
@@ -94,6 +94,7 @@ class P2pHistory extends \yii\db\ActiveRecord
             'payment_id' => 'Payment Id',
             'price' => 'Price',
             'status' => 'Status',
+            'chat_room_id' => 'ИД чата'
         ];
     }
 }

@@ -40,7 +40,7 @@ class B2bHistory extends \yii\db\ActiveRecord
     {
         return [
             [['b2b_ads_id', 'author_id','creator_id', 'start_date', 'end_date', 'price','author_id_rs'], 'required'],
-            [['b2b_ads_id', 'author_id', 'creator_id','payment_id', 'start_date','end_date', 'status','author_id_rs'], 'integer'],
+            [['b2b_ads_id', 'author_id', 'creator_id','payment_id', 'start_date','end_date', 'status','author_id_rs','chat_room_id'], 'integer'],
             [['image'], 'file', 'extensions' => 'png, jpg, pdf'],
             [['price'], 'number']
             
@@ -111,6 +111,7 @@ class B2bHistory extends \yii\db\ActiveRecord
             'price' => 'Price',
             'status' => 'Status',
             'image' => 'Документ',
+            'chat_room_id' => 'Номер ИД чата'
         ];
     }
 

@@ -16,6 +16,15 @@ use app\models\PaymentType;
 use app\models\PaymentUser;
 use app\models\StatusType;
 use app\models\P2pPayment;
+use app\modules\api\controllers\Assistant;
+use app\models\chat\ChatCacheModel;
+use app\models\chat\ChatDatabaseModel;
+use app\models\chat\ChatMember;
+use app\models\chat\ChatMessageFavorites;
+use app\models\chat\ChatMessagePinned;
+use app\models\chat\ChatMessageReciever;
+use app\models\chat\ChatRecieverHistory;
+use app\models\chat\ChatRoom;
 
 
 class P2pController extends BaseController
@@ -1097,7 +1106,7 @@ class P2pController extends BaseController
             ->andwhere($wherechart)
             ->andwhere($wherecurrency)
             ->andwhere($wherestatus)
-            ->andWhere($whereusers)
+            //->andWhere($whereusers)
             ->andWhere($whereduration)
             ->andWhere($wheresummmin)
             ->andWhere($wheresummmax)
@@ -1492,6 +1501,12 @@ class P2pController extends BaseController
                 return ["success" => false, "message" => "Ошибка сохранения объявления"];
             }
 
+            
+            // chat_room
+            $chat_id = $this->newChatroom($p2p_h->author_id, $p2p_h->creator_id);
+            $p2p_h->chat_room_id = $chat_id;
+            
+            
             if(!$p2p_h->save()) {
 
                 Yii::$app->response->statusCode = 400;
@@ -1504,10 +1519,14 @@ class P2pController extends BaseController
             }
 
 
+            
+
+
             $data = [
                 "id" => $p2p_h->p2p_ads_id,
                 "offer" => (float)$p2p_h->price,
                 "payment" => $p2p_h->payment_id,
+                "chat_room_id" => $chat_id
 
             ];
 
@@ -1516,6 +1535,9 @@ class P2pController extends BaseController
             if ($user) {
                 $this->sendCode($user, $p2p_h->id);
             }
+
+            
+
 
             return ["success" => true, "message" => "Подтверждено участие в сделке (покупка)", "data" => $data];
 
@@ -2141,6 +2163,7 @@ class P2pController extends BaseController
                 Yii::$app->response->statusCode = 400;
                 return ["success" => false, "message" => "Ошибка сохранения кошелька"];
             }
+            
 
 
         }
@@ -2153,7 +2176,7 @@ class P2pController extends BaseController
                 Yii::$app->response->statusCode = 400;
                 return ["success" => false, "message" => "Сделка не найдена (в истории)"];
             }
-            //подтвердил оплату 
+            //не подтвердил оплату покупатель
             if($p2p_ads->amount == 0) {
                 $p2p_ads->status = 10;
             } else {
@@ -2684,6 +2707,60 @@ class P2pController extends BaseController
         }
     }
 
+
+
+
+    /**
+     * actionNewRoom - Создание группы (комнаты) чата
+     * Необходимые POST поля:
+     *   title - название комнаты чата
+     *   users_ids - идентификаторы участников
+     * @param null $post_json - строка с параметрами метода в json формате
+     *
+     *
+     */
+    protected function newChatroom($author_id, $creator_id)
+    
+    {
+            $chat_database = new ChatDatabaseModel();
+            
+            /**=================================================================
+             * Создание комнаты в БД
+             * ===============================================================*/
+
+            $title = $history_id;
+            $chat_id = $chat_database->newRoom($title, 2 /*групповой*/, $current_date);
+            $chat_database->newMember($chat_id, $author_id, $current_date, 1, 2 /*Участник*/);
+            $chat_database->newMember($chat_id, $creator_id, $current_date, 1, 2 /*Участник*/);
+            $result = (int)$chat_id;
+
+            /**=================================================================
+             * Создание комнаты в кэше
+             * ===============================================================*/
+//                $chat_cache->newRoom($title, 2 /*групповой*/, $current_date, $chat_id);
+            //print_r($result);
+
+            /**=================================================================
+             * Создание участников
+             * ===============================================================*/
+            // в группе получателей не должен быть администратор
+            //$member_id = $chat_database->newMember($chat_id, $session['user_id'], $current_date, 1, 1 /*Администратор*/);
+            //unset($user_ids[$session['user_id']]);
+            // foreach ($user_ids as $user) {
+            //     //print_r($user);
+            //     $member_id = $chat_database->newMember($chat_id, $user, $current_date, 1, 2 /*Участник*/);
+            //     //$chat_cache->newMember($member_id, $chat_id, $user_id, $current_date, 1, 2 /*Участник*/);
+            // }
+
+        // } catch (Throwable $ex) {
+        //     //$log->addError($ex->getMessage(), $ex->getLine());
+        //     print_r("Ошибка");
+        // }
+
+        //$log->addLog("Окончание выполнения метода");
+
+        return $result;
+    }
 
 
 }  

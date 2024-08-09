@@ -1519,6 +1519,13 @@ class B2bController extends BaseController
                 return ["success" => false, "message" => "Ошибка сохранения объявления"];
             }
 
+            
+            
+            // chat_room b2b
+            $chat_id = P2pController::newChatroom($b2b_h->author_id, $b2b_h->creator_id);
+            $b2b_h->chat_room_id = $chat_id;
+            
+            
             if(!$b2b_h->save()) {
 
                 Yii::$app->response->statusCode = 400;

@@ -1495,7 +1495,7 @@ class WalletController extends BaseController
      *      description = "Список адресов",
      *      @SWG\Schema(
      *          type="array",
-     *          @SWG\Items(ref="#/definitions/WalletAddress")
+     *          @SWG\Items(ref="#/definitions/Result")
      *      ),
      *    ),
      *    @SWG\Response(
