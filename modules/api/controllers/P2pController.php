@@ -2736,7 +2736,7 @@ class P2pController extends BaseController
                 return false;
             }
             $current_date = $now->format('Y-m-d H:i:s');
-            $chat_id = $chat_database->newRoom("chat: ".random(000000,999999), 2 /*групповой*/, $current_date);
+            $chat_id = $chat_database->newRoom("chat: ".rand(000000,999999), 2 /*групповой*/, $current_date);
             $chat_database->newMember($chat_id, $author_id, $current_date, 1, 2 /*Участник*/);
             $chat_database->newMember($chat_id, $creator_id, $current_date, 1, 2 /*Участник*/);
             $result = (int)$chat_id;

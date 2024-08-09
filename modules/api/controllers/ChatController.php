@@ -360,7 +360,7 @@ class ChatController extends BaseController
      *
      */
     
-     public function getMessagesByRoom($chat_room_id, $message_id = null)
+     public function actionMessagesByRoom2($chat_room_id, $message_id = null)
      {
          $query = (new Query())
              ->select([
@@ -390,7 +390,7 @@ class ChatController extends BaseController
     
     
     
-     public static function actionGetMessagesByRoomOld($post_json = null)
+     public static function actionGetMessagesByRoom($post_json = null)
     {
         $status = 1;
         $errors = array();

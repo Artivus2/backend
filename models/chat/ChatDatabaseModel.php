@@ -158,13 +158,13 @@ class ChatDatabaseModel implements ChatModelInterface
             ->select([
                 'chat_member.user_id as user_id',
                 'chat_member.status_id as chat_member_status_id',
-                'employee.last_name as last_name',
-                'employee.first_name as first_name',
-                'employee.patronymic as patronymic'
+                'user.login as login',
+                // 'employee.first_name as first_name',
+                // 'employee.patronymic as patronymic'
             ])
             ->from('chat_member')
             ->innerJoin('user', 'user.id = chat_member.user_id')
-            ->innerJoin('employee', 'employee.id = user.employee_id')
+            //->innerJoin('employee', 'employee.id = user.employee_id')
             ->where([
                 'chat_room_id' => $chat_room_id
             ])
@@ -189,9 +189,9 @@ class ChatDatabaseModel implements ChatModelInterface
             ->select([
                 'chat_member.user_id as user_id',
                 'chat_member.status_id as chat_member_status_id',
-                'employee.last_name as last_name',
-                'employee.first_name as first_name',
-                'employee.patronymic as patronymic'
+                //'user.login as login',
+                // 'employee.first_name as first_name',
+                // 'employee.patronymic as patronymic'
             ])
             ->from('chat_member')
             ->innerJoin('user', 'user.id = chat_member.user_id')
@@ -258,47 +258,70 @@ class ChatDatabaseModel implements ChatModelInterface
         $user_id = $session['user_id'];
         // Получение последнего статуса сообщения, независимо от того, в каком
         // чате оно отправлено (индивидуальном или групповом)
-        $last_status = (new Query())
-            ->select(['chat_message_id', 'max(status_id_last) as status_id_last'])
-            ->from('chat_message')
-            ->leftJoin('chat_message_reciever as cmr',
-                'cmr.chat_message_id = chat_message.id 
-                and (cmr.status_id_last != 30 or cmr.status_id_last = all(select status_id_last from chat_message_reciever where chat_message_id = chat_message.id))')
-            ->where([
-                'chat_room_id' => $chat_room_id
-            ])
-            ->groupBy(['chat_message.id']);
+//         $last_status = (new Query())
+//             ->select(['chat_message_id', 'max(status_id_last) as status_id_last'])
+//             ->from('chat_message')
+//             ->leftJoin('chat_message_reciever as cmr',
+//                 'cmr.chat_message_id = chat_message.id 
+//                 and (cmr.status_id_last != 30 or cmr.status_id_last = all(select status_id_last from chat_message_reciever where chat_message_id = chat_message.id))')
+//             ->where([
+//                 'chat_room_id' => $chat_room_id
+//             ])
+//             ->groupBy(['chat_message.id']);
 
-        // Получение сообщений вместе с их последними статусами
+//         // Получение сообщений вместе с их последними статусами
+//         $query = (new Query())
+//             ->select([
+//                 'chat_message.id as id',
+//                 'chat_message.primary_message as primary_message',
+//                 'chat_message.sender_user_id as sender_user_id',
+//                 //'CONCAT(employee.last_name, " ", LEFT(IFNULL(employee.first_name, ""),1), ". ", LEFT(IFNULL(employee.patronymic, ""),1), ". ") as user_full_name',
+//                 'chat_message.chat_attachment_type_id as chat_attachment_type_id',
+//                 'chat_message.attachment as attachment',
+//                 'chat_message.date_time as date_time',
+//                 'chat_message_reciever.status_id_last as status_id_last',
+//                 'chat_message_favorites.id as chat_message_favorites_id',
+//             ])
+//             ->from('chat_message')
+//             ->leftJoin(['chat_message_reciever' => $last_status], 'chat_message.id = chat_message_reciever.chat_message_id')
+//             ->leftJoin('chat_message_favorites', 'chat_message.id = chat_message_favorites.chat_message_id and chat_message_favorites.user_id=' . $user_id)
+//             ->innerJoin('user', 'user.id = chat_message.sender_user_id')
+//             //->innerJoin('employee', 'employee.id = user.employee_id')
+//             ->where([
+//                 'chat_room_id' => $chat_room_id
+//             ])
+// //            ->andWhere([
+// //                'or',
+// //                ['chat_message_reciever.id' => $last_status],
+// //                ['chat_message_reciever.id' => null]
+// //            ])
+//             ->orderBy([
+//                 'chat_message.date_time' => SORT_DESC
+//             ]);
+
         $query = (new Query())
-            ->select([
-                'chat_message.id as id',
-                'chat_message.primary_message as primary_message',
-                'chat_message.sender_user_id as sender_user_id',
-                'CONCAT(employee.last_name, " ", LEFT(IFNULL(employee.first_name, ""),1), ". ", LEFT(IFNULL(employee.patronymic, ""),1), ". ") as user_full_name',
-                'chat_message.chat_attachment_type_id as chat_attachment_type_id',
-                'chat_message.attachment as attachment',
-                'chat_message.date_time as date_time',
-                'chat_message_reciever.status_id_last as status_id_last',
-                'chat_message_favorites.id as chat_message_favorites_id',
-            ])
-            ->from('chat_message')
-            ->leftJoin(['chat_message_reciever' => $last_status], 'chat_message.id = chat_message_reciever.chat_message_id')
-            ->leftJoin('chat_message_favorites', 'chat_message.id = chat_message_favorites.chat_message_id and chat_message_favorites.user_id=' . $user_id)
-            ->innerJoin('user', 'user.id = chat_message.sender_user_id')
-            ->innerJoin('employee', 'employee.id = user.employee_id')
-            ->where([
-                'chat_room_id' => $chat_room_id
-            ])
-//            ->andWhere([
-//                'or',
-//                ['chat_message_reciever.id' => $last_status],
-//                ['chat_message_reciever.id' => null]
-//            ])
-            ->orderBy([
-                'chat_message.date_time' => SORT_DESC
-            ]);
+        ->select([
+            'chat_message.id as id',
+            'chat_message.id as message_id',
+            'chat_message.primary_message as primary_message',
+            'chat_message.sender_user_id as sender_user_id',
+            'chat_message.chat_attachment_type_id as chat_attachment_type_id',
+            'chat_message.attachment as attachment',
+            'chat_message.date_time as date_time',
+            'user.login as login'
+        ])
+        ->from('chat_message')
+        ->where([
+            'chat_room_id' => $chat_room_id
+        ])
+        ->innerJoin('user', 'user.id = chat_message.sender_user_id')
+        ->orderBy([
+            'chat_message.date_time' => SORT_DESC
+        ]);
 
+        if ($message_id !== null && $message_id !== '') {
+        $query->andWhere(['<', 'chat_message.id', $message_id]);
+        }
         if ($message_id !== null && $message_id !== '') {
             $query->andWhere(['<', 'chat_message.id', $message_id]);
         }
