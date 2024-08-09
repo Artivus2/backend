@@ -2387,7 +2387,8 @@ class B2bController extends BaseController
                     "start_date" => date("Y-m-d H:i:s", $item->start_date),
                     "end_date" => date("Y-m-d H:i:s", $item->end_date),
                     "status_history" => $item->status,
-                    "description" => $item->ads->description
+                    "description" => $item->ads->description,
+                    'chat_room_id' => $item->chat_room_id
                 ];
             }
 
@@ -2468,7 +2469,8 @@ class B2bController extends BaseController
                     "start_date" => date("Y-m-d H:i:s", $item->start_date),
                     "end_date" => date("Y-m-d H:i:s", $item->end_date),
                     "status_history" => $item->status,
-                    "description" => $item->ads->description
+                    "description" => $item->ads->description,
+                    'chat_room_id' => $item->chat_room_id
                     
                 ];
             }

@@ -2503,7 +2503,8 @@ class P2pController extends BaseController
                     //"image_author" => Url::to([$item->author->getImage()->getUrl("75x75")], "https"),
                     "creator_id" => $item->creator_id,
                     "status_history" => $item->status,
-                    "description" => $item->ads->description
+                    "description" => $item->ads->description,
+                    'chat_room_id' => $item->chat_room_id
                     ];
                 }
 
@@ -2626,7 +2627,8 @@ class P2pController extends BaseController
                     
                     "creator_id" => $item->creator_id,
                     "status_history" => $item->status,
-                    "description" => $item->ads->description
+                    "description" => $item->ads->description,
+                    'chat_room_id' => $item->chat_room_id
                     ];
                 }
 
