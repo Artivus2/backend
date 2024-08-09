@@ -167,7 +167,7 @@ class ChatController extends BaseController
              * Добавление нового сообщения в БД
              * ===============================================================*/
             try {
-                $user_full_name = $chat_member->user->fio;
+                $user_full_name = $chat_member->user->login;
                 $new_message_id = $chat_database->newMessage($text, $sender_user_id, $chat_room_id, $current_date, $chat_attachment_type_id, $attachment);
             } catch (Throwable $exception) {
                 $errors[] = __FUNCTION__ . '. Ошибка при добавлении сообщения в БД';
@@ -359,7 +359,38 @@ class ChatController extends BaseController
      * @param null $post_json строка с параметрами метода в json формате
      *
      */
-    public static function actionGetMessagesByRoom($post_json = null)
+    
+     public function getMessagesByRoom($chat_room_id, $message_id = null)
+     {
+         $query = (new Query())
+             ->select([
+                 'chat_message.id as id',
+                 'chat_message.id as message_id',
+                 'chat_message.primary_message as primary_message',
+                 'chat_message.sender_user_id as sender_user_id',
+                 'chat_message.chat_attachment_type_id as chat_attachment_type_id',
+                 'chat_message.attachment as attachment',
+                 'chat_message.date_time as date_time',
+             ])
+             ->from('chat_message')
+             ->where([
+                 'chat_room_id' => $chat_room_id
+             ])
+             ->orderBy([
+                 'chat_message.date_time' => SORT_DESC
+             ]);
+ 
+         if ($message_id !== null && $message_id !== '') {
+             $query->andWhere(['<', 'chat_message.id', $message_id]);
+         }
+ 
+         return $query->all();
+     }
+    
+    
+    
+    
+     public static function actionGetMessagesByRoomOld($post_json = null)
     {
         $status = 1;
         $errors = array();
