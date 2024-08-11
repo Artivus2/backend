@@ -4,6 +4,8 @@
 namespace app\modules\api\controllers;
 
 use Exception;
+use DateTime;
+use DateTimeZone;
 use app\modules\api\controllers\Assistant;
 use app\models\chat\ChatCacheModel;
 use app\models\chat\ChatDatabaseModel;
@@ -170,7 +172,7 @@ class ChatController extends BaseController
              * ===============================================================*/
             try {
                 $user_full_name = $chat_member->user->login;
-                $new_message_id = $chat_database->newMessage($text, $sender_user_id, $chat_room_id, $now, $chat_attachment_type_id, $attachment);
+                $new_message_id = $chat_database->newMessage($text, $sender_user_id, $chat_room_id, $now->format('Y-m-d H:i:s'), $chat_attachment_type_id, $attachment);
             } catch (Throwable $exception) {
                 $errors[] = __FUNCTION__ . '. Ошибка при добавлении сообщения в БД';
                 throw $exception;
@@ -318,7 +320,7 @@ class ChatController extends BaseController
             /**=================================================================
              * Создание комнаты в БД
              * ===============================================================*/
-            $chat_id = $chat_database->newRoom($title, 2 /*групповой*/, $now);
+            $chat_id = $chat_database->newRoom($title, 2 /*групповой*/, $now->format('Y-m-d H:i:s'));
 
             $result = (int)$chat_id;
 
@@ -336,7 +338,7 @@ class ChatController extends BaseController
             //unset($user_ids[$session['user_id']]);
             foreach ($user_ids as $user) {
                 //print_r($user);
-                $member_id = $chat_database->newMember($chat_id, $user, $current_date, 1, 2 /*Участник*/);
+                $member_id = $chat_database->newMember($chat_id, $user, $$now->format('Y-m-d H:i:s'), 1, 2 /*Участник*/);
                 //$chat_cache->newMember($member_id, $chat_id, $user_id, $current_date, 1, 2 /*Участник*/);
             }
 
@@ -537,7 +539,7 @@ class ChatController extends BaseController
             $now = DateTime::createFromFormat('U.u', sprintf('%.f', microtime(true)))->setTimeZone($time_zone);
             $chat_database = new ChatDatabaseModel();
             try {
-                $chat_member_id = $chat_database->newMember($chat_room_id, $user_id, $now, 1, $chat_role_id);
+                $chat_member_id = $chat_database->newMember($chat_room_id, $user_id, $now->format('Y-m-d H:i:s'), 1, $chat_role_id);
             } catch (Throwable $exception) {
                 $errors[] = __FUNCTION__ . '. Ошибка добавления участника в чат в БД';
                 throw $exception;
