@@ -1,6 +1,0 @@
-{
-  "dependencies": {
-    "axios": "^0.24.0",
-    "chartjs-to-image": "^1.0.5"
-  }
-}

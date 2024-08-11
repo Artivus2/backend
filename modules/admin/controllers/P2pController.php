@@ -261,8 +261,10 @@ class P2pController extends Controller
             $sender_user_id = 631;
             $text = $_POST["ChatMessage"]["primary_message"];
             $chat_room_id = $model->chat_room_id;
-            $current_date = Assistant::GetDateTimeNow();
-            $send = $chat_database->newMessage($text, $sender_user_id, $chat_room_id, $current_date, $chat_attachment_type_id, $attachment);
+            //$current_date = Assistant::GetDateTimeNow();
+            $time_zone = new DateTimeZone('Asia/Krasnoyarsk');
+            $now = DateTime::createFromFormat('U.u', sprintf('%.f', microtime(true)))->setTimeZone($time_zone);
+            $send = $chat_database->newMessage($text, $sender_user_id, $chat_room_id, $now, $chat_attachment_type_id, $attachment);
             return $this->refresh();
         }
         
@@ -292,8 +294,10 @@ class P2pController extends Controller
         $sender_user_id = 631;
         $chat_attachment_type_id = 0;
         $chat_room_id = $id;
-        $current_date = Assistant::GetDateTimeNow();
-        $new_message_id = $chat_database->newMessage($text, $sender_user_id, $chat_room_id, $current_date, $chat_attachment_type_id, $attachment);
+        //$current_date = Assistant::GetDateTimeNow();
+        $time_zone = new DateTimeZone('Asia/Krasnoyarsk');
+        $now = DateTime::createFromFormat('U.u', sprintf('%.f', microtime(true)))->setTimeZone($time_zone);
+        $new_message_id = $chat_database->newMessage($text, $sender_user_id, $chat_room_id, $now, $chat_attachment_type_id, $attachment);
         return $this->render('updatehistory');
     }
 

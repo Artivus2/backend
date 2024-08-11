@@ -641,6 +641,7 @@ class Assistant
 
         //Вариант 1 с получением часового пояса
         $time_zone = new DateTimeZone('Asia/Krasnoyarsk');
+        $now = DateTime::createFromFormat('U.u', sprintf('%.f', microtime(true)))->setTimeZone($time_zone);
         if ($time_zone) {
             $now = DateTime::createFromFormat('U.u', sprintf('%.f', microtime(true)))->setTimeZone($time_zone);
         } else {

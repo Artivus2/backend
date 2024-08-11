@@ -160,7 +160,9 @@ class ChatController extends BaseController
             }
             $warnings[] = __FUNCTION__ . '. Проверена роль отправителя';
 
-            $current_date = Assistant::GetDateTimeNow();
+            //$current_date = Assistant::GetDateTimeNow();
+            $time_zone = new DateTimeZone('Asia/Krasnoyarsk');
+            $now = DateTime::createFromFormat('U.u', sprintf('%.f', microtime(true)))->setTimeZone($time_zone);
             $chat_database = new ChatDatabaseModel();
             //$chat_cache = new ChatCacheModel();
             /**=================================================================
@@ -168,7 +170,7 @@ class ChatController extends BaseController
              * ===============================================================*/
             try {
                 $user_full_name = $chat_member->user->login;
-                $new_message_id = $chat_database->newMessage($text, $sender_user_id, $chat_room_id, $current_date, $chat_attachment_type_id, $attachment);
+                $new_message_id = $chat_database->newMessage($text, $sender_user_id, $chat_room_id, $now, $chat_attachment_type_id, $attachment);
             } catch (Throwable $exception) {
                 $errors[] = __FUNCTION__ . '. Ошибка при добавлении сообщения в БД';
                 throw $exception;
@@ -306,7 +308,9 @@ class ChatController extends BaseController
             $user_ids = $post['users_ids'];
             $user_ids = explode(",", $user_ids);
             //return var_dump($user_ids);
-            $current_date = Assistant::GetDateTimeNow();
+            //$current_date = Assistant::GetDateTimeNow();
+            $time_zone = new DateTimeZone('Asia/Krasnoyarsk');
+            $now = DateTime::createFromFormat('U.u', sprintf('%.f', microtime(true)))->setTimeZone($time_zone);
 
             $chat_database = new ChatDatabaseModel();
             //$chat_cache = new ChatCacheModel();
@@ -314,7 +318,7 @@ class ChatController extends BaseController
             /**=================================================================
              * Создание комнаты в БД
              * ===============================================================*/
-            $chat_id = $chat_database->newRoom($title, 2 /*групповой*/, $current_date);
+            $chat_id = $chat_database->newRoom($title, 2 /*групповой*/, $now);
 
             $result = (int)$chat_id;
 
@@ -528,10 +532,12 @@ class ChatController extends BaseController
             /**=================================================================
              * Добавление воркера в чат в БД
              * ===============================================================*/
-            $curr_date = Assistant::GetDateTimeNow();
+            //$curr_date = Assistant::GetDateTimeNow();
+            $time_zone = new DateTimeZone('Asia/Krasnoyarsk');
+            $now = DateTime::createFromFormat('U.u', sprintf('%.f', microtime(true)))->setTimeZone($time_zone);
             $chat_database = new ChatDatabaseModel();
             try {
-                $chat_member_id = $chat_database->newMember($chat_room_id, $user_id, $curr_date, 1, $chat_role_id);
+                $chat_member_id = $chat_database->newMember($chat_room_id, $user_id, $now, 1, $chat_role_id);
             } catch (Throwable $exception) {
                 $errors[] = __FUNCTION__ . '. Ошибка добавления участника в чат в БД';
                 throw $exception;
