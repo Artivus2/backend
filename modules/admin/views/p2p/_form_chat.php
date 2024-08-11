@@ -73,7 +73,7 @@ $chat = 'Чат по ордеру: ' . $model->id;
             </div>
                 
             <?php }
-        if ($model->creator_id !== $item["sender_user_id"] && $model->author_id !== $item["sender_user_id"]) {
+        if ($item["sender_user_id"] == Yii::$app->params['chat_admin']) {
             ?>  
         
             <div class="chat-content-admin">
