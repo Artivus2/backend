@@ -5,7 +5,7 @@ namespace app\models;
 use Yii;
 
 /**
- * @SWG\Definition(required={"id", "inn", "ogrn", "name", "address","kpp","phone","fio","bank","bik","rs","ks","status"})
+ * @SWG\Definition(required={"id", "inn", "ogrn", "name", "address","kpp","phone","fio","status"})
  *
  * @SWG\Property(property="id", type="integer")
  * @SWG\Property(property="inn", type="string")
@@ -17,10 +17,6 @@ use Yii;
  * @SWG\Property(property="kpp", type="string")
  * @SWG\Property(property="fio", type="string")
  * @SWG\Property(property="phone", type="string")
- * @SWG\Property(property="bank", type="integer")
- * @SWG\Property(property="bik", type="string")
- * @SWG\Property(property="rs", type="string")
- * @SWG\Property(property="ks", type="string")
  */
 class Company extends \yii\db\ActiveRecord
 {

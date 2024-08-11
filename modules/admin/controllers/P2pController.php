@@ -4,6 +4,8 @@ namespace app\modules\admin\controllers;
 
 
 use Yii;
+use Exception;
+use Throwable;
 use yii\web\Controller;
 use app\models\Chart;
 use app\models\Currency;
@@ -19,8 +21,16 @@ use app\models\P2pPayment;
 use app\models\StatusType;
 use yii\data\ActiveDataProvider;
 use app\models\MySubscribeCallback;
-use PubNub\PubNub;
-use PubNub\PNConfiguration;
+use app\modules\api\controllers\Assistant;
+use app\models\chat\ChatCacheModel;
+use app\models\chat\ChatDatabaseModel;
+use app\models\chat\ChatMember;
+use app\models\chat\ChatMessage;
+use app\models\chat\ChatMessageFavorites;
+use app\models\chat\ChatMessagePinned;
+use app\models\chat\ChatMessageReciever;
+use app\models\chat\ChatRecieverHistory;
+use app\models\chat\ChatRoom;
 
 
 /**
@@ -143,6 +153,30 @@ class P2pController extends Controller
     public function actionUpdatehistory($id)
     {
         $model = $this->findModelHistory($id);
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    
+        $send =  new ChatMessage();
+        //chat room
+        $p2p_chat = P2pHistory::find()->where(['id' => $id])->one();
+
+        if (!ChatRoom::find()->where(['id' => $p2p_chat->chat_room_id])->exists()) {
+            throw new Exception(__FUNCTION__ . ". Нет чата с таким идентификатором $p2p_chat->chat_room_id");
+        }
+        $chat_database = new ChatDatabaseModel();
+
+        try {
+            //$messages = $chat_database->getMessagesByRoom($chat_room_id);
+            $messages = $chat_database->getMessagesWithStatusesByRoomUser($p2p_chat->chat_room_id/*, $user_id*/);
+            $warnings[] = __FUNCTION__ . '. Сообщения получены из БД';
+//                $warnings[] = $messages;
+        } catch (Throwable $exception) {
+            $errors[] = __FUNCTION__ . '. Ошибка получения сообщений из БД';
+            throw $exception;
+        }
+
+        
+
+        
+
 
         if ($model->status == 5) {
             $p2p_ads = P2pAds::find()->where(['id' => $model->p2p_ads_id, 'status' => [-1,6]])->one();
@@ -194,7 +228,7 @@ class P2pController extends Controller
                     }
                 }
                 $p2p_h->status = 4;
-                $wallet_buyer = Wallet::findOne()->where(["user_id" => $p2p_h->creator_id, 'chart_id' => $p2p_ads->chart_id,'type' => 0])->one();
+                $wallet_buyer = Wallet::find()->where(["user_id" => $p2p_h->creator_id, 'chart_id' => $p2p_ads->chart_id,'type' => 0])->one();
                 if (!$wallet_buyer) {
                     $wallet_buyer = new Wallet(["user_id" => $p2p_h->creator_id, "chart_id" => $p2p_ads->chart_id,'type' => 0]);
                 }
@@ -213,64 +247,58 @@ class P2pController extends Controller
             
         }
 
-        
+        //chat
+
+
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
             return $this->redirect(['view', 'id' => $model->p2p_ads_id]);
         }
         
+        $attachment = null;
+        $text = null;
+        $chat_attachment_type_id = 0;
+        if (Yii::$app->request->post()) {
+            $sender_user_id = 631;
+            $text = $_POST["ChatMessage"]["primary_message"];
+            $chat_room_id = $model->chat_room_id;
+            $current_date = Assistant::GetDateTimeNow();
+            $send = $chat_database->newMessage($text, $sender_user_id, $chat_room_id, $current_date, $chat_attachment_type_id, $attachment);
+            return $this->refresh();
+        }
+        
+        
+        
+        
+        
+        
+        
+
         
 
         return $this->render('updatehistory', [
             'model' => $model,
+            'messages' => $messages,
+            'send' => $send
         ]);
     }
 
+    public function actionSendmessage($id, $text)
+    {
+       
+        //send_message
+        $send = null;
+        $attachment = null;
+        $text = null;
+        $sender_user_id = 631;
+        $chat_attachment_type_id = 0;
+        $chat_room_id = $id;
+        $current_date = Assistant::GetDateTimeNow();
+        $new_message_id = $chat_database->newMessage($text, $sender_user_id, $chat_room_id, $current_date, $chat_attachment_type_id, $attachment);
+        return $this->render('updatehistory');
+    }
 
     
-    public function actionChat($id)
-    {
-        
-        $model = $this->findModelHistory($id);
-
-        // if ($model->load(Yii::$app->request->post()) && $model->save()) {
-        //     return $this->redirect(['view', 'id' => $model->p2p_ads_id]);
-        // }
-
-        // return $this->render('updatehistory', [
-        //     'model' => $model,
-        // ]);
-        $pnconf = new PNConfiguration();
-
-        $pnconf->setSubscribeKey("sub-c-7a080724-d4d0-46af-a644-53d651aa3dd4");
-        $pnconf->setPublishKey("pub-c-ed0d5f65-4368-492b-a376-0b82917208b9");
-        $pnconf->setSecure(false);
-        $pnconf->setUserId("admin");
-        $pubnub = new PubNub($pnconf);
-        // $pnConfiguration->setSubscribeKey("sub-c-7a080724-d4d0-46af-a644-53d651aa3dd4");
-        // $pnConfiguration->setPublishKey("pub-c-ed0d5f65-4368-492b-a376-0b82917208b9");
-        // $pnConfiguration->setUserId($model->author_id);
-        // $pubnub = new PubNub($pnConfiguration);
-        
-        $subscribeCallback = new MySubscribeCallback();
-        $pubnub->addListener($subscribeCallback);
-
-
-        // $result = $pubnub->subscribe()
-        // ->channels("p2p_order_32024_07_22_14_49_12")
-        // ->execute();
-
-
-        $result = $pubnub->publish()
-            ->channel("p2p_order_32024_07_22_14_49_12")
-            ->message("Admin: 123")
-            ->sync();
-
-        return print_r($result);
-        
-        // return response()->json(['success' => true]); https://www.pubnub.com/docs/sdks/php#putting-it-all-together
-
-        
-    }
+    
 }
 
 

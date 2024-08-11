@@ -5,7 +5,7 @@ namespace app\models\chat;
 
 // Модели чата
 //use backend\controllers\Assistant;
-//use backend\controllers\const_amicum\StatusEnumController;
+
 use app\models\chat\ChatMember;
 use app\models\chat\ChatMessage;
 use app\models\chat\ChatRecieverHistory;
@@ -19,7 +19,7 @@ use yii\helpers\ArrayHelper;
 
 class ChatDatabaseModel implements ChatModelInterface
 {
-
+    
     // getChatActiveMembers - Получение активных участников конкретного чата из БД
 
     /**

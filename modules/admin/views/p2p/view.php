@@ -163,12 +163,8 @@ $this->params['breadcrumbs'][] ='   >>>>  '. $this->title;
                             'method' => 'post',
                         ],
                     ]);
-                },
-                'chat' => function ($url,$history) {
-                    return Html::a(
-                    '<span class="edit-icon">Чат</span>', 
-                    ['/admin/p2p/chat', 'id' => $history->id]);
-                },
+                }
+                
 
                 
             ],

@@ -1,13 +1,23 @@
 <?php
 
+
 use yii\helpers\Html;
+use yii\widgets\Pjax;
 
-/* @var $this yii\web\View */
-/* @var $model app\models\Users */
+            $this->registerJs(
+                '$("document").ready(function(){
+                            setInterval(function(){
+                                
+                                $.pjax.reload({container:"#update-chat", async:false});
+                                console.log("обновление");
+                            },10000);
+                    });'
+            );
 
-$this->title = 'Изменить связанный ордер: ' . $model->p2p_ads_id;
+$this->title = 'Изменить связанный ордер: ' . $model->id;
+
 $this->params['breadcrumbs'][] = ['label' => 'P2P история', 'url' => ['index']];
-$this->params['breadcrumbs'][] = ['label' => $model->p2p_ads_id, 'url' => ['view', 'id' => $model->p2p_ads_id]];
+$this->params['breadcrumbs'][] = ['label' => $model->id, 'url' => ['view', 'id' => $model->p2p_ads_id]];
 $this->params['breadcrumbs'][] = 'Изменить';
 ?>
 <div class="p2p-update">
@@ -15,8 +25,37 @@ $this->params['breadcrumbs'][] = 'Изменить';
     <h1><?= Html::encode($this->title) ?></h1>
 
     <?= $this->render('_form_history', [
-        'model' => $model
+        'model' => $model,
+       
+    ]) ?>
+
+     
+
+<?php
+
+Pjax::begin([
+    'id' => 'update-chat',
+    'timeout' => 5000, // Обновлять каждые 5 секунд
+]);
+echo $this->render('_form_chat', [
+    'model' => $model,
+    'messages' => $messages
+    
+]);
+
+
+
+
+Pjax::end();
+
+?>
+
+<?= $this->render('_form_message', [
+        'model' => $model,
+        'send' => $send
         
     ]) ?>
 
 </div>
+
+

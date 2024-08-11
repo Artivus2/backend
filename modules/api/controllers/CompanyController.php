@@ -241,35 +241,6 @@ class CompanyController extends BaseController
      *      required=true,
      *      @SWG\Schema(type="string")
      *     ),
-     *    @SWG\Parameter(
-     *      name="bank",
-     *      in="body",
-     *      description="Банк",
-     *      required=true,
-     *      @SWG\Schema(type="integer")
-     *     ),
-     *    @SWG\Parameter(
-     *      name="rs",
-     *      in="body",
-     *      description="Расчетный счет",
-     *      required=true,
-     *      @SWG\Schema(type="string")
-     *     ),
-     *    @SWG\Parameter(
-     *      name="ks",
-     *      in="body",
-     *      description="Корр счет",
-     *      required=true,
-     *      @SWG\Schema(type="string")
-     *     ),
-     *    @SWG\Parameter(
-     *      name="bik",
-     *      in="body",
-     *      description="БИК",
-     *      required=true,
-     *      @SWG\Schema(type="string")
-     *     ),
-     
      *	  @SWG\Response(
      *      response = 200,
      *      description = "Компания создана",
