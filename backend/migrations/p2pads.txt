@@ -1,0 +1,6 @@
+ALTER TABLE `greenavi`.`p2p_ads` 
+ADD COLUMN `duration` INT NULL AFTER `date`,
+ADD COLUMN `uuid` VARCHAR(20) NOTNULL AFTER `status`,
+CHANGE COLUMN `type` `type` INT NOT NULL AFTER `user_id`,
+CHANGE COLUMN `price` `amount` DECIMAL(27,8) NOT NULL AFTER `currency_id`,
+CHANGE COLUMN `course` `max_price` DECIMAL(27,8) NOT NULL ;
