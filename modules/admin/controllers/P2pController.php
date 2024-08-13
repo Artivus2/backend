@@ -264,7 +264,7 @@ class P2pController extends Controller
             $text = $_POST["ChatMessage"]["primary_message"];
             $chat_room_id = $model->chat_room_id;
             //$current_date = Assistant::GetDateTimeNow();
-            $time_zone = new DateTimeZone('Asia/Krasnoyarsk');
+            $time_zone = new DateTimeZone('Europe/Moscow');
             $now = DateTime::createFromFormat('U.u', sprintf('%.f', microtime(true)))->setTimeZone($time_zone);
             $send = $chat_database->newMessage($text, $sender_user_id, $chat_room_id, $now->format('Y-m-d H:i:s'), $chat_attachment_type_id, $attachment);
             return $this->refresh();
@@ -297,7 +297,7 @@ class P2pController extends Controller
         $chat_attachment_type_id = 0;
         $chat_room_id = $id;
         //$current_date = Assistant::GetDateTimeNow();
-        $time_zone = new DateTimeZone('Asia/Krasnoyarsk');
+        $time_zone = new DateTimeZone('Europe/Moscow');
         $now = DateTime::createFromFormat('U.u', sprintf('%.f', microtime(true)))->setTimeZone($time_zone);
         $new_message_id = $chat_database->newMessage($text, $sender_user_id, $chat_room_id, $now->format('Y-m-d H:i:s'), $chat_attachment_type_id, $attachment);
         return $this->render('updatehistory');
