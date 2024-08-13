@@ -138,7 +138,15 @@ class ChatController extends BaseController
                     throw new Exception(__FUNCTION__ . '. Отсутствует отправляемое вложение');
                 }
                 
-                $attachment = Assistant::UploadFileChat($attachment, $attachment_title, 'chat_message');
+                $temp = $attachment['tmp_name'];
+                $date_now = date('d-m-Y_H-i-s');
+
+                $file_name = $file_name.'-'.$date_now.'.jpg';
+                $target_file = $_SERVER['DOCUMENT_ROOT'].'\uploads\\' .$file_name;
+                move_uploaded_file($temp, $target_file);
+                
+
+                
             }
 
 
@@ -471,7 +479,7 @@ class ChatController extends BaseController
         }
 
         
-        return array('Items' => $messages, 'status' => $status, 'warnings' => $warnings, 'errors' => $errors);
+        return array('Items' => $messages);
 
     }
 
