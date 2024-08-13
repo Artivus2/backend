@@ -137,7 +137,7 @@ class ChatController extends BaseController
                 if (!$attachment) {
                     throw new Exception(__FUNCTION__ . '. Отсутствует отправляемое вложение');
                 }
-                
+                $file_name = $attachment['name'];
                 $temp = $attachment['tmp_name'];
                 $date_now = date('d-m-Y_H-i-s');
 
