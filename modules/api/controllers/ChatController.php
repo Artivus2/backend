@@ -142,7 +142,7 @@ class ChatController extends BaseController
                 $temp = $attachment['tmp_name'];
                 $date_now = date('d-m-Y_H-i-s');
                 
-                $file_name +='-'.$date_now.'.jpg';
+                $file = $file_name.'-'.(string)$date_now.'.jpg';
                 $target_file = $_SERVER['DOCUMENT_ROOT'].'/uploads/' .$file_name;
                 move_uploaded_file($temp, $target_file);
                 
@@ -181,7 +181,7 @@ class ChatController extends BaseController
              * ===============================================================*/
             try {
                 $user_full_name = $chat_member->user->login;
-                $new_message_id = $chat_database->newMessage($text, $sender_user_id, $chat_room_id, $now->format('Y-m-d H:i:s'), $chat_attachment_type_id, $file_name ?? null);
+                $new_message_id = $chat_database->newMessage($text, $sender_user_id, $chat_room_id, $now->format('Y-m-d H:i:s'), $chat_attachment_type_id, $file);
             } catch (Throwable $exception) {
                 $errors[] = __FUNCTION__ . '. Ошибка при добавлении сообщения в БД';
                 throw $exception;
