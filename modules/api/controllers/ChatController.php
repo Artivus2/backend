@@ -140,10 +140,10 @@ class ChatController extends BaseController
                 
                 $file_name = $attachment['name'];
                 $temp = $attachment['tmp_name'];
-                $date_now = date('d-m-Y_H-i-s');
+                $date_now = rand(000000,999999);
                 
                 $file = $file_name.'-'.(string)$date_now.'.jpg';
-                $target_file = $_SERVER['DOCUMENT_ROOT'].'/uploads/' .$file_name;
+                $target_file = $_SERVER['DOCUMENT_ROOT'].'/uploads/' .$file;
                 move_uploaded_file($temp, $target_file);
                 
 
@@ -172,7 +172,7 @@ class ChatController extends BaseController
             $warnings[] = __FUNCTION__ . '. Проверена роль отправителя';
 
             //$current_date = Assistant::GetDateTimeNow();
-            $time_zone = new DateTimeZone('Moscow/Russia');
+            $time_zone = new DateTimeZone('Asia/Krasnoyarsk');
             $now = DateTime::createFromFormat('U.u', sprintf('%.f', microtime(true)))->setTimeZone($time_zone);
             $chat_database = new ChatDatabaseModel();
             //$chat_cache = new ChatCacheModel();
