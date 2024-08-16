@@ -2575,7 +2575,7 @@ class B2bController extends BaseController
              * Создание комнаты в БД
              * ===============================================================*/
             //$current_date = Assistant::GetDateTimeNow();
-            $time_zone = new DateTimeZone('Asia/Krasnoyarsk');
+            $time_zone = new DateTimeZone('Europe/Moscow');
             if ($time_zone) {
                 $now = DateTime::createFromFormat('U.u', sprintf('%.f', microtime(true)))->setTimeZone($time_zone);
             } else {

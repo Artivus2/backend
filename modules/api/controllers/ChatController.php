@@ -188,72 +188,6 @@ class ChatController extends BaseController
             }
             $warnings[] = __FUNCTION__ . '. Сообщение добавлено в БД';
 
-            /**=================================================================
-             * Добавление нового сообщения в кэш
-             * ===============================================================*/
-            /*try {
-                $result  = $chat_cache->newMessage($text, $sender_user_id, $chat_room_id, $current_date, $new_message_id, $chat_attachment_type_id, $attachment);
-            } catch (\Throwable $exception) {
-                $errors[] = __FUNCTION__ . '. Ошибка при добавлении сообщения в кэш';
-                throw $exception;
-            }
-            $warnings[] = __FUNCTION__ . '. Сообщение добавлено в кэш';*/
-
-            /**=================================================================
-             * Добавление получателя сообщения и запись статуса в историю
-             * ===============================================================*/
-            // $recievers_ids = $chat_database->getChatActiveMembers($chat_room_id);
-            // if ($recievers_ids !== false) {
-            //     $recievers_ids = ArrayHelper::getColumn($recievers_ids, 'user_id');
-            // } else {
-            //     throw new Exception(__FUNCTION__ . '. В группе нет участников');
-            // }
-
-            // foreach ($recievers_ids as $reciever_id) {
-            //     if ($reciever_id != $sender_user_id) {
-            //         try {
-            //             $message_reciever_id = $chat_database->newMessageReciever($new_message_id, $reciever_id, 29/*StatusEnumController::MSG_SENDED*/, $chat_room_id);
-            //             $added_messages_ids[] = $chat_database->newMessageStatus($message_reciever_id, 29/*StatusEnumController::MSG_SENDED*/, $current_date);
-            //         } catch (Throwable $exception) {
-            //             $errors[] = __FUNCTION__ . '. Ошибка добавления получателя сообщения или его статуса';
-            //             throw $exception;
-            //         }
-            //     }
-            // }
-            // $warnings[] = __FUNCTION__ . '. Получатели сообщения и статусы сохранены';
-
-            /**=================================================================
-             * Отправка сообщения на вебсокет
-             * ===============================================================*/
-            
-            //  try {
-            //     $ws_msg = json_encode(array(
-            //         'ClientType' => 'server',
-            //         'ActionType' => 'publish',
-            //         'ClientId' => 'server',
-            //         'Subscribes' => [$chat_room_id],
-            //         'type' => 'login',
-            //         'room_id' => $chat_room_id,                                                                 // ключ комнаты
-            //         'id' => $new_message_id,                                                                    // ключ сообщения
-            //         'sender_user_id' => $sender_user_id,                                                    // ключ отправителя
-            //         'user_full_name' => $user_full_name,                                                    // Фамилия И.О. пользователя
-            //         'primary_message' => $text,                                                                 // текст сообщения
-            //         'chat_attachment_type_id' => $chat_attachment_type_id,                                      // тип сообщения (изображение, видео, цитата)
-            //         'attachment' => $attachment,                                                                // вложение
-            //         'date_time' => $current_date                                                                // дата и время сообщения
-            //         )
-
-            //             , JSON_UNESCAPED_UNICODE);
-                    
-            //     //));
-            //     WebsocketController::actionSendMsg('ws://127.0.0.1:7272', $ws_msg);
-
-            // } catch (Throwable $exception) {
-            //     $errors[] = __FUNCTION__ . '. Ошибка отправки сообщения на вебсокет сервер';
-            //     throw $exception;
-            // }
-
-
             $warnings[] = __FUNCTION__ . '. Конец метода';
         } catch (Throwable $exception) {
             $status = 0;
@@ -463,6 +397,87 @@ class ChatController extends BaseController
             try {
                 //$messages = $chat_database->getMessagesByRoom($chat_room_id);
                 $messages = $chat_database->getMessagesWithStatusesByRoomUser($chat_room_id/*, $user_id*/);
+                $warnings[] = __FUNCTION__ . '. Сообщения получены из БД';
+//                $warnings[] = $messages;
+            } catch (Throwable $exception) {
+                $errors[] = __FUNCTION__ . '. Ошибка получения сообщений из БД';
+                throw $exception;
+            }
+            //}
+
+            $warnings[] = __FUNCTION__ . '. Конец метода';
+        } catch (Throwable $exception) {
+            $status = 0;
+            $errors['Method parameters'] = $post_json;
+            $errors[] = $exception->getMessage();
+            $errors[] = $exception->getLine();
+        }
+
+        
+        return array('Items' => $messages);
+
+    }
+
+
+
+    public static function actionGetMessagesByRoomB2b($post_json = null)
+    {
+        $status = 1;
+        $errors = array();
+        $warnings = array();
+        $messages = array();
+        $post_json = $_POST;
+        Yii::$app->response->format = Response::FORMAT_JSON;
+        //return print_r($post_json);
+        
+        try {
+            /**=================================================================
+             * Валидация входных данных
+             * ===============================================================*/
+            $warnings[] = __FUNCTION__ . '. Начало метода. Параметры: ' . print_r($post_json, true);
+            if ($post_json === null || $post_json === '') {
+                throw new Exception(__FUNCTION__ . '. Данные с фронта не получены');
+            }
+
+            $post = $post_json;
+            if ($post === null) {
+                throw new Exception(__FUNCTION__ . '. Получен невалидный json: ' . $post_json);
+            }
+
+            $post_valid = isset($post['chat_room_id']/*, $post['user_id']*/);
+            if (!$post_valid) {
+                throw new Exception(__FUNCTION__ . '. Не все входные параметры инициализированы'.print_r($post_json));
+            }
+
+            if (empty($post['chat_room_id'])) {
+                throw new Exception(__FUNCTION__ . '. Не передан идентификатор чата');
+            }
+
+            /*if (empty($post['user_id'])) {
+                throw new \Exception(__FUNCTION__ . '. Не передан идентификатор пользователя - пользователя чата');
+            }*/
+
+            $chat_room_id = $post['chat_room_id'];
+            //$user_id = $post['user_id'];
+
+            // TODO: нужна ли проверка?
+            // Если убрать проверку, то при отсутствии чата возвращает пустой массив
+            // в поле messages результирующего массива
+            if (!ChatRoom::find()->where(['id' => $chat_room_id])->exists()) {
+                throw new Exception(__FUNCTION__ . ". Нет чата с таким идентификатором $chat_room_id");
+            }
+
+            $chat_database = new ChatDatabaseModel();
+
+
+
+            /**=================================================================
+             * Получение сообщений из БД
+             * ===============================================================*/
+            //if ($messages === false) {
+            try {
+                //$messages = $chat_database->getMessagesByRoom($chat_room_id);
+                $messages = $chat_database->getMessagesWithStatusesByRoomCompany($chat_room_id/*, $user_id*/);
                 $warnings[] = __FUNCTION__ . '. Сообщения получены из БД';
 //                $warnings[] = $messages;
             } catch (Throwable $exception) {

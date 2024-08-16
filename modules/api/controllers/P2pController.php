@@ -2731,7 +2731,7 @@ class P2pController extends BaseController
              * Создание комнаты в БД
              * ===============================================================*/
             //$current_date = Assistant::GetDateTimeNow();
-            $time_zone = new DateTimeZone('Asia/Krasnoyarsk');
+            $time_zone = new DateTimeZone('Europe/Moscow');
             if ($time_zone) {
                 $now = DateTime::createFromFormat('U.u', sprintf('%.f', microtime(true)))->setTimeZone($time_zone);
             } else {
@@ -2743,30 +2743,6 @@ class P2pController extends BaseController
             $chat_database->newMember($chat_id, $creator_id, $current_date, 1, 2 /*Участник*/);
             $result = (int)$chat_id;
 
-            /**=================================================================
-             * Создание комнаты в кэше
-             * ===============================================================*/
-//                $chat_cache->newRoom($title, 2 /*групповой*/, $current_date, $chat_id);
-            //print_r($result);
-
-            /**=================================================================
-             * Создание участников
-             * ===============================================================*/
-            // в группе получателей не должен быть администратор
-            //$member_id = $chat_database->newMember($chat_id, $session['user_id'], $current_date, 1, 1 /*Администратор*/);
-            //unset($user_ids[$session['user_id']]);
-            // foreach ($user_ids as $user) {
-            //     //print_r($user);
-            //     $member_id = $chat_database->newMember($chat_id, $user, $current_date, 1, 2 /*Участник*/);
-            //     //$chat_cache->newMember($member_id, $chat_id, $user_id, $current_date, 1, 2 /*Участник*/);
-            // }
-
-        // } catch (Throwable $ex) {
-        //     //$log->addError($ex->getMessage(), $ex->getLine());
-        //     print_r("Ошибка");
-        // }
-
-        //$log->addLog("Окончание выполнения метода");
 
         return $result;
     }
