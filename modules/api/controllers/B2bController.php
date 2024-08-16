@@ -1520,11 +1520,7 @@ class B2bController extends BaseController
             }
 
             
-            
-            // chat_room b2b
-            $chat_id = B2bController::newChatroom($b2b_h->start_date, $b2b_h->author_id, $b2b_h->creator_id);
-            $b2b_h->chat_room_id = $chat_id;
-            
+                                  
             
             if(!$b2b_h->save()) {
 
@@ -1540,7 +1536,7 @@ class B2bController extends BaseController
 
             $data = [
                 "id" => $b2b_h->b2b_ads_id,
-                "offer" => (float)$b2b_h->price,
+                "offer" => (float)$b2b_h->price                
                 
             ];
 
@@ -1617,7 +1613,9 @@ class B2bController extends BaseController
             Yii::$app->response->statusCode = 400;
             return ["success" => false, "message" => "Ошибка сохранения объявления"];
         }
-
+        // chat_room b2b
+        $chat_id = B2bController::newChatroom($b2b_h->start_date, $b2b_h->author_id, $b2b_h->creator_id);
+        $b2b_h->chat_room_id = $chat_id;
         if(!$b2b_h->save()) {
             Yii::$app->response->statusCode = 400;
             return ["success" => false, "message" => "Ошибка сохранения сделки"];
