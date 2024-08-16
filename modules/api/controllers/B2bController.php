@@ -27,6 +27,14 @@ use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\Middleware;
 use GuzzleHttp\Psr7;
 use GuzzleHttp\Psr7\Response;
+use app\models\chat\ChatCacheModel;
+use app\models\chat\ChatDatabaseModel;
+use app\models\chat\ChatMember;
+use app\models\chat\ChatMessageFavorites;
+use app\models\chat\ChatMessagePinned;
+use app\models\chat\ChatMessageReciever;
+use app\models\chat\ChatRecieverHistory;
+use app\models\chat\ChatRoom;
 
 
 class B2bController extends BaseController
