@@ -319,12 +319,12 @@ class ChatDatabaseModel implements ChatModelInterface
             'chat_message.date_time' => SORT_DESC
         ]);
 
-        if ($message_id !== null && $message_id !== '') {
-        $query->andWhere(['<', 'chat_message.id', $message_id]);
-        }
-        if ($message_id !== null && $message_id !== '') {
-            $query->andWhere(['<', 'chat_message.id', $message_id]);
-        }
+        // if ($message_id !== null && $message_id !== '') {
+        // $query->andWhere(['<', 'chat_message.id', $message_id]);
+        // }
+        // if ($message_id !== null && $message_id !== '') {
+        //     $query->andWhere(['<', 'chat_message.id', $message_id]);
+        // }
 
         return $query->all();
     }

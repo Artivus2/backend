@@ -83,6 +83,22 @@ class P2pController extends Controller
         ]);
     }
 
+    public function actionAppeal()
+    {
+        
+        $history = P2pHistory::find()->where(['status' => Yii::$app->params['appeal']]);
+               
+        $data = new ActiveDataProvider([
+            'query' => $history,
+            'pagination' => [
+                'pageSize' => 10,
+          ],
+            ]);
+        return $this->render('appeal', [
+            'history' => $data,
+        ]);
+    }
+
 
     public function actionUpdate($id)
     {
@@ -169,16 +185,10 @@ class P2pController extends Controller
             //$messages = $chat_database->getMessagesByRoom($chat_room_id);
             $messages = $chat_database->getMessagesWithStatusesByRoomUser($p2p_chat->chat_room_id/*, $user_id*/);
             $warnings[] = __FUNCTION__ . '. Сообщения получены из БД';
-//                $warnings[] = $messages;
         } catch (Throwable $exception) {
             $errors[] = __FUNCTION__ . '. Ошибка получения сообщений из БД';
             throw $exception;
         }
-
-        
-
-        
-
 
         if ($model->status == 5) {
             $p2p_ads = P2pAds::find()->where(['id' => $model->p2p_ads_id, 'status' => [-1,6]])->one();
@@ -260,47 +270,20 @@ class P2pController extends Controller
         $text = null;
         $chat_attachment_type_id = 0;
         if (Yii::$app->request->post()) {
-            $sender_user_id = 631;
+            $sender_user_id = Yii::$app->params['chat_admin'];
             $text = $_POST["ChatMessage"]["primary_message"];
             $chat_room_id = $model->chat_room_id;
-            //$current_date = Assistant::GetDateTimeNow();
             $time_zone = new DateTimeZone('Europe/Moscow');
             $now = DateTime::createFromFormat('U.u', sprintf('%.f', microtime(true)))->setTimeZone($time_zone);
             $send = $chat_database->newMessage($text, $sender_user_id, $chat_room_id, $now->format('Y-m-d H:i:s'), $chat_attachment_type_id, $attachment);
             return $this->refresh();
         }
-        
-        
-        
-        
-        
-        
-        
-
-        
 
         return $this->render('updatehistory', [
             'model' => $model,
             'messages' => $messages,
             'send' => $send
         ]);
-    }
-
-    public function actionSendmessage($id, $text)
-    {
-       
-        //send_message
-        $send = null;
-        $attachment = null;
-        $text = null;
-        $sender_user_id = 631;
-        $chat_attachment_type_id = 0;
-        $chat_room_id = $id;
-        //$current_date = Assistant::GetDateTimeNow();
-        $time_zone = new DateTimeZone('Europe/Moscow');
-        $now = DateTime::createFromFormat('U.u', sprintf('%.f', microtime(true)))->setTimeZone($time_zone);
-        $new_message_id = $chat_database->newMessage($text, $sender_user_id, $chat_room_id, $now->format('Y-m-d H:i:s'), $chat_attachment_type_id, $attachment);
-        return $this->render('updatehistory');
     }
 
     

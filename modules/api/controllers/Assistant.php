@@ -565,7 +565,7 @@ class Assistant
      * @author Якимов М.Н.
      * Created date: on 29.01.2020 17:04
      */
-    public static function UploadFileChat($attachment, $file_name, $table): string
+    public static function UploadFileChat($attachment, $file_name, $table)
     {
         //$file = $_FILES['attachment'];
         $temp = $attachment['tmp_name'];

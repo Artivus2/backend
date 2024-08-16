@@ -172,7 +172,7 @@ class ChatController extends BaseController
             $warnings[] = __FUNCTION__ . '. Проверена роль отправителя';
 
             //$current_date = Assistant::GetDateTimeNow();
-            $time_zone = new DateTimeZone('Asia/Krasnoyarsk');
+            $time_zone = new DateTimeZone('Europe/Moscow');
             $now = DateTime::createFromFormat('U.u', sprintf('%.f', microtime(true)))->setTimeZone($time_zone);
             $chat_database = new ChatDatabaseModel();
             //$chat_cache = new ChatCacheModel();
@@ -181,7 +181,7 @@ class ChatController extends BaseController
              * ===============================================================*/
             try {
                 $user_full_name = $chat_member->user->login;
-                $new_message_id = $chat_database->newMessage($text, $sender_user_id, $chat_room_id, $now->format('Y-m-d H:i:s'), $chat_attachment_type_id, $file);
+                $new_message_id = $chat_database->newMessage($text, $sender_user_id, $chat_room_id, $now->format('Y-m-d H:i:s'), $chat_attachment_type_id, $file ?? null);
             } catch (Throwable $exception) {
                 $errors[] = __FUNCTION__ . '. Ошибка при добавлении сообщения в БД';
                 throw $exception;
@@ -320,7 +320,7 @@ class ChatController extends BaseController
             $user_ids = explode(",", $user_ids);
             //return var_dump($user_ids);
             //$current_date = Assistant::GetDateTimeNow();
-            $time_zone = new DateTimeZone('Asia/Krasnoyarsk');
+            $time_zone = new DateTimeZone('Europe/Moscow');
             $now = DateTime::createFromFormat('U.u', sprintf('%.f', microtime(true)))->setTimeZone($time_zone);
 
             $chat_database = new ChatDatabaseModel();
