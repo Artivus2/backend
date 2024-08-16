@@ -2589,7 +2589,7 @@ class B2bController extends BaseController
             $chat_database->newMember($chat_id, $author_id, $current_date, 1, 2 /*Участник*/);
             $chat_database->newMember($chat_id, $creator_id, $current_date, 1, 2 /*Участник*/);
             $result = (int)$chat_id;
-
+            return $result;
 
     }
 
