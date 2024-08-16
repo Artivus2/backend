@@ -1522,7 +1522,7 @@ class B2bController extends BaseController
             
             
             // chat_room b2b
-            $chat_id = P2pController::newChatroom($b2b_h->start_date, $b2b_h->author_id, $b2b_h->creator_id);
+            $chat_id = B2bController::newChatroom($b2b_h->start_date, $b2b_h->author_id, $b2b_h->creator_id);
             $b2b_h->chat_room_id = $chat_id;
             
             
@@ -2547,5 +2547,40 @@ class B2bController extends BaseController
              }
          }
      }
+
+
+     /**
+     * actionNewRoom - Создание группы (комнаты) чата
+     * Необходимые POST поля:
+     *   title - название комнаты чата
+     *   users_ids - идентификаторы участников
+     * @param null $post_json - строка с параметрами метода в json формате
+     *
+     *
+     */
+    protected function newChatroom($start_date, $author_id, $creator_id)
+    
+    {
+            $chat_database = new ChatDatabaseModel();
+            
+            /**=================================================================
+             * Создание комнаты в БД
+             * ===============================================================*/
+            //$current_date = Assistant::GetDateTimeNow();
+            $time_zone = new DateTimeZone('Asia/Krasnoyarsk');
+            if ($time_zone) {
+                $now = DateTime::createFromFormat('U.u', sprintf('%.f', microtime(true)))->setTimeZone($time_zone);
+            } else {
+                return false;
+            }
+            $current_date = $now->format('Y-m-d H:i:s');
+            $chat_id = $chat_database->newRoom("chat: ".rand(000000,999999), 2 /*групповой*/, $current_date);
+            $chat_database->newMember($chat_id, $author_id, $current_date, 1, 2 /*Участник*/);
+            $chat_database->newMember($chat_id, $creator_id, $current_date, 1, 2 /*Участник*/);
+            $result = (int)$chat_id;
+
+
+    }
+
 
 }  
