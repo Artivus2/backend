@@ -1503,7 +1503,9 @@ class P2pController extends BaseController
             }
 
             
-
+            // chat_room
+            $chat_id = $this->newChatroom($p2p_h->start_date, $p2p_h->author_id, $p2p_h->creator_id);
+            $p2p_h->chat_room_id = $chat_id;
             
             if(!$p2p_h->save()) {
 
@@ -1607,14 +1609,14 @@ class P2pController extends BaseController
         }
 
         //$p2p_ads->status = $status;
-
+        // chat_room
+        $chat_id = $this->newChatroom($p2p_h->start_date, $p2p_h->author_id, $p2p_h->creator_id);
+        $p2p_h->chat_room_id = $chat_id;
         if(!$p2p_ads->save()) {
             Yii::$app->response->statusCode = 400;
             return ["success" => false, "message" => "Ошибка сохранения объявления"];
         }
-        // chat_room
-        $chat_id = $this->newChatroom($p2p_h->start_date, $p2p_h->author_id, $p2p_h->creator_id);
-        $p2p_h->chat_room_id = $chat_id;
+        
 
         if(!$p2p_h->save()) {
             Yii::$app->response->statusCode = 400;
